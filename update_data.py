@@ -45,7 +45,7 @@ for i in range(0, len(syms), 50):
         print("batch failed", b[:3], e); continue
     for s in b:
         try:
-            df = raw[s + ".NS"].dropna(subset=["Close"])
+            df = raw[s + ".NS"].dropna(subset=["Open", "High", "Low", "Close"])
             if len(df) >= 30: frames[s] = df
         except Exception: pass
 print(f"{len(frames)}/{len(syms)} symbols downloaded")
@@ -59,6 +59,7 @@ for s, df in frames.items():
                "v": [int(v) for v in df.Volume.fillna(0)], "sample": 0},
               open(f"{OUT}/candles/{s}.json", "w"), separators=(",", ":"))
     c = df.Close.values
+    if len(c) < 260: continue          # need ~1 year of history for RS rating (skips new IPOs)
     price = c[-1]; chg = (price / c[-2] - 1) * 100
     quotes[s] = {"p": round(float(price), 2), "c": round(float(chg), 2)}
     ret = lambda n: (price / c[-n - 1] - 1) * 100 if len(c) > n else np.nan
@@ -74,11 +75,14 @@ for s, df in frames.items():
                      ret3=round(float(ret(63)), 1), ret6=round(float(ret(126)), 1), ret1=round(float(ret(252)), 1),
                      fromHigh=round(float((price / hi - 1) * 100), 1), turnover=round(turn),
                      _score=np.nansum([ret(63) * .4, ret(126) * .3, ret(252) * .3])))
+import math
+_num = ("price", "change", "ret3", "ret6", "ret1", "fromHigh", "turnover", "_score")
+rows = [r for r in rows if all(math.isfinite(float(r[k])) for k in _num)]   # NaN would make the JSON unreadable in browsers
 sc = pd.Series([r["_score"] for r in rows]).rank(pct=True) * 98 + 1
 for r, v in zip(rows, sc): r["rs"] = int(round(v)); del r["_score"]
 rows.sort(key=lambda r: -r["rs"])
 for i, r in enumerate(rows, 1): r["rank"] = i
-json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"))
+json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"updated": pd.Timestamp.now(tz="Asia/Kolkata").isoformat(), "quotes": quotes},
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"))
 
