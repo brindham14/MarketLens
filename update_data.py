@@ -1,9 +1,11 @@
+Claude
+Update data · PY
 """Builds everything the MarketLens RS site reads from data/ :
    summary.json  one row per stock: price, returns, RS rating, stage, trend checks and the pattern fields
                  used by the Stock Screener / Popular Scans (VCP, cup & handle, flag, pocket pivot, Darvas ...)
    themes.json   theme / industry strength used by the Swing Trade tab
    quotes.json, history.json, candles/SYMBOL.json, candles/_NIFTY500.json
-
+ 
 Run   : python update_data.py      (after market close, ~17:00 IST)
 Needs : pip install yfinance pandas numpy
 Optional input files next to this script:
@@ -12,19 +14,19 @@ Optional input files next to this script:
 """
 import io, json, math, os, sys, urllib.request, datetime as dt
 import numpy as np, pandas as pd, yfinance as yf
-
+ 
 OUT = "data"; os.makedirs(f"{OUT}/candles", exist_ok=True)
 H = {"User-Agent": "Mozilla/5.0", "Accept": "text/csv,*/*", "Referer": "https://www.nseindia.com/"}
-
+ 
 def get_csv(url):
     return pd.read_csv(io.BytesIO(urllib.request.urlopen(urllib.request.Request(url, headers=H), timeout=60).read()))
-
+ 
 # ---------------------------------------------------------------- stock list
 rows_ = []
 try:   # ALL NSE equities
     eq = get_csv("https://nsearchives.nseindia.com/content/equities/EQUITY_L.csv"); eq.columns = [c.strip() for c in eq.columns]
     eq = eq[eq["SERIES"].str.strip().isin(["EQ", "BE", "BZ", "SM", "ST"])]
-    rows_ = [dict(symbol=r["SYMBOL"].strip(), name=r["NAME OF COMPANY"].strip(), sector="") for _, r in eq.iterrows()]
+    rows_ = [dict(symbol=r["SYMBOL"].strip(), name=r["NAME OF COMPANY"].strip(), sector="", ld=str(r.get("DATE OF LISTING", "")).strip()) for _, r in eq.iterrows()]
     print("NSE full list:", len(rows_), "stocks")
 except Exception as e:
     print("could not download NSE list:", e)
@@ -44,12 +46,12 @@ for r in mine.to_dict("records"):
 meta = pd.DataFrame(list(d.values()))
 syms = meta["symbol"].str.strip().str.upper().tolist()
 info = {r.symbol.strip().upper(): r for r in meta.itertuples()}
-
+ 
 # ---------------------------------------------------------------- prices
 def fetch(batch, tick=lambda s: s + ".NS"):
-    return yf.download([tick(s) for s in batch], start="2019-01-01", group_by="ticker",
+    return yf.download([tick(s) for s in batch], start="2021-01-01", group_by="ticker",
                        auto_adjust=False, threads=True, progress=False)
-
+ 
 frames = {}
 for i in range(0, len(syms), 50):
     b = syms[i:i + 50]
@@ -64,31 +66,30 @@ for i in range(0, len(syms), 50):
         except Exception: pass
 print(f"{len(frames)}/{len(syms)} symbols downloaded")
 if not frames: sys.exit("no data downloaded - nothing written")
-
+ 
 # benchmark: Nifty 500 (falls back to Nifty 50)
 bench = None
 for tk in ("^CRSLDX", "^NSEI"):
     try:
-        bdf = yf.download(tk, start="2019-01-01", auto_adjust=False, progress=False)
+        bdf = yf.download(tk, start="2021-01-01", auto_adjust=False, progress=False)
         if isinstance(bdf.columns, pd.MultiIndex): bdf.columns = bdf.columns.get_level_values(0)
         bdf = bdf.dropna(subset=["Close"])
         if len(bdf) > 300: bench = bdf; print("benchmark:", tk, len(bdf)); break
     except Exception as e:
         print("benchmark failed", tk, e)
-
+ 
 r2 = lambda x: [round(float(v), 2) for v in x]
 def write_candles(name, df):
     json.dump({"d": [t.strftime("%Y-%m-%d") for t in df.index], "o": r2(df.Open), "h": r2(df.High), "l": r2(df.Low),
                "c": r2(df.Close), "v": [int(v) for v in df.Volume.fillna(0)], "sample": 0},
               open(f"{OUT}/candles/{name}.json", "w"), separators=(",", ":"))
-for s, df in frames.items(): write_candles(s, df)
 if bench is not None: write_candles("_NIFTY500", bench)
-
+ 
 # ---------------------------------------------------------------- helpers
 def sma(a, n): return float(np.mean(a[-n:])) if len(a) >= n else np.nan
 def depth_in(h, l):            # deepest pullback % inside a window (running peak -> later low)
     rm = np.maximum.accumulate(h); return float(np.max((rm - l) / rm)) * 100
-
+ 
 def darvas(h, l, per=252, near=5):
     """Port of the chart's Darvas-box indicator: list of (top_index, complete_index, top, bottom)."""
     n = len(h); out = []; k = 3
@@ -103,7 +104,26 @@ def darvas(h, l, per=252, near=5):
                 out.append((k, j, float(h[k]), float(lo))); k = j; break
         k += 1
     return out
-
+ 
+def base_number(h, l, c, min_w=2, max_d=35, within=15, per=252):
+    """Number of the latest base (1 = first base after a deeper low). None if no base in the last 60 sessions."""
+    n = len(c); R = 10; min_bars = max(2, min_w * 5); out = []; i = R
+    rmax = pd.Series(h).rolling(per, min_periods=1).max().values
+    while i < n - 1:
+        if h[i] < rmax[i] * (1 - within / 100) or h[i] < max(h[max(0, i - R):i + R + 1]):
+            i += 1; continue
+        e = i + 1
+        while e < n and c[e] <= h[i]: e += 1
+        lo = float(np.min(l[i:min(e, n)])); depth = (h[i] - lo) / h[i] * 100
+        if e - i >= min_bars and depth <= max_d:
+            out.append((i, min(e, n - 1), lo)); i = max(e, i + 1)
+        else: i += 1
+    cnt = 0; prev = None; last = None
+    for a, b, lo in out:
+        cnt = 1 if (prev is not None and lo < prev) else cnt + 1
+        prev = lo; last = (b, cnt)
+    return last[1] if last and last[0] >= n - 60 else None
+ 
 def pattern_fields(o, h, l, c, v):
     """Pattern / setup fields for one stock from daily OHLCV (arrays, latest last)."""
     n = len(c); f = {}
@@ -138,7 +158,7 @@ def pattern_fields(o, h, l, c, v):
         f["vcp"] = int(d1 > d2 > d3 and d3 <= 8 and (f["v10"] or 9) < 1 and f["a50"] and price >= 0.85 * np.max(h[-252:]))
     # Tight weeks: consecutive weekly closes within 1.5%
     return f
-
+ 
 def weekly_tight(close_series):
     wc = close_series.resample("W-FRI").last().dropna().values
     t = 0
@@ -146,7 +166,7 @@ def weekly_tight(close_series):
         if abs(wc[i] / wc[i - 1] - 1) <= 0.015: t += 1
         else: break
     return t
-
+ 
 def flag_cup_my(h, l, c):
     f = {}; n = len(c); price = c[-1]
     # Flag: >=25% run-up into a recent high, then a tight (<=12%) pullback
@@ -184,7 +204,7 @@ def flag_cup_my(h, l, c):
             if len(first_above) and (j + 1 + first_above[0]) >= n - 5 and price > top: f["dvb"] = 1
             elif not len(first_above) and bot <= price <= top and price >= top * 0.95: f["dvi"] = 1
     return f
-
+ 
 # ---------------------------------------------------------------- per-stock features
 latest = max(df.index[-1] for df in frames.values())
 fe, closes = {}, {}
@@ -212,6 +232,8 @@ for s, df in frames.items():
              turnover=round(float(np.mean(c[-50:] * v[-50:]) / 1e7), 1))
     f.update(pattern_fields(o, h, l, c, v)); f.update(flag_cup_my(h, l, c))
     f["tw"] = weekly_tight(df.Close)
+    bn = base_number(h, l, c)
+    if bn: f["bn"] = int(bn)
     # trend-template pieces that do not depend on RS
     lo52, hi52 = float(np.min(l[-252:])), float(np.max(h[-252:])); ma50 = sma(c, 50)
     f["_tt"] = sum([price > ma150 and price > ma200, ma150 > ma200, ma200 > ma200_prev, ma50 > ma150 and ma50 > ma200,
@@ -220,14 +242,14 @@ for s, df in frames.items():
     fe[s] = f; closes[s] = df.Close
 C = pd.DataFrame(closes).sort_index().ffill()
 print("scored stocks:", len(fe))
-
+ 
 # ---------------------------------------------------------------- RS rating (weighted return, ranked 1-99)
 def ret(n): return C / C.shift(n) - 1
 R21, R63, R126, R189, R252 = ret(21), ret(63), ret(126), ret(189), ret(252)
 RAW = 0.4 * R63 + 0.2 * R126 + 0.2 * R189 + 0.2 * R252            # 40% 3M + 20% 6M + 20% 9M + 20% 12M
 uni = [s for s in C.columns if s in TM] if len(TM & set(C.columns)) >= 300 else list(C.columns)
 print("RS ranked against", len(uni), "stocks")
-
+ 
 def pct_of(series_now, series_ref):
     ref = np.sort(series_ref.dropna().values)
     out = {}
@@ -235,7 +257,7 @@ def pct_of(series_now, series_ref):
         out[s] = np.nan if (x != x or len(ref) == 0) else np.searchsorted(ref, x, side="right") / len(ref)
     return pd.Series(out)
 rs_of = lambda p: np.clip(np.round(1 + 98 * p), 1, 99)
-
+ 
 def rs_at(offset):
     row = RAW.iloc[-1 - offset]
     return rs_of(pct_of(row, row[uni]))
@@ -245,7 +267,7 @@ P = {k: pct_of(r.iloc[-1], r.iloc[-1][uni]) for k, r in (("r1", R21), ("r3", R63
 idx_close = bench["Close"].reindex(C.index).ffill() if bench is not None else None
 idx_r63 = float(idx_close.iloc[-1] / idx_close.iloc[-64] - 1) * 100 if idx_close is not None and idx_close.notna().sum() > 70 else 0.0
 liq = lambda f: f["turnover"] >= 10
-
+ 
 rows = []
 for s, f in fe.items():
     rs = RS_NOW.get(s, np.nan)
@@ -270,7 +292,7 @@ for s, f in fe.items():
         if len(ratio) > 252: f["rsH"] = int(ratio.iloc[-1] >= ratio.iloc[-252:].max() * 0.999)
     f.pop("_sma50", None)
     rows.append(f)
-
+ 
 # ---------------------------------------------------------------- optional: NSE delivery data
 try:
     dates = list(C.index[-21:])
@@ -299,7 +321,7 @@ try:
         print("delivery data not available (NSE blocked or too few days) - delivery screens will stay empty")
 except Exception as e:
     print("delivery step skipped:", e)
-
+ 
 # ---------------------------------------------------------------- themes (Swing Trade tab)
 custom = {}
 if os.path.exists("themes.csv"):
@@ -324,9 +346,13 @@ for name, mem in groups.items():
                        vs=("+" if vs >= 0 else "−") + f"{abs(vs):.0f}%", count=f"{strong} of {len(ms)} RS ≥ 85",
                        members=[m["symbol"] for m in ms]))
 themes.sort(key=lambda x: -x["score"])
-
+ 
 # ---------------------------------------------------------------- write
 rows.sort(key=lambda r: (-r["rs"], -r["ret3"]))
+keep = {r["symbol"] for r in rows}
+for fn in os.listdir(f"{OUT}/candles"):        # remove old files for stocks that no longer qualify
+    if fn.endswith(".json") and fn[:-5] not in keep and not fn.startswith("_"): os.remove(f"{OUT}/candles/{fn}")
+for s in keep: write_candles(s, frames[s])
 for i, r in enumerate(rows, 1): r["rank"] = i
 def clean(v):
     if isinstance(v, (np.integer,)): return int(v)
@@ -335,6 +361,58 @@ def clean(v):
     return v
 rows = [{k: clean(v) for k, v in r.items() if clean(v) is not None} for r in rows]
 asof = C.index[-1].strftime("%Y-%m-%d")
+# ---------------------------------------------------------------- Recent IPOs (listed in the last 12 months)
+ipos = []; cut = pd.Timestamp.now() - pd.Timedelta(days=366)
+for s, df in frames.items():
+    try:
+        ld = pd.to_datetime(str(getattr(info.get(s), "ld", "")), format="%d-%b-%Y", errors="coerce")
+        if pd.isna(ld) or ld < cut: continue
+        post = df[df.index >= ld]
+        if len(post) < 3 or (post.index[0] - ld).days > 7: continue            # history must start at the listing
+        hi = float(post.High.max()); hi_i = int(np.argmax(post.High.values)); n_ = len(post)
+        low_after = float(post.Low.values[hi_i:].min()); last = float(post.Close.iloc[-1])
+        val = float(np.mean(post.Close.values[-50:] * np.nan_to_num(post.Volume.values[-50:])) / 1e7)
+        ipos.append(dict(symbol=s, name=info[s].name or s, ld=ld.strftime("%Y-%m-%d"), lc=round(float(post.Close.iloc[0]), 2),
+                         last=round(last, 2), hi=round(hi, 2), since=round((last / float(post.Close.iloc[0]) - 1) * 100, 1),
+                         fromHi=round((last / hi - 1) * 100, 1), m1=round((last / float(post.Close.iloc[-22]) - 1) * 100, 1) if n_ > 22 else None,
+                         val=round(val, 1), base=int(n_ - 1 - hi_i >= 10 and (hi - low_after) / hi * 100 <= 35), inScan=int(s in by)))
+    except Exception: pass
+json.dump(ipos, open(f"{OUT}/ipos.json", "w"), separators=(",", ":"), allow_nan=False)
+print("recent IPOs:", len(ipos))
+ 
+# ---------------------------------------------------------------- gap-ups (last ~70 sessions, liquid stocks)
+gaps = []
+for r in rows:
+    df = frames.get(r["symbol"])
+    if df is None: continue
+    t = df.tail(71)
+    for i in range(1, len(t)):
+        pc, op = float(t.Close.iloc[i - 1]), float(t.Open.iloc[i])
+        if pc > 0 and op / pc - 1 >= 0.01:
+            gaps.append(dict(symbol=r["symbol"], date=t.index[i].strftime("%Y-%m-%d"), open=round(op, 2), prevClose=round(pc, 2), close=round(float(t.Close.iloc[i]), 2)))
+import time as _t
+t0, caps = _t.time(), {}
+for sym in sorted({g["symbol"] for g in gaps if g["open"] / g["prevClose"] - 1 >= 0.02}):
+    if _t.time() - t0 > 600: break                                      # stop after 10 minutes
+    try:
+        fi = yf.Ticker(sym + ".NS").fast_info
+        mc = fi["market_cap"] if "market_cap" in fi else fi["marketCap"]
+        if mc and mc == mc: caps[sym] = round(float(mc) / 1e7)
+    except Exception: pass
+for g_ in gaps:
+    if g_["symbol"] in caps: g_["marketCapCr"] = caps[g_["symbol"]]
+json.dump(gaps, open(f"{OUT}/gaps.json", "w"), separators=(",", ":"), allow_nan=False)
+print("gap-up records:", len(gaps), "| with market cap:", len(caps))
+ 
+# ---------------------------------------------------------------- check list: how many stocks each screen finds
+chk = {"stocks": len(rows), "with sector": sum(1 for r in rows if r.get("sector")), "VCP": sum(1 for r in rows if r.get("vcp") == 1),
+       "near breakout (pivot)": sum(1 for r in rows if r.get("pv")), "cup": sum(1 for r in rows if r.get("cup") == 1),
+       "flag": sum(1 for r in rows if r.get("fl") == 1), "multi-year": sum(1 for r in rows if r.get("my") == 1),
+       "volume breakout": sum(1 for r in rows if r.get("b50") == 1), "pocket pivot": sum(1 for r in rows if r.get("pp") == 1),
+       "RS line high": sum(1 for r in rows if r.get("rsH")), "tight weeks >=3": sum(1 for r in rows if (r.get("tw") or 0) >= 3),
+       "just entered stage 2": sum(1 for r in rows if r.get("stage") == 2 and r.get("ns2", 99) <= 15),
+       "with delivery data": sum(1 for r in rows if "deliveryPct" in r), "with base number": sum(1 for r in rows if r.get("bn"))}
+print("SCREEN CHECK:", chk)
 json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "themes": themes}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoformat(), "generated": dt.datetime.utcnow().isoformat() + "Z",
@@ -345,3 +423,13 @@ json.dump({"dates": [t.strftime("%Y-%m-%d") for t in C.index],
                           "c": [None if pd.isna(v) else round(float(v), 2) for v in C[s]]} for s in C.columns if s in by}},
           open(f"{OUT}/history.json", "w"), separators=(",", ":"), allow_nan=False)
 print("done:", len(rows), "stocks,", len(themes), "themes, as of", asof)
+ 
+
+
+
+
+
+
+
+
+
