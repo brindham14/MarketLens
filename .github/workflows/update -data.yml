@@ -1,38 +1,19 @@
-Claude
-Update · YML
-name: Update data
+name: Update stock data
 on:
   schedule:
-    - cron: "30 13 * * 1-5"   # 7:00 pm IST, Monday to Friday
-  workflow_dispatch: {}        # lets you run it by hand
+    - cron: "30 11 * * 1-5"   # 17:00 IST, Mon-Fri (after market close)
+  workflow_dispatch: {}
 permissions:
   contents: write
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
+        with: { python-version: "3.11" }
       - run: pip install yfinance pandas numpy
       - run: python update_data.py
-      - name: Save data
-        run: |
-          git config user.name "data-bot"
-          git config user.email "data-bot@users.noreply.github.com"
-          git add -A data
-          git diff --cached --quiet || git commit -m "Update data $(date -u +%F)"
-          git push
- 
-
-
-
-
-
-
-
-
-
-Claude finished the response
+      - run: |
+          git config user.name "data-bot"; git config user.email "bot@users.noreply.github.com"
+          git add data; git commit -m "Update data $(date -u +%F)" || exit 0; git push
