@@ -4,3 +4,4 @@ themes.csv
 symbols.csv
 wrangler.jsonc
 .assetsignore
+data/history.json
