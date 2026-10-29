@@ -252,18 +252,21 @@ idx_close = bench["Close"].reindex(C.index).ffill() if bench is not None else No
 idx_r63 = float(idx_close.iloc[-1] / idx_close.iloc[-64] - 1) * 100 if idx_close is not None and idx_close.notna().sum() > 70 else 0.0
 liq = lambda f: f["turnover"] >= 10
 
+def safe(x): return 0.0 if x != x else x
 rows = []
 for s, f in fe.items():
     rs = RS_NOW.get(s, np.nan)
     if rs != rs: continue
     r = C[s]
-    f["rs"] = int(rs); f["rsd"] = int(rs - RS_1M.get(s, rs))
-    f["ret3"] = round(float(R63[s].iloc[-1]) * 100, 1); f["ret6"] = round(float(R126[s].iloc[-1]) * 100, 1)
-    f["ret1"] = round(float(R252[s].iloc[-1]) * 100, 1); f["r1"] = round(float(R21[s].iloc[-1]) * 100, 1)
-    f["ret1w"] = round(float(C[s].iloc[-1] / C[s].iloc[-6] - 1) * 100, 1)
+    rs1m = RS_1M.get(s, np.nan); rs1m = rs if rs1m != rs1m else rs1m
+    f["rs"] = int(rs); f["rsd"] = int(rs - rs1m)
+    f["ret3"] = safe(round(float(R63[s].iloc[-1]) * 100, 1)); f["ret6"] = safe(round(float(R126[s].iloc[-1]) * 100, 1))
+    f["ret1"] = safe(round(float(R252[s].iloc[-1]) * 100, 1)); f["r1"] = safe(round(float(R21[s].iloc[-1]) * 100, 1))
+    f["ret1w"] = safe(round(float(C[s].iloc[-1] / C[s].iloc[-6] - 1) * 100, 1))
     f["bi"] = round(f["ret3"] - idx_r63, 1)
-    for k, name in (("r1", "rs1"), ("r3", "rs3"), ("r6", "rs6"), ("r12", "rs12")): f[name] = int(rs_of(P[k][s]))
-    f["mom"] = round(float(np.nanmean([P[k][s] for k in P])) * 98 + 1, 1)           # 25% each of 1M/3M/6M/12M percentiles
+    for k, name in (("r1", "rs1"), ("r3", "rs3"), ("r6", "rs6"), ("r12", "rs12")): f[name] = (lambda v: int(rs) if v != v else int(v))(rs_of(P[k][s]))
+    _pv = [P[k][s] for k in P if P[k][s] == P[k][s]]
+    f["mom"] = round(float(np.mean(_pv)) * 98 + 1, 1) if _pv else float(rs)           # 25% each of 1M/3M/6M/12M percentiles
     f["tr"] = int(f.pop("_tt") + (1 if rs >= 70 else 0)); f["trend"] = f["tr"]
     f["mt"] = int(min(f["rs1"], f["rs3"], f["rs6"]) >= 80)
     streak = 0
