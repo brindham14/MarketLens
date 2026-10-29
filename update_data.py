@@ -382,6 +382,6 @@ json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoforma
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"dates": [t.strftime("%Y-%m-%d") for t in C.index],
            "stocks": {s: {"sec": info[s].sector if s in info else "",
-                          "c": [None if pd.isna(v) else round(float(v), 2) for v in C[s]]} for s in C.columns if s in by}},
+                          "c": [None if pd.isna(v) else round(float(v), 2) for v in C[s]]} for s in uni if s in by}},      # ranking universe only: keeps the file under Cloudflare's 25 MB per-file limit
           open(f"{OUT}/history.json", "w"), separators=(",", ":"), allow_nan=False)
 print("done:", len(rows), "stocks,", len(themes), "themes, as of", asof)
