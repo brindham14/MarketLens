@@ -1,0 +1,49 @@
+# Starter theme lists - edit freely. One row per stock: symbol,theme. Symbols not listed on NSE are ignored.
+# These are NOT the reference website's private lists; they are reasonable starting points for your own themes.
+symbol,theme
+POLYCAB,Cables & Wires
+KEI,Cables & Wires
+FINCABLES,Cables & Wires
+RRKABEL,Cables & Wires
+UNIVCABLES,Cables & Wires
+CORDSCABLE,Cables & Wires
+BIRLACABLE,Cables & Wires
+STLTECH,Cables & Wires
+HFCL,Cables & Wires
+VINDHYATEL,Cables & Wires
+APARINDS,Cables & Wires
+LAURUSLABS,Pharma CDMO
+DIVISLAB,Pharma CDMO
+SYNGENE,Pharma CDMO
+GLAND,Pharma CDMO
+SAILIFE,Pharma CDMO
+ACUTAAS,Pharma CDMO
+PPLPHARMA,Pharma CDMO
+NEULANDLAB,Pharma CDMO
+COHANCE,Pharma CDMO
+JUBLPHARMA,Pharma CDMO
+TDPOWERSYS,Power T&D Equipment
+APARINDS,Power T&D Equipment
+BHEL,Power T&D Equipment
+GENUSPOWER,Power T&D Equipment
+POWERINDIA,Power T&D Equipment
+SIEMENS,Power T&D Equipment
+ABB,Power T&D Equipment
+CGPOWER,Power T&D Equipment
+TRANSRAILL,Power T&D Equipment
+VOLTAMP,Power T&D Equipment
+E2E,Data Centres
+NETWEB,Data Centres
+ANANTRAJ,Data Centres
+TATACOMM,Data Centres
+RAILTEL,Data Centres
+ANGELONE,Capital Markets
+BSE,Capital Markets
+CDSL,Capital Markets
+MCX,Capital Markets
+KFINTECH,Capital Markets
+CAMS,Capital Markets
+360ONE,Capital Markets
+NUVAMA,Capital Markets
+MOTILALOFS,Capital Markets
+IEX,Capital Markets
