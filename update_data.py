@@ -104,6 +104,16 @@ def fill_sectors_nse(rows, cache_path=f"{OUT}/sector_cache.json", per_run=500, f
     print("stocks with a sector:", sum(1 for r in rows if r["sector"]), "of", len(rows))
 try: fill_sectors_nse(rows_)
 except Exception as e: print("NSE sector fill failed:", e)
+# your own sector lists (sectors.csv: symbol,sector) win over the NSE sector - they are copied from the reference's Workspace
+try:
+    if os.path.exists("sectors.csv"):
+        _sc = pd.read_csv("sectors.csv", comment="#").fillna(""); _m = {str(r["symbol"]).strip().upper(): str(r["sector"]).strip() for r in _sc.to_dict("records")}
+        _h = {r["symbol"]: r for r in rows_}; _n = 0
+        for _s, _v in _m.items():
+            if _s in _h and _v: _h[_s]["sector"] = _v; _n += 1
+        print("sectors.csv applied to", _n, "stocks")
+except Exception as e:
+    print("sectors.csv skipped:", e)
 INDEX_OK = len(IDX.get("Nifty 500", ())) >= 400
 FNO = set()
 try:
@@ -474,6 +484,51 @@ themes.sort(key=lambda x: -x["score"])
 lists = {nm: [s for s in dict.fromkeys(mem) if s in by] for nm, mem in groups.items()}
 for nm, mem in custom.items(): lists.setdefault(nm, [s for s in dict.fromkeys(mem) if s in by])
 
+# ---------------------------------------------------------------- Sector Rotation (sectors and themes)
+# score = 60% median RS + 20% liquid members above 50 DMA + 20% above 200 DMA, pulled toward 50 for small groups (n / (n + 5.5));
+# quadrant = median 3-month return vs the index (outperforming or not) and the median RS change over the last month (rising or falling)
+def _idx_ret(n):
+    try: return float(idx_close.iloc[-1] / idx_close.iloc[-1 - n] - 1) * 100
+    except Exception: return 0.0
+IDX_R21, IDX_R126 = _idx_ret(21), _idx_ret(126)
+def group_metrics(name, mem, k0=5.5):
+    allm = [by[s] for s in dict.fromkeys(mem) if s in by]
+    ms = [m for m in allm if liq(m)]
+    if len(ms) < 5: return None
+    n = len(ms); med = float(np.median([m["rs"] for m in ms]))
+    a50 = 100 * np.mean([m.get("a50") == 1 for m in ms]); a200 = 100 * np.mean([m.get("a200") == 1 for m in ms])
+    score = 50 + (0.6 * med + 0.2 * a50 + 0.2 * a200 - 50) * n / (n + k0)
+    ch = float(np.median([m.get("rsd", 0) for m in ms])); x3 = float(np.median([m["bi"] for m in ms]))
+    quad = ("Leading" if ch >= 0 else "Weakening") if x3 >= 0 else ("Improving" if ch >= 0 else "Lagging")
+    top = sorted(ms, key=lambda m: -m["rs"])[:3]
+    return dict(name=name, score=int(round(score)), rs=round(med, 1), rsd=round(ch, 1), quad=quad, n=n, nall=len(allm),
+                x1=round(float(np.median([m["r1"] for m in ms])) - IDX_R21, 1), x3=round(x3, 1),
+                x6=round(float(np.median([m["ret6"] for m in ms])) - IDX_R126, 1),
+                adv=sum(m["change"] > 0 for m in ms), dec=sum(m["change"] < 0 for m in ms),
+                aadv=sum(m["change"] > 0 for m in allm), adec=sum(m["change"] < 0 for m in allm),
+                top=[[m["symbol"], m["rs"]] for m in top], small=n < 10)
+def rank_all(items, key):
+    items = [i for i in items if i]; items.sort(key=lambda i: (-i["score"], -i["rs"]))
+    for r, i in enumerate(items, 1): i["rank"] = r
+    hp = f"{OUT}/sector_history.json"
+    try: hist = json.load(open(hp))
+    except Exception: hist = {}
+    today = dt.datetime.strptime(C.index[-1].strftime("%Y-%m-%d"), "%Y-%m-%d")
+    old = [d for d in hist if (today - dt.datetime.strptime(d, "%Y-%m-%d")).days >= 3]
+    prev = hist.get(max((d for d in old if (today - dt.datetime.strptime(d, "%Y-%m-%d")).days <= 40), default=None) or (min(old) if old else ""), {})
+    for i in items:
+        pr = prev.get(key + ":" + i["name"]); i["prev"] = (pr - i["rank"]) if pr else None
+    hist[C.index[-1].strftime("%Y-%m-%d")] = {**hist.get(C.index[-1].strftime("%Y-%m-%d"), {}), **{key + ":" + i["name"]: i["rank"] for i in items}}
+    for d in sorted(hist)[:-90]: hist.pop(d, None)
+    json.dump(hist, open(hp, "w"), separators=(",", ":"))
+    return items
+sec_groups = {}
+for r in rows:
+    if r.get("sector"): sec_groups.setdefault(r["sector"], []).append(r["symbol"])
+sector_rot = rank_all([group_metrics(k, v) for k, v in sec_groups.items()], "S")
+theme_rot = rank_all([group_metrics(k, v) for k, v in groups.items()], "T")
+print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes")
+
 # ---------------------------------------------------------------- gap-ups and recent IPOs (screener screens)
 gaps = []
 for s_, df in frames.items():
@@ -517,6 +572,7 @@ json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_n
 json.dump(gaps, open(f"{OUT}/gaps.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(ipos, open(f"{OUT}/ipos.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "themes": themes, "lists": lists}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)
+json.dump({"asOf": asof, "sectors": sector_rot, "themes": theme_rot}, open(f"{OUT}/sectors.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoformat(), "generated": dt.datetime.utcnow().isoformat() + "Z",
            "quotes": {r["symbol"]: {"p": r["price"], "c": r["change"]} for r in rows}},
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"), allow_nan=False)

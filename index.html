@@ -1268,6 +1268,7 @@ const rotationCards={
  ]};
 function quadrantKey(){const selected=[...document.querySelectorAll("[data-strong-quad]:checked")].map(x=>x.dataset.strongQuad);return selected.includes("All")||selected.length===0?"All":selected[0]}
 function renderRotation(){
+ if(window.__mlRealData&&window.__mlSectors&&window.mlRenderRealRotation)return window.mlRenderRealRotation();
  const universe=document.querySelector(".rotation-tabs button.active")?.dataset.universe||"Themes";
  $("rotationTableTitle").textContent=universe==="Sectors"?"NSE sector index":universe==="Themes"?"NSE sector & thematic index":"NSE sector & thematic index";
  const rows=universe==="Sectors"?rotationData.Sectors:universe==="Themes"?rotationData.Themes:[...rotationData.Sectors,...rotationData.Themes].sort((a,b)=>b[1]-a[1]);
@@ -1283,6 +1284,7 @@ function renderRotation(){
  $("strongestDescription").textContent=$("strongestType").value==="Industry"?"NSE industries at the finest level (for example, Cables — Electricals or Stockbroking) with enough liquid members. Score = 60% median RS rating + 20% members above 50 DMA + 20% above 200 DMA. Click a card to inspect its stocks.":$("strongestType").value==="Sector"?"NSE sector baskets grouped by industry classification. Scores and RS values in this prototype are illustrative; click a card to inspect matching stocks.":"Theme baskets cut across sectors (a stock can sit in several). Score = 60% median RS rating + 20% members above 50 DMA + 20% above 200 DMA, with small groups pulled toward neutral. Click a card to inspect its stocks.";
 }
 function renderRotationPlot(universe){
+ if(window.__mlRealData&&window.__mlSectors&&window.mlRotPlot)return window.mlRotPlot(universe);
  const rows=(universe==="Sectors"?rotationData.Sectors:universe==="Themes"?rotationData.Themes:[...rotationData.Sectors,...rotationData.Themes]).slice(0,universe==="All"?24:17);
  const w=560,h=350,l=42,r=12,t=22,b=25,cx=(w-l-r)/2,cy=(h-t-b)/2;
  const filter=$("quadrantFilter").value;
@@ -2989,8 +2991,42 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
   while(n=w.nextNode()){let t=n.nodeValue,c=t;for(const [a,b] of map)c=c.split(a).join(b);if(c!==t)n.nodeValue=c}
   const o=document.querySelector('#asOf option');if(o&&asOf)o.textContent='Latest ('+asOf+')';
  }
+
+ /* ---- Sector Rotation from data/sectors.json (sectors + themes: score, quadrant, adv/dec) ---- */
+ const rEsc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;");
+ const rFmt=v=>(v>0?"+":"")+Number(v).toFixed(1)+"%";
+ const rCol={Leading:"#39865e",Improving:"#5279a7",Weakening:"#c18c23",Lagging:"#b84a49"};
+ window.mlRotItems=function(u){const S=window.__mlSectors,sec=S.sectors.map(i=>({...i,kind:"Sector"})),th=S.themes.map(i=>({...i,kind:"Theme"}));return u==="Sectors"?sec:u==="Themes"?th:[...sec,...th]};
+ window.mlRotPlot=function(universe){
+  const items=mlRotItems(universe),filter=$("quadrantFilter").value,w=560,h=350,l=42,r=12,t=22,b=25,pw=w-l-r,ph=h-t-b,mx=l+pw/2,my=t+ph/2;
+  const xm=Math.max(8,...items.map(i=>Math.abs(i.x3)))*1.1,ym=Math.max(5,...items.map(i=>Math.abs(i.rsd)))*1.1;
+  let s=`<svg viewBox="0 0 ${w} ${h}" role="img" aria-label="${universe} relative strength rotation chart"><rect x="${l}" y="${t}" width="${pw/2}" height="${ph/2}" fill="#e6edf4"/><rect x="${mx}" y="${t}" width="${pw/2}" height="${ph/2}" fill="#e0ede1"/><rect x="${l}" y="${my}" width="${pw/2}" height="${ph/2}" fill="#f5e7e2"/><rect x="${mx}" y="${my}" width="${pw/2}" height="${ph/2}" fill="#f7f0e2"/><line x1="${mx}" y1="${t}" x2="${mx}" y2="${h-b}" stroke="#d6d2c8"/><line x1="${l}" y1="${my}" x2="${w-r}" y2="${my}" stroke="#d6d2c8"/><text x="${l+6}" y="${t+11}" font-size="9" fill="#68766c">IMPROVING</text><text x="${w-r-4}" y="${t+11}" text-anchor="end" font-size="9" fill="#68766c">LEADING</text><text x="${l+6}" y="${h-b-4}" font-size="9" fill="#68766c">LAGGING</text><text x="${w-r-4}" y="${h-b-4}" text-anchor="end" font-size="9" fill="#68766c">WEAKENING</text>`;
+  items.forEach(i=>{if(filter!=="All quadrants"&&i.quad!==filter)return;const x=Math.max(l+5,Math.min(w-r-5,mx+i.x3/xm*pw/2)),y=Math.max(t+8,Math.min(h-b-5,my-i.rsd/ym*ph/2)),sym=i.kind==="Theme"?"M5 0L0 5L-5 0L0 -5Z":"";
+   s+=`<g><${i.kind==="Theme"?`path transform="translate(${x},${y})" d="${sym}"`:`circle cx="${x}" cy="${y}" r="5"`} fill="${rCol[i.quad]}" opacity=".92"/><title>${rEsc(i.name)} · ${i.quad} · score ${i.score}</title><text x="${x+7}" y="${y+3}" font-size="8" fill="#536157">${rEsc(i.name.slice(0,20))}</text></g>`});
+  s+=`</svg>`;$("rotationPlot").innerHTML=s;$("rotationChartTitle").textContent=universe==="Sectors"?"Sector rotation":universe==="Themes"?"Theme rotation":"Sector & theme rotation";
+  const lab=document.querySelector("#rotationPlot+.meta,.rotation-chart-panel .meta");if(lab)lab.textContent="X: median 3-month return vs Nifty 500 (%)  ·  Y: median RS change over the last month";
+ };
+ window.mlRenderRealRotation=function(){
+  const S=window.__mlSectors,u=document.querySelector(".rotation-tabs button.active")?.dataset.universe||"All",items=mlRotItems(u);
+  const tabs=document.querySelectorAll(".rotation-tabs button");tabs.forEach(b=>{const k=b.dataset.universe;b.textContent=k==="All"?`All (${S.sectors.length+S.themes.length})`:k==="Sectors"?`Sectors (${S.sectors.length})`:`Themes (${S.themes.length})`});
+  $("rotationTableTitle").textContent="Sector & theme (median stock)";
+  document.querySelectorAll(".changed-head,#changedPanel").forEach(e=>e.style.display="none");   /* sample-only box: hidden while real data is on */
+  $("rotationRows").innerHTML=items.slice().sort((a,b)=>b.rs-a.rs).map(r=>`<tr data-rotname="${rEsc(r.name)}"><td style="text-align:left"><span class="dot" style="background:${rCol[r.quad]}"></span>${rEsc(r.name)}${u==="All"?` <span class="meta">· ${r.kind.toLowerCase()}</span>`:""}</td><td><span class="rsbadge ${r.rs<60?"low":r.rs<80?"mid":""}">${Math.round(r.rs)}</span></td><td class="chg ${r.x1>=0?"up":"down"}">${rFmt(r.x1)}</td><td class="chg ${r.x3>=0?"up":"down"}">${rFmt(r.x3)}</td><td class="chg ${r.x6>=0?"up":"down"}">${rFmt(r.x6)}</td><td style="color:${r.rsd>=0?"#347e56":"#b34d4d"}">${r.rsd>=0?"▲":"▼"}</td></tr>`).join("");
+  $("rotationRows").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{document.querySelectorAll("#rotationRows tr").forEach(x=>x.style.background="");tr.style.background="#e8eddf";$("rotationChartTitle").textContent=tr.dataset.rotname+" rotation"});
+  mlRotPlot(u);
+  const ty=$("strongestType");if(ty.options.length!==2){ty.innerHTML="<option>Sector</option><option>Theme</option>"}
+  const cardsAll=ty.value==="Theme"?S.themes:S.sectors,cnt={Leading:0,Improving:0,Weakening:0,Lagging:0};cardsAll.forEach(c=>cnt[c.quad]++);
+  document.querySelectorAll("[data-strong-quad]").forEach(cb=>{const k=cb.dataset.strongQuad;if(k!=="All"){const lb=cb.parentElement;lb.lastChild.nodeValue=` ${k} (${cnt[k]})`}});
+  const sq=[...document.querySelectorAll("[data-strong-quad]:checked")].map(x=>x.dataset.strongQuad),all=sq.includes("All")||sq.length===0;
+  const cards=cardsAll.filter(c=>all||sq.includes(c.quad));
+  const arr=p=>p>0?`<span style="color:#347e56">▲${p}</span>`:p<0?`<span style="color:#b34d4d">▼${-p}</span>`:`<span class="meta">0</span>`;
+  $("strongestCards").innerHTML=cards.map(c=>`<article class="rotation-card ${c.quad.toLowerCase()}" data-card="${rEsc(c.name)}"><h3>#${c.rank} ${c.prev==null?"":arr(c.prev)} ${rEsc(c.name)}${c.small?" · small group":""}</h3><div class="scorebar"><span style="width:${c.score}%"></span></div><div class="card-metrics"><span>Score<br><b>${c.score}</b></span><span>Median RS<br><b>${c.rs}</b> <span style="color:${c.rsd>=0?"#347e56":"#b34d4d"}">${c.rsd>=0?"▲":"▼"}${Math.abs(c.rsd)}</span></span><span>Adv / Dec<br><b>${c.adv} / ${c.dec}</b><br><small class="meta">all ${c.aadv} / ${c.adec}</small></span></div><div class="tickers">${c.top.map(x=>`<span class="ticker-chip">${rEsc(x[0])} ${x[1]}</span>`).join("")}</div><div style="text-align:right;font-size:10px;color:var(--muted);margin-top:5px">${c.n} liquid of ${c.nall} · Stocks ▸</div></article>`).join("")||'<p class="meta">No groups in this quadrant.</p>';
+  $("strongestCards").querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>{const nm=el.dataset.card,c=cardsAll.find(x=>x.name===nm),sel=$("sector");if([...sel.options].some(o=>o.value===nm))sel.value=nm;const top=c&&c.top&&c.top[0]&&c.top[0][0];if(top&&typeof selected!=="undefined")selected=top;document.querySelector('[data-tab="workspace"]').click();if(typeof renderAll==="function")renderAll();if(typeof renderRows==="function")renderRows()});
+  $("strongestDescription").textContent=(ty.value==="Theme"?"Theme baskets cut across sectors (a stock can sit in several). ":"NSE sectors. ")+"Only liquid stocks count (≥ ₹10 cr a day). Score = 60% median RS rating + 20% members above 50 DMA + 20% above 200 DMA, with small groups pulled toward neutral. Click a card to see its stocks. Quadrant: median 3-month return vs Nifty 500 and the RS change over the last month. Data as of "+(S.asOf||"")+".";
+ };
  window.mlApplyRealScans=async function(){
   let T=null;try{const r=await fetch('data/themes.json',{cache:'no-store'});if(r.ok)T=await r.json()}catch(e){}
+  try{const r=await fetch('data/sectors.json',{cache:'no-store'});if(r.ok){const S=await r.json();if(S&&Array.isArray(S.sectors)&&S.sectors.length)window.__mlSectors=S}}catch(e){}
   try{
    const rows=compute();
    if(T&&Array.isArray(T.themes)&&T.themes.length){
@@ -3001,6 +3037,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
     swingSymbols.splice(0,swingSymbols.length,...l);
    }
    if(typeof renderSwing==='function')renderSwing();
+   if(window.__mlSectors&&typeof renderRotation==='function')renderRotation();
    if(typeof renderPopularScans==='function')renderPopularScans();
    relabel(T&&T.asOf);
    try{const a=T&&T.asOf;if(a){const d=new Date(a+'T00:00:00'),days=Math.floor((Date.now()-d)/864e5);const el=$("swingCount");if(el&&!el.querySelector('.fresh'))el.insertAdjacentHTML('beforeend',` <b class="fresh" style="color:${days>4?'var(--red,#c0392b)':'inherit'}">Data as of ${a}${days>4?' · STALE: last daily update was '+days+' days ago':''}.</b>`)}}catch(e){}
