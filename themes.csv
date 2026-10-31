@@ -1,101 +1,286 @@
 # Starter theme lists - edit freely. One row per stock: symbol,theme. Symbols not listed on NSE are ignored.
 # These are NOT the reference website's private lists; they are reasonable starting points for your own themes.
 symbol,theme
-POLYCAB,Cables & Wires
-KEI,Cables & Wires
-FINCABLES,Cables & Wires
-RRKABEL,Cables & Wires
-UNIVCABLES,Cables & Wires
-CORDSCABLE,Cables & Wires
-BIRLACABLE,Cables & Wires
+LAURUSLABS,Pharma CDMO / CRDMO
+ACUTAAS,Pharma CDMO / CRDMO
+GLAND,Pharma CDMO / CRDMO
+SAILIFE,Pharma CDMO / CRDMO
+DIVISLAB,Pharma CDMO / CRDMO
+PPLPHARMA,Pharma CDMO / CRDMO
+AARTIPHARM,Pharma CDMO / CRDMO
+NEULANDLAB,Pharma CDMO / CRDMO
+ANTHEM,Pharma CDMO / CRDMO
+CONCORDBIO,Pharma CDMO / CRDMO
+JUBLPHARMA,Pharma CDMO / CRDMO
+COHANCE,Pharma CDMO / CRDMO
+BLUEJET,Pharma CDMO / CRDMO
+SYNGENE,Pharma CDMO / CRDMO
+DCAL,Pharma CDMO / CRDMO
+AEGISLOG,Logistics
+GESHIP,Logistics
+ADANIPORTS,Logistics
+MAHLOG,Logistics
+JSWINFRA,Logistics
+VRLLOG,Logistics
+SCI,Logistics
+ALLCARGO,Logistics
+TCI,Logistics
+TCIEXP,Logistics
+TVSSCS,Logistics
+DELHIVERY,Logistics
+CONCOR,Logistics
+BLUEDART,Logistics
+GATEWAY,Logistics
 STLTECH,Cables & Wires
 HFCL,Cables & Wires
+BIRLACABLE,Cables & Wires
 VINDHYATEL,Cables & Wires
+CORDSCABLE,Cables & Wires
 APARINDS,Cables & Wires
-LAURUSLABS,Pharma CDMO
-DIVISLAB,Pharma CDMO
-SYNGENE,Pharma CDMO
-GLAND,Pharma CDMO
-SAILIFE,Pharma CDMO
-ACUTAAS,Pharma CDMO
-PPLPHARMA,Pharma CDMO
-NEULANDLAB,Pharma CDMO
-COHANCE,Pharma CDMO
-JUBLPHARMA,Pharma CDMO
+UNIVCABLES,Cables & Wires
+PARACABLES,Cables & Wires
+FINCABLES,Cables & Wires
+RRKABEL,Cables & Wires
+POLYCAB,Cables & Wires
+DYCL,Cables & Wires
+KEI,Cables & Wires
+HAVELLS,Cables & Wires
+MTARTECH,Defence
+CYIENTDLM,Defence
+PARAS,Defence
+APOLLO,Defence
+ASTRAMICRO,Defence
+SOLARINDS,Defence
+DATAPATTNS,Defence
+BEML,Defence
+HAL,Defence
+IDEAFORGE,Defence
+ZENTEC,Defence
+HBLENGINE,Defence
+BHARATFORG,Defence
+BEL,Defence
+GRSE,Defence
+COCHINSHIP,Defence
+BDL,Defence
+DCXINDIA,Defence
+MAZDOCK,Defence
+STLTECH,Telecom & Digital Infra
+HFCL,Telecom & Digital Infra
+VINDHYATEL,Telecom & Digital Infra
+TANLA,Telecom & Digital Infra
+IDEA,Telecom & Digital Infra
+BHARTIARTL,Telecom & Digital Infra
+BHARTIHEXA,Telecom & Digital Infra
+TATACOMM,Telecom & Digital Infra
+INDUSTOWER,Telecom & Digital Infra
+TEJASNET,Telecom & Digital Infra
+ROUTE,Telecom & Digital Infra
+ITI,Telecom & Digital Infra
+RAILTEL,Telecom & Digital Infra
+SANSERA,Auto Components
+SONACOMS,Auto Components
+LUMAXTECH,Auto Components
+VARROC,Auto Components
+MOTHERSON,Auto Components
+CRAFTSMAN,Auto Components
+BOSCHLTD,Auto Components
+GABRIEL,Auto Components
+ASKAUTOLTD,Auto Components
+BELRISE,Auto Components
+MINDACORP,Auto Components
+SUPRAJIT,Auto Components
+JAMNAAUTO,Auto Components
+BHARATFORG,Auto Components
+UNOMINDA,Auto Components
+TIMKEN,Auto Components
+SCHAEFFLER,Auto Components
+ZFCVINDIA,Auto Components
+ENDURANCE,Auto Components
+EXIDEIND,Auto Components
+SKFINDIA,Auto Components
+FIEMIND,Auto Components
+ARE&M,Auto Components
+SUBROS,Auto Components
 TDPOWERSYS,Power T&D Equipment
 APARINDS,Power T&D Equipment
 BHEL,Power T&D Equipment
-GENUSPOWER,Power T&D Equipment
-POWERINDIA,Power T&D Equipment
-SIEMENS,Power T&D Equipment
-ABB,Power T&D Equipment
-CGPOWER,Power T&D Equipment
-TRANSRAILL,Power T&D Equipment
 VOLTAMP,Power T&D Equipment
-E2E,Data Centres
-NETWEB,Data Centres
-ANANTRAJ,Data Centres
-TATACOMM,Data Centres
-RAILTEL,Data Centres
-ANGELONE,Capital Markets
-BSE,Capital Markets
-CDSL,Capital Markets
-MCX,Capital Markets
-KFINTECH,Capital Markets
-CAMS,Capital Markets
-360ONE,Capital Markets
-NUVAMA,Capital Markets
-MOTILALOFS,Capital Markets
-IEX,Capital Markets
-STLTECH,Telecom Infra
-HFCL,Telecom Infra
-VINDHYATEL,Telecom Infra
-TEJASNET,Telecom Infra
-ITI,Telecom Infra
-RAILTEL,Telecom Infra
-TATACOMM,Telecom Infra
-INDUSTOWER,Telecom Infra
-OPTIEMUS,Telecom Infra
-GTLINFRA,Telecom Infra
-BHARTIHEXA,Telecom Infra
-ROUTE,Telecom Infra
-TANLA,Telecom Infra
-MTNL,Telecom Infra
-TECHNOE,Data Centres
-BLUESTARCO,Data Centres
-VOLTAS,Data Centres
-CGPOWER,Data Centres
-SCHNEIDER,Data Centres
-HAVELLS,Data Centres
-POLYCAB,Data Centres
-KEI,Data Centres
-APARINDS,Data Centres
+POWERINDIA,Power T&D Equipment
+SCHNEIDER,Power T&D Equipment
+GVT&D,Power T&D Equipment
+CGPOWER,Power T&D Equipment
+KPIL,Power T&D Equipment
+ABB,Power T&D Equipment
+SIEMENS,Power T&D Equipment
+ENRIN,Power T&D Equipment
+TARIL,Power T&D Equipment
+POWERGRID,Power T&D Equipment
+KEC,Power T&D Equipment
 STLTECH,Data Centres
-SONACOMS,Auto Components
-UNOMINDA,Auto Components
-BOSCHLTD,Auto Components
-CRAFTSMAN,Auto Components
-SUNDRMFAST,Auto Components
-MOTHERSON,Auto Components
-ENDURANCE,Auto Components
-LUMAXTECH,Auto Components
-BALKRISIND,Auto Components
-EXIDEIND,Auto Components
-ARE&M,Auto Components
-SCHAEFFLER,Auto Components
-TIMKEN,Auto Components
-GABRIEL,Auto Components
-JAMNAAUTO,Auto Components
-MINDACORP,Auto Components
-SANSERA,Auto Components
-CIEINDIA,Auto Components
-BHARATFORG,Auto Components
-ASAHIINDIA,Auto Components
-FIEMIND,Auto Components
-SUBROS,Auto Components
-JTEKTINDIA,Auto Components
-UNIPARTS,Auto Components
-MSUMI,Auto Components
-SUPRAJIT,Auto Components
-ANURAS,Pharma CDMO
-AARTIDRUGS,Pharma CDMO
+HFCL,Data Centres
+E2E,Data Centres
+BBOX,Data Centres
+POWERINDIA,Data Centres
+SCHNEIDER,Data Centres
+GVT&D,Data Centres
+NETWEB,Data Centres
+SIEMENS,Data Centres
+TATACOMM,Data Centres
+BLUESTARCO,Data Centres
+ANANTRAJ,Data Centres
+TECHNOE,Data Centres
+KAYNES,Data Centres
+RAILTEL,Data Centres
+MCX,Capital Markets
+SMCGLOBAL,Capital Markets
+NUVAMA,Capital Markets
+BSE,Capital Markets
+MOTILALOFS,Capital Markets
+ANGELONE,Capital Markets
+GROWW,Capital Markets
+5PAISA,Capital Markets
+CDSL,Capital Markets
+GEOJITFSL,Capital Markets
+CAMS,Capital Markets
+KFINTECH,Capital Markets
+IEX,Capital Markets
+INDHOTEL,Travel & Hospitality
+CHALET,Travel & Hospitality
+ITCHOTELS,Travel & Hospitality
+INDIGO,Travel & Hospitality
+JUNIPER,Travel & Hospitality
+LEMONTREE,Travel & Hospitality
+EIHOTEL,Travel & Hospitality
+EASEMYTRIP,Travel & Hospitality
+SAMHI,Travel & Hospitality
+VENTIVE,Travel & Hospitality
+IRCTC,Travel & Hospitality
+THOMASCOOK,Travel & Hospitality
+MHRIL,Travel & Hospitality
+LENSKART,Internet & Platforms
+PAYTM,Internet & Platforms
+NYKAA,Internet & Platforms
+ETERNAL,Internet & Platforms
+NAUKRI,Internet & Platforms
+JUSTDIAL,Internet & Platforms
+CARTRADE,Internet & Platforms
+INDIAMART,Internet & Platforms
+MAPMYINDIA,Internet & Platforms
+IXIGO,Internet & Platforms
+POLICYBZR,Internet & Platforms
+SWIGGY,Internet & Platforms
+VIJAYA,Hospitals & Diagnostics
+YATHARTH,Hospitals & Diagnostics
+LALPATHLAB,Hospitals & Diagnostics
+METROPOLIS,Hospitals & Diagnostics
+APOLLOHOSP,Hospitals & Diagnostics
+MEDANTA,Hospitals & Diagnostics
+KIMS,Hospitals & Diagnostics
+ASTERDM,Hospitals & Diagnostics
+THYROCARE,Hospitals & Diagnostics
+NH,Hospitals & Diagnostics
+RAINBOW,Hospitals & Diagnostics
+HCG,Hospitals & Diagnostics
+JLHL,Hospitals & Diagnostics
+KRSNAA,Hospitals & Diagnostics
+FORTIS,Hospitals & Diagnostics
+MAXHEALTH,Hospitals & Diagnostics
+SHALBY,Hospitals & Diagnostics
+SYRMA,Electronics Manufacturing (EMS)
+AVALON,Electronics Manufacturing (EMS)
+CYIENTDLM,Electronics Manufacturing (EMS)
+PGEL,Electronics Manufacturing (EMS)
+DIXON,Electronics Manufacturing (EMS)
+AMBER,Electronics Manufacturing (EMS)
+KAYNES,Electronics Manufacturing (EMS)
+SKYGOLD,Gold & Jewellery
+THANGAMAYL,Gold & Jewellery
+KALYANKJIL,Gold & Jewellery
+TITAN,Gold & Jewellery
+MANAPPURAM,Gold & Jewellery
+PNGJL,Gold & Jewellery
+SENCO,Gold & Jewellery
+MUTHOOTFIN,Gold & Jewellery
+RAJESHEXPO,Gold & Jewellery
+ATHERENERG,Electric Vehicles
+SONACOMS,Electric Vehicles
+TVSMOTOR,Electric Vehicles
+HBLENGINE,Electric Vehicles
+BAJAJ-AUTO,Electric Vehicles
+GREAVESCOT,Electric Vehicles
+UNOMINDA,Electric Vehicles
+TATAPOWER,Electric Vehicles
+OLAELEC,Electric Vehicles
+EXIDEIND,Electric Vehicles
+M&M,Electric Vehicles
+ARE&M,Electric Vehicles
+OLECTRA,Electric Vehicles
+JBMA,Electric Vehicles
+MTARTECH,Nuclear & Heavy Engineering
+BHEL,Nuclear & Heavy Engineering
+LT,Nuclear & Heavy Engineering
+WALCHANNAG,Nuclear & Heavy Engineering
+NTPC,Nuclear & Heavy Engineering
+GODREJIND,Nuclear & Heavy Engineering
+HCC,Nuclear & Heavy Engineering
+SYRMA,Semiconductors
+CYIENTDLM,Semiconductors
+CGPOWER,Semiconductors
+TATAELXSI,Semiconductors
+DIXON,Semiconductors
+KAYNES,Semiconductors
+MOSCHIP,Semiconductors
+GREENPLY,Building Materials & Home
+PIDILITIND,Building Materials & Home
+KAJARIACER,Building Materials & Home
+PRINCEPIPE,Building Materials & Home
+ASTRAL,Building Materials & Home
+BERGEPAINT,Building Materials & Home
+ASIANPAINT,Building Materials & Home
+SUPREMEIND,Building Materials & Home
+KANSAINER,Building Materials & Home
+CENTURYPLY,Building Materials & Home
+FINPIPE,Building Materials & Home
+CERA,Building Materials & Home
+GREENPANEL,Building Materials & Home
+ANANDRATHI,Wealth & Asset Management
+NUVAMA,Wealth & Asset Management
+MOTILALOFS,Wealth & Asset Management
+PRUDENT,Wealth & Asset Management
+NAM-INDIA,Wealth & Asset Management
+360ONE,Wealth & Asset Management
+HDFCAMC,Wealth & Asset Management
+ABSLAMC,Wealth & Asset Management
+CAMS,Wealth & Asset Management
+KFINTECH,Wealth & Asset Management
+UTIAMC,Wealth & Asset Management
+BEML,Railways
+HBLENGINE,Railways
+KERNEX,Railways
+TEXRAIL,Railways
+RITES,Railways
+CONCOR,Railways
+TITAGARH,Railways
+IRCTC,Railways
+IRFC,Railways
+RAILTEL,Railways
+IRCON,Railways
+RVNL,Railways
+JWL,Railways
+ACMESOLAR,Renewable Energy
+ADANIGREEN,Renewable Energy
+NHPC,Renewable Energy
+JSWENERGY,Renewable Energy
+PREMIERENE,Renewable Energy
+TATAPOWER,Renewable Energy
+NTPCGREEN,Renewable Energy
+WAAREEENER,Renewable Energy
+IREDA,Renewable Energy
+SJVN,Renewable Energy
+BORORENEW,Renewable Energy
+SUZLON,Renewable Energy
+WEBELSOLAR,Renewable Energy
+KPIGREEN,Renewable Energy
+SWSOLAR,Renewable Energy
+INOXWIND,Renewable Energy
+INOXGREEN,Renewable Energy
