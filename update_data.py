@@ -49,6 +49,61 @@ for _nm, _fn in [("Nifty 50", "ind_nifty50list"), ("Nifty Next 50", "ind_niftyne
         IDX[_nm] = set(_c["Symbol"].astype(str).str.strip()); print(_nm, len(IDX[_nm]), "members")
     except Exception as e:
         print("could not download", _nm, e)
+# fill sectors for stocks outside Nifty Total Market, using the Industry column of the other NSE index lists
+try:
+    _have = {r["symbol"]: r for r in rows_}
+    for _fn in ["ind_nifty500list", "ind_niftymidcap150list", "ind_niftysmallcap250list", "ind_niftymicrocap250_list"]:
+        try:
+            _c = get_csv(f"https://nsearchives.nseindia.com/content/indices/{_fn}.csv"); _c.columns = [x.strip() for x in _c.columns]
+            _ic = next((x for x in _c.columns if x.lower() == "industry"), None)
+            if not _ic: continue
+            for _, _r in _c.iterrows():
+                _sy = str(_r["Symbol"]).strip(); _ind = str(_r[_ic]).strip()
+                if _sy in _have and not _have[_sy]["sector"] and _ind and _ind.lower() != "nan": _have[_sy]["sector"] = _ind
+        except Exception as e:
+            print("sector fill skipped", _fn, e)
+    print("stocks with a sector:", sum(1 for r in rows_ if r["sector"]), "of", len(rows_))
+except Exception as e:
+    print("sector fill failed:", e)
+# sectors for the stocks no index list covers: NSE quote API (macro-economic sector, same names as the dropdown).
+# Remembered in data/sector_cache.json, at most 500 new stocks per run, so the gap closes over a few daily runs.
+def fill_sectors_nse(rows, cache_path=f"{OUT}/sector_cache.json", per_run=500, fetch=None):
+    import http.cookiejar, time
+    cache = json.load(open(cache_path)) if os.path.exists(cache_path) else {}
+    for r in rows:
+        if not r["sector"] and cache.get(r["symbol"]): r["sector"] = cache[r["symbol"]]
+    todo = [r for r in rows if not r["sector"] and r["symbol"] not in cache][:per_run]
+    if todo:
+        op = None
+        if fetch is None:
+            op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+            hd = {"User-Agent": "Mozilla/5.0", "Accept": "application/json,*/*", "Referer": "https://www.nseindia.com/"}
+            def warm():
+                try: op.open(urllib.request.Request("https://www.nseindia.com/", headers=hd), timeout=30).read()
+                except Exception: pass
+            warm()
+            def fetch(sym):
+                u = "https://www.nseindia.com/api/quote-equity?symbol=" + urllib.request.quote(sym)
+                d = json.loads(op.open(urllib.request.Request(u, headers=hd), timeout=30).read())
+                ii = d.get("industryInfo") or {}
+                return (ii.get("macro") or ii.get("sector") or "").strip()
+        bad = 0; got = 0
+        for i, r in enumerate(todo):
+            try:
+                sec = fetch(r["symbol"]); bad = 0
+                cache[r["symbol"]] = sec                     # "" = NSE has no sector for it, do not ask again
+                if sec: r["sector"] = sec; got += 1
+            except Exception:
+                bad += 1
+                if bad >= 8: print("NSE quote API not reachable - sector fill stopped"); break
+            if op is not None and i % 100 == 99: warm()
+            if op is not None: time.sleep(0.25)
+        print("NSE sector fill:", got, "new sectors from", len(todo), "tried")
+        try: json.dump(cache, open(cache_path, "w"), separators=(",", ":"))
+        except Exception as e: print("could not save sector cache", e)
+    print("stocks with a sector:", sum(1 for r in rows if r["sector"]), "of", len(rows))
+try: fill_sectors_nse(rows_)
+except Exception as e: print("NSE sector fill failed:", e)
 INDEX_OK = len(IDX.get("Nifty 500", ())) >= 400
 FNO = set()
 try:
