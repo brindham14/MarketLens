@@ -2996,7 +2996,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
    if(T&&Array.isArray(T.themes)&&T.themes.length){
     window.__mlThemes=T;THEME_MEMBERS={};T.themes.forEach(t=>THEME_MEMBERS[t.name]=t.members||[]);
     swingThemes.splice(0,swingThemes.length,...T.themes.slice(0,5));
-    const top=new Set(T.themes.slice(0,8).flatMap(t=>t.members));
+    const top=new Set(T.themes.slice(0,5).flatMap(t=>t.members));
     const l=rows.filter(x=>x.rs>=90&&(x.turnover||0)>=10&&top.has(x.symbol)).sort((a,b)=>(b.mom||0)-(a.mom||0)).map(x=>x.symbol);
     swingSymbols.splice(0,swingSymbols.length,...l);
    }
