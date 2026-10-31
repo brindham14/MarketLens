@@ -286,7 +286,7 @@ for s, df in frames.items():
     f = dict(symbol=s, name=(info[s].name if info[s].name else s), sector=info[s].sector or "",
              price=round(float(price), 2), change=round(float((price / prev - 1) * 100), 2), stage=stage, ns2=ns2,
              fromHigh=round(float((price / np.max(h[-252:]) - 1) * 100), 1),
-             turnover=round(float(np.mean(c[-50:] * v[-50:]) / 1e7), 1))
+             turnover=round(float(np.mean(c[-20:] * v[-20:]) / 1e7), 1))
     f.update(pattern_fields(o, h, l, c, v)); f.update(flag_cup_my(h, l, c))
     f["tw"] = weekly_tight(df.Close)
     # trend-template pieces that do not depend on RS
@@ -414,6 +414,9 @@ for name, mem in groups.items():
                        vs=("+" if vs >= 0 else "−") + f"{abs(vs):.0f}%", count=f"{strong} of {len(ms)} RS ≥ 85",
                        members=[m["symbol"] for m in ms]))
 themes.sort(key=lambda x: -x["score"])
+# full member lists (every scored stock in the theme, liquid or not) for the Workspace sector/theme filter
+lists = {nm: [s for s in dict.fromkeys(mem) if s in by] for nm, mem in groups.items()}
+for nm, mem in custom.items(): lists.setdefault(nm, [s for s in dict.fromkeys(mem) if s in by])
 
 # ---------------------------------------------------------------- gap-ups and recent IPOs (screener screens)
 gaps = []
@@ -457,7 +460,7 @@ asof = C.index[-1].strftime("%Y-%m-%d")
 json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(gaps, open(f"{OUT}/gaps.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(ipos, open(f"{OUT}/ipos.json", "w"), separators=(",", ":"), allow_nan=False)
-json.dump({"asOf": asof, "themes": themes}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)
+json.dump({"asOf": asof, "themes": themes, "lists": lists}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoformat(), "generated": dt.datetime.utcnow().isoformat() + "Z",
            "quotes": {r["symbol"]: {"p": r["price"], "c": r["change"]} for r in rows}},
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"), allow_nan=False)
