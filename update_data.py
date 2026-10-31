@@ -39,6 +39,23 @@ try:   # sectors + the scan universe (Nifty Total Market) used for ranking
     print("Nifty Total Market:", len(TM), "stocks")
 except Exception as e:
     print("could not download sector list:", e)
+# index membership (Nifty 50/Next 50/100/500/Midcap/Smallcap/Microcap) and F&O list - each is optional
+IDX = {}
+for _nm, _fn in [("Nifty 50", "ind_nifty50list"), ("Nifty Next 50", "ind_niftynext50list"), ("Nifty 100", "ind_nifty100list"),
+                 ("Nifty 500", "ind_nifty500list"), ("Nifty Midcap 150", "ind_niftymidcap150list"),
+                 ("Nifty Smallcap 250", "ind_niftysmallcap250list"), ("Nifty Microcap 250", "ind_niftymicrocap250_list")]:
+    try:
+        _c = get_csv(f"https://nsearchives.nseindia.com/content/indices/{_fn}.csv")
+        IDX[_nm] = set(_c["Symbol"].astype(str).str.strip()); print(_nm, len(IDX[_nm]), "members")
+    except Exception as e:
+        print("could not download", _nm, e)
+INDEX_OK = len(IDX.get("Nifty 500", ())) >= 400
+FNO = set()
+try:
+    _f = get_csv("https://nsearchives.nseindia.com/content/fo/fo_mktlots.csv"); _f.columns = [c.strip() for c in _f.columns]
+    FNO = set(_f["SYMBOL"].astype(str).str.strip()) - {"Symbol", "SYMBOL"}; print("F&O stocks:", len(FNO))
+except Exception as e:
+    print("could not download F&O list:", e)
 mine = pd.read_csv("symbols.csv").fillna("") if os.path.exists("symbols.csv") else pd.DataFrame(columns=["symbol", "name", "sector"])
 d = {r["symbol"]: r for r in rows_}
 for r in mine.to_dict("records"):
@@ -67,6 +84,13 @@ for i in range(0, len(syms), 50):
         except Exception: pass
 print(f"{len(frames)}/{len(syms)} symbols downloaded")
 if not frames: sys.exit("no data downloaded - nothing written")
+# safeguard: a partly failed download must not overwrite a good release (the old files stay published)
+try:
+    _prev = len(json.load(open(f"{OUT}/summary.json")))
+    if len(frames) < 0.85 * _prev:
+        sys.exit(f"only {len(frames)} stocks downloaded vs {_prev} in the last release - keeping the previous data, nothing written")
+except (FileNotFoundError, ValueError):
+    pass
 
 # benchmark: Nifty 500 (falls back to Nifty 50)
 bench = None
@@ -85,7 +109,7 @@ def write_candles(name, df):
                "c": r2(df.Close), "v": [int(v) for v in df.Volume.fillna(0)], "sample": 0},
               open(f"{OUT}/candles/{name}.json", "w"), separators=(",", ":"))
 for s, df in frames.items(): write_candles(s, df)
-if bench is not None: write_candles("_NIFTY500", bench)
+if bench is not None: write_candles("NIFTY500", bench)
 
 # ---------------------------------------------------------------- helpers
 def sma(a, n): return float(np.mean(a[-n:])) if len(a) >= n else np.nan
@@ -107,6 +131,53 @@ def darvas(h, l, per=252, near=5):
         k += 1
     return out
 
+def pivot_highs(h, c, N=5, within=10, cancel=25, per=252, span=320):
+    """Port of the chart's Pivots indicator: a high near the 52-week high with N lower highs on each side.
+    Returns [(index, price, break_index_or_None)] for pivots not cancelled by a 25% fall."""
+    n = len(c); rm = pd.Series(h).rolling(per, min_periods=1).max().values; out = []
+    for k in range(max(N, n - span), n - N):
+        hk = h[k]
+        if hk < rm[k] * (1 - within / 100): continue
+        if max(h[k - N:k].max(), h[k + 1:k + N + 1].max()) > hk: continue
+        brk, canc = None, False
+        for j in range(k + N + 1, n):
+            if c[j] > hk: brk = j; break
+            if c[j] < hk * (1 - cancel / 100): canc = True; break
+        if not canc: out.append((k, float(hk), brk))
+    return out
+
+def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.10, minHandle=3, maxHandle=25, maxHD=.12):
+    """Port of the chart's CupHandle indicator for a handle that ends on the latest bar."""
+    n = len(h); end = n - 1; best = None
+    for hlen in range(minHandle, maxHandle + 1):
+        hs = end - hlen + 1
+        if hs < 1: continue
+        hh, hl = float(h[hs:end + 1].max()), float(l[hs:end + 1].min())
+        if hh <= 0 or (hh - hl) / hh > maxHD: continue
+        hd = (hh - hl) / hh
+        for cupLen in range(minCup, min(maxCup, hs) + 1, 2):
+            cs, ce = hs - cupLen, hs - 1
+            if cs < 0: continue
+            rw = max(3, int(cupLen * .22))
+            leftAt = cs + int(np.argmax(h[cs:min(ce, cs + rw) + 1])); leftHigh = float(h[leftAt])
+            if leftAt + 8 >= ce or ce - 3 < leftAt + 3: continue
+            bottomAt = leftAt + 3 + int(np.argmin(l[leftAt + 3:ce - 2])); bottom = float(l[bottomAt])
+            if leftHigh <= 0: continue
+            depth = (leftHigh - bottom) / leftHigh
+            if depth < minDepth or depth > maxDepth: continue
+            bp = (bottomAt - leftAt) / max(1, ce - leftAt)
+            if bp < .30 or bp > .70: continue
+            a2 = max(bottomAt + 3, ce - rw)
+            if a2 > ce: continue
+            rightHigh = float(h[a2:ce + 1].max())
+            if abs(rightHigh - leftHigh) / leftHigh > rimTol: continue
+            mid = bottom + (leftHigh - bottom) * .5
+            if hl < mid or hl < rightHigh * (1 - maxHD * 1.25): continue
+            if hh > max(leftHigh, rightHigh) * (1 + rimTol * .5): continue
+            if best is None or cupLen > best["cupLen"]:
+                best = dict(depth=depth * 100, hD=hd * 100, cupLen=cupLen, rightHigh=rightHigh)
+    return best
+
 def pattern_fields(o, h, l, c, v):
     """Pattern / setup fields for one stock from daily OHLCV (arrays, latest last)."""
     n = len(c); f = {}
@@ -124,18 +195,24 @@ def pattern_fields(o, h, l, c, v):
     dn = [v[i] for i in range(n - 11, n - 1) if c[i] < c[i - 1]]
     f["pp"] = int(n > 60 and c[-1] > c[-2] and price > ma50 and v[-1] > (max(dn) if dn else 0))
     # ranges / compression
-    f["rng10"] = round(float((np.max(h[-50:]) - np.min(l[-50:])) / np.max(h[-50:]) * 100), 1)
+    f["rng10"] = round(float((np.max(h[-45:]) - np.min(l[-45:])) / np.max(h[-45:]) * 100), 1)
     tr = np.maximum(h[1:] - l[1:], np.maximum(abs(h[1:] - c[:-1]), abs(l[1:] - c[:-1])))
     f["atr1050"] = round(float(np.mean(tr[-10:]) / np.mean(tr[-50:]) * 100), 1) if len(tr) >= 50 else None
     f["inside5"] = int(sum(1 for i in range(n - 5, n) if h[i] <= h[i - 1] and l[i] >= l[i - 1]))
     f["low52"] = round(float(np.min(l[-252:])), 2)
     f["high1m"] = round(float(np.max(h[-21:])), 2); f["high3m"] = round(float(np.max(h[-63:])), 2)
-    # pivot (a high set at least 5 sessions ago, within 15% of the 52-week high)
+    # pivot = resistance from the Pivots indicator: highest not-yet-cleared pivot high (last 3), or the one cleared today / most recently
     if n > 70:
-        seg = h[-60:-5]; k = int(np.argmax(seg)); piv = float(seg[k])
-        if piv >= 0.85 * float(np.max(h[-252:])):
-            f["pv"] = round(piv, 2); f["pivotHeldSessions"] = int(n - 1 - (n - 60 + k))
-            f["breakoutToday"] = int(c[-1] > piv and c[-2] <= piv)
+        pvs = pivot_highs(h, c)
+        today = [p for p in pvs if p[2] == n - 1]
+        un = [p for p in pvs if p[2] is None][-3:]
+        old = [p for p in pvs if p[2] is not None and n - 1 - p[2] <= 60]
+        if un:
+            k, pr, bj = max(un, key=lambda q: q[1]); f["pv"] = round(pr, 2); f["pivotHeldSessions"] = int(n - 1 - k); f["breakoutToday"] = 0
+        elif today:
+            k, pr, bj = today[-1]; f["pv"] = round(pr, 2); f["pivotHeldSessions"] = int(n - 1 - k); f["breakoutToday"] = 1
+        elif old:
+            k, pr, bj = max(old, key=lambda q: q[2]); f["pv"] = round(pr, 2); f["pivotHeldSessions"] = int(n - 1 - bj); f["breakoutToday"] = 0
     # VCP: three shrinking 4-week pullbacks, last <= 8%, volume drying up, above 50 DMA, near the high
     if n > 130:
         d1, d2, d3 = (depth_in(h[a:b], l[a:b]) for a, b in ((-60, -40), (-40, -20), (-20, None)))
@@ -161,18 +238,12 @@ def flag_cup_my(h, l, c):
         pole = (h[pk] / base_low - 1) * 100; fd = (h[pk] - np.min(l[pk:])) / h[pk] * 100
         f["pole"], f["fD"] = round(float(pole), 1), round(float(fd), 1)
         f["fl"] = int(pole >= 25 and fd <= 12 and 3 <= since <= 25 and price >= 0.85 * h[pk])
-    # Cup with handle
-    if n > 200:
-        win = h[-150:-35]; L = n - 150 + int(np.argmax(win)); HL = float(h[L])
-        B = L + 1 + int(np.argmin(l[L + 1:])); LB = float(l[B])
-        depth = (HL - LB) / HL * 100
-        r = B + int(np.argmax(h[B:])); HR = float(h[r])
-        hand = n - 1 - r
-        if 12 <= depth <= 40 and r - L >= 35 and B - L >= 15 and r - B >= 15 and HR >= 0.92 * HL and 3 <= hand <= 25:
-            hl = float(np.min(l[r + 1:])); hd = (HR - hl) / HR * 100
-            if hd <= 12 and hl >= LB + 0.5 * (HL - LB) and price >= 0.92 * HR and price > sma(c, 50):
-                f["cup"] = 1; f["cupD"] = round(depth, 1); f["hD"] = round(hd, 1); f["pv"] = round(HR, 2)
-                f["pivotHeldSessions"] = int(hand); f["breakoutToday"] = int(c[-1] > HR and c[-2] <= HR)
+    # Cup with handle (port of the chart's indicator): 12-40% cup of 7+ weeks, shallow handle in its upper half, still below the right rim
+    if n > 200 and price > sma(c, 50):
+        cu = cup_handle(h[-400:], l[-400:])
+        if cu and -6 <= (price / cu["rightHigh"] - 1) * 100 <= 0:
+            f["cup"] = 1; f["cupD"] = round(cu["depth"], 1); f["hD"] = round(cu["hD"], 1); f["pv"] = round(cu["rightHigh"], 2)
+            f["pivotHeldSessions"] = max(5, int(cu["cupLen"] // 10)); f["breakoutToday"] = 0
     # Multi-year breakout: closes above the highest high of the last ~3 years (older than 60 sessions)
     if n > 400:
         look = min(n - 1, 756); seg = h[-look:-60]; ci = n - look + int(np.argmax(seg)); C = float(h[ci])
@@ -220,8 +291,10 @@ for s, df in frames.items():
     f["tw"] = weekly_tight(df.Close)
     # trend-template pieces that do not depend on RS
     lo52, hi52 = float(np.min(l[-252:])), float(np.max(h[-252:])); ma50 = sma(c, 50)
-    f["_tt"] = sum([price > ma150 and price > ma200, ma150 > ma200, ma200 > ma200_prev, ma50 > ma150 and ma50 > ma200,
-                    price > ma50, price >= 1.3 * lo52, price >= 0.75 * hi52])
+    _ttc = [price > ma150 and price > ma200, ma150 > ma200, ma200 > ma200_prev, ma50 > ma150 and ma50 > ma200,
+            price > ma50, price >= 1.3 * lo52, price >= 0.75 * hi52]
+    f["ttc"] = [int(bool(x)) for x in _ttc]          # the 7 trend-template checks (the 8th is RS >= 70)
+    f["_tt"] = sum(f["ttc"])
     f["_sma50"] = ma50
     fe[s] = f; closes[s] = df.Close
 C = pd.DataFrame(closes).sort_index().ffill()
@@ -278,6 +351,10 @@ for s, f in fe.items():
         ratio = (r / idx_close).dropna()
         if len(ratio) > 252: f["rsH"] = int(ratio.iloc[-1] >= ratio.iloc[-252:].max() * 0.999)
     f.pop("_sma50", None)
+    if TM: f["tm"] = int(s in TM)
+    if INDEX_OK:
+        f["indices"] = [n for n, m in IDX.items() if s in m]; f["indexMembershipVerified"] = True
+    if FNO: f["fno"] = s in FNO
     rows.append(f)
 
 # ---------------------------------------------------------------- optional: NSE delivery data
@@ -314,11 +391,15 @@ custom = {}
 if os.path.exists("themes.csv"):
     t = pd.read_csv("themes.csv", comment="#").fillna("")
     for r in t.to_dict("records"): custom.setdefault(str(r["theme"]).strip(), []).append(str(r["symbol"]).strip().upper())
-groups = {}
-for r in rows:
-    if r["sector"]: groups.setdefault(r["sector"], []).append(r["symbol"])
-for name, mem in custom.items(): groups[name] = mem
 by = {r["symbol"]: r for r in rows}
+valid_custom = {nm: mem for nm, mem in custom.items() if sum(1 for s in set(mem) if s in by and liq(by[s])) >= 5}
+groups = {}
+if len(valid_custom) >= 3:    # your own themes.csv lists drive the Swing Trade tab (like the reference's hand-made themes)
+    groups = dict(valid_custom)
+else:                         # too few usable custom themes: fall back to NSE sectors, plus whatever themes you listed
+    for r in rows:
+        if r["sector"]: groups.setdefault(r["sector"], []).append(r["symbol"])
+    for name, mem in custom.items(): groups[name] = mem
 themes = []
 for name, mem in groups.items():
     ms = [by[s] for s in dict.fromkeys(mem) if s in by and liq(by[s])]
@@ -382,6 +463,18 @@ json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoforma
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"dates": [t.strftime("%Y-%m-%d") for t in C.index],
            "stocks": {s: {"sec": info[s].sector if s in info else "",
-                          "c": [None if pd.isna(v) else round(float(v), 2) for v in C[s]]} for s in uni if s in by}},      # ranking universe only: keeps the file under Cloudflare's 25 MB per-file limit
+                          "c": [None if pd.isna(v) else round(float(v), 2) for v in C[s]]} for s in uni if s in by},
+           "bench": ({"n500": [None if pd.isna(v) else round(float(v), 2) for v in bench.Close.reindex(C.index).ffill()]} if bench is not None else {})},      # ranking universe only: keeps the file under Cloudflare's 25 MB per-file limit
           open(f"{OUT}/history.json", "w"), separators=(",", ":"), allow_nan=False)
+# last ~1 year of daily closes for every scored stock: powers the Pattern Finder
+rc = C.iloc[-260:]
+json.dump({"dates": [d.strftime("%Y-%m-%d") for d in rc.index],
+           "stocks": {s: [None if pd.isna(v) else round(float(v), 2) for v in rc[s]] for s in rc.columns if s in by}},
+          open(f"{OUT}/recent.json", "w"), separators=(",", ":"), allow_nan=False)
 print("done:", len(rows), "stocks,", len(themes), "themes, as of", asof)
+# freshness / health file shown on the website
+_last = max(df.index[-1] for df in frames.values())
+json.dump({"asOf": asof, "lastCandle": _last.strftime("%Y-%m-%d"), "generated": dt.datetime.utcnow().isoformat() + "Z",
+           "stocksDownloaded": len(frames), "stocksRequested": len(syms), "stocksScored": len(rows),
+           "benchmarkOk": bench is not None, "rsUniverse": len(uni)},
+          open(f"{OUT}/meta.json", "w"), separators=(",", ":"))
