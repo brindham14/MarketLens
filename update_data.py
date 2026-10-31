@@ -406,7 +406,8 @@ for name, mem in groups.items():
     if len(ms) < 5: continue
     medrs = float(np.median([m["rs"] for m in ms]))
     breadth = 100 * np.mean([m["p50"] is not None and m["p50"] > 0 for m in ms])
-    persist = 100 * np.mean([m["rs3"] >= 70 and m["rs6"] >= 70 for m in ms])
+    allm = [by[s] for s in dict.fromkeys(mem) if s in by]          # persistence is measured over every stock in the theme (like the reference), not only the liquid ones
+    persist = 100 * np.mean([m["rs3"] >= 70 and m["rs6"] >= 70 for m in allm])
     strong = sum(m["rs"] >= 85 for m in ms)
     vs = float(np.median([m["bi"] for m in ms]))
     themes.append(dict(name=name, score=int(round(0.4 * medrs + 0.3 * breadth + 0.3 * persist)), rs=round(medrs),
