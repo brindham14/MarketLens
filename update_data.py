@@ -148,6 +148,28 @@ for i in range(0, len(syms), 50):
             if len(df) >= 30: frames[s] = df
         except Exception: pass
 print(f"{len(frames)}/{len(syms)} symbols downloaded")
+
+# Yahoo sometimes misses a bonus / split / demerger: the price then "falls" 40-80% in one day, which NSE price bands do not allow.
+# Roll such a day back so the history is continuous (otherwise RS and the charts show a fake crash).
+def fix_jumps(df, lo=0.62, hi=1.6, window=300):
+    c = df["Close"].values.astype(float); r = np.full(len(c), np.nan); r[1:] = c[1:] / c[:-1]
+    adj = np.ones(len(c)); fixed = []
+    for i in range(len(c) - 1, max(len(c) - 1 - window, 0), -1):
+        v = r[i]
+        if v == v and (v < lo or v > hi):
+            adj[:i] *= v; fixed.append((df.index[i].strftime("%Y-%m-%d"), round(float(v), 2)))
+    if not fixed: return df, fixed
+    df = df.copy()
+    for k in ("Open", "High", "Low", "Close"): df[k] = df[k].values.astype(float) * adj
+    if "Volume" in df: df["Volume"] = df["Volume"].values.astype(float) / adj
+    return df, fixed
+_fx = {}
+for _s in list(frames):
+    try:
+        frames[_s], _f = fix_jumps(frames[_s])
+        if _f: _fx[_s] = _f
+    except Exception: pass
+print("price jumps rolled back (unadjusted corporate actions):", len(_fx), dict(list(_fx.items())[:12]))
 if not frames: sys.exit("no data downloaded - nothing written")
 # safeguard: a partly failed download must not overwrite a good release (the old files stay published)
 try:
@@ -370,7 +392,11 @@ print("scored stocks:", len(fe))
 def ret(n): return C / C.shift(n) - 1
 R21, R63, R126, R189, R252 = ret(21), ret(63), ret(126), ret(189), ret(252)
 RAW = 0.4 * R63 + 0.2 * R126 + 0.2 * R189 + 0.2 * R252            # 40% 3M + 20% 6M + 20% 9M + 20% 12M
-uni = [s for s in C.columns if s in TM] if len(TM & set(C.columns)) >= 300 else list(C.columns)
+# like the reference: ranked against the Nifty Total Market stocks that actually trade (20-day average traded value >= Rs 6 cr; fitted
+# against 95 stock ratings and 35 sector/theme medians copied from the reference - the very thin stocks are left out of the ranking)
+RS_MIN_TURNOVER = 6
+_liq_tm = [s for s in C.columns if s in TM and s in fe and fe[s]["turnover"] >= RS_MIN_TURNOVER]
+uni = _liq_tm if len(_liq_tm) >= 300 else ([s for s in C.columns if s in TM] if len(TM & set(C.columns)) >= 300 else list(C.columns))
 print("RS ranked against", len(uni), "stocks")
 
 def pct_of(series_now, series_ref):
