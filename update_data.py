@@ -556,7 +556,43 @@ for r in rows:
     if r.get("sector"): sec_groups.setdefault(r["sector"], []).append(r["symbol"])
 sector_rot = rank_all([group_metrics(k, v) for k, v in sec_groups.items()], "S")
 theme_rot = rank_all([group_metrics(k, v) for k, v in groups.items()], "T")
-print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes")
+ind_groups = {}
+if os.path.exists("industries.csv"):      # NSE industry of each stock (copied from the reference), used for the Industry level of Sector Rotation
+    try:
+        for r_ in pd.read_csv("industries.csv", comment="#").fillna("").to_dict("records"):
+            if str(r_["symbol"]).strip() and str(r_["industry"]).strip(): ind_groups.setdefault(str(r_["industry"]).strip(), []).append(str(r_["symbol"]).strip().upper())
+    except Exception as e: print("industries.csv skipped:", e)
+ind_rot = rank_all([group_metrics(k, v) for k, v in ind_groups.items()], "I") if ind_groups else []
+print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes,", len(ind_rot), "industries")
+
+# "Where money is moving": rank of every sector/theme 1 day, 1 week, 3 weeks and 6 weeks ago, rebuilt from the price history
+# (same score formula, same liquid members as today, RS and 50/200-day averages as they were on that day)
+MOVE_K = {"1D": 1, "1W": 5, "3W": 15, "6W": 30}
+_SMA50, _SMA200 = C.rolling(50).mean(), C.rolling(200).mean()
+def _rank_then(grp, k):
+    rs_k = rs_at(k); a50 = (C.iloc[-1 - k] > _SMA50.iloc[-1 - k]); a200 = (C.iloc[-1 - k] > _SMA200.iloc[-1 - k]); res = []
+    for name, mem in grp.items():
+        ms = [s for s in dict.fromkeys(mem) if s in by and liq(by[s]) and s in rs_k.index and rs_k[s] == rs_k[s]]
+        if len(ms) < 5: continue
+        n = len(ms); med = float(np.median([rs_k[s] for s in ms]))
+        p50 = 100 * np.mean([bool(a50.get(s, False)) for s in ms]); p200 = 100 * np.mean([bool(a200.get(s, False)) for s in ms])
+        res.append((name, int(round(50 + (0.6 * med + 0.2 * p50 + 0.2 * p200 - 50) * n / (n + 5.5))), round(med, 1)))
+    res.sort(key=lambda x: (-x[1], -x[2]))
+    return {nm: r for r, (nm, _, _) in enumerate(res, 1)}
+MOVE_SINCE = {}
+try:
+    for lab, k in MOVE_K.items():
+        MOVE_SINCE[lab] = C.index[-1 - k].strftime("%Y-%m-%d")
+        for items, grp in ((sector_rot, sec_groups), (theme_rot, groups), (ind_rot, ind_groups)):
+            rk = _rank_then(grp, k)
+            for i in items: i.setdefault("pr", {})[lab] = rk.get(i["name"])
+    for items in (sector_rot, theme_rot, ind_rot):
+        for i in items:
+            p3 = (i.get("pr") or {}).get("3W")
+            if p3: i["prev"] = p3 - i["rank"]          # the arrow on each card = rank change over 3 weeks, like the reference
+    print("money-moving ranks built for", list(MOVE_SINCE))
+except Exception as e:
+    print("money-moving step skipped:", e); MOVE_SINCE = {}
 
 # ---------------------------------------------------------------- what changed since the previous trading day
 asof_now = C.index[-1].strftime("%Y-%m-%d")
@@ -640,7 +676,7 @@ json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_n
 json.dump(gaps, open(f"{OUT}/gaps.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(ipos, open(f"{OUT}/ipos.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "themes": themes, "lists": lists}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)
-json.dump({"asOf": asof, "sectors": sector_rot, "themes": theme_rot}, open(f"{OUT}/sectors.json", "w"), separators=(",", ":"), allow_nan=False)
+json.dump({"asOf": asof, "since": MOVE_SINCE, "sectors": sector_rot, "themes": theme_rot, "industries": ind_rot}, open(f"{OUT}/sectors.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "updated": pd.Timestamp.now(tz="Asia/Kolkata").isoformat(), "generated": dt.datetime.utcnow().isoformat() + "Z",
            "quotes": {r["symbol"]: {"p": r["price"], "c": r["change"]} for r in rows}},
           open(f"{OUT}/quotes.json", "w"), separators=(",", ":"), allow_nan=False)

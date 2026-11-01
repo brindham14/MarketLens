@@ -1,0 +1,729 @@
+symbol,industry
+ATHERENERG,2/3 Wheelers
+TVSMOTOR,2/3 Wheelers
+HEROMOTOCO,2/3 Wheelers
+EICHERMOT,2/3 Wheelers
+BAJAJ-AUTO,2/3 Wheelers
+OLAELEC,2/3 Wheelers
+GRINDWELL,Abrasives & Bearings
+TIMKEN,Abrasives & Bearings
+CARBORUNIV,Abrasives & Bearings
+SKFINDUS,Abrasives & Bearings
+SIGMAADV,Aerospace & Defense
+ROSSTECH,Aerospace & Defense
+UNIMECH,Aerospace & Defense
+PARAS,Aerospace & Defense
+APOLLO,Aerospace & Defense
+AXISCADES,Aerospace & Defense
+KRISHNADEF,Aerospace & Defense
+HAL,Aerospace & Defense
+ZENTEC,Aerospace & Defense
+BEL,Aerospace & Defense
+NIBE,Aerospace & Defense
+AVANTEL,Aerospace & Defense
+BDL,Aerospace & Defense
+CYIENTDLM,Aerospace & Defense
+CENTUM,Aerospace & Defense
+JAYKAY,Aerospace & Defense
+ASTRAMICRO,Aerospace & Defense
+AEQUS,Aerospace & Defense
+DATAPATTNS,Aerospace & Defense
+IDEAFORGE,Aerospace & Defense
+MIDHANI,Aerospace & Defense
+GRSE,Aerospace & Defense
+HDFCAMC,Asset Management Company
+NAM-INDIA,Asset Management Company
+ICICIAMC,Asset Management Company
+ABSLAMC,Asset Management Company
+SANSERA,Auto Components & Equipments
+SSWL,Auto Components & Equipments
+WHEELS,Auto Components & Equipments
+SONACOMS,Auto Components & Equipments
+LUMAXTECH,Auto Components & Equipments
+KROSS,Auto Components & Equipments
+SHRIPISTON,Auto Components & Equipments
+VARROC,Auto Components & Equipments
+MOTHERSON,Auto Components & Equipments
+CRAFTSMAN,Auto Components & Equipments
+BOSCHLTD,Auto Components & Equipments
+GABRIEL,Auto Components & Equipments
+MINDACORP,Auto Components & Equipments
+JAMNAAUTO,Auto Components & Equipments
+UNOMINDA,Auto Components & Equipments
+SCHAEFFLER,Auto Components & Equipments
+ZFCVINDIA,Auto Components & Equipments
+MSUMI,Auto Components & Equipments
+TIINDIA,Auto Components & Equipments
+SEDEMAC,Auto Components & Equipments
+NRBBEARING,Auto Components & Equipments
+GNA,Auto Components & Equipments
+ROLEXRINGS,Auto Components & Equipments
+RKFORGE,Auto Components & Equipments
+SUNDRMFAST,Auto Components & Equipments
+PRICOLLTD,Auto Components & Equipments
+SJS,Auto Components & Equipments
+BELRISE,Auto Components & Equipments
+BHARATFORG,Auto Components & Equipments
+ENDURANCE,Auto Components & Equipments
+EXIDEIND,Auto Components & Equipments
+TENNIND,Auto Components & Equipments
+FIEMIND,Auto Components & Equipments
+ARE&M,Auto Components & Equipments
+JBMA,Auto Components & Equipments
+INDIAGLYCO,Breweries & Distilleries
+ABDL,Breweries & Distilleries
+UNITDSPR,Breweries & Distilleries
+UBL,Breweries & Distilleries
+TI,Breweries & Distilleries
+RADICO,Breweries & Distilleries
+PARACABLES,Cables - Electricals
+POLYCAB,Cables - Electricals
+FINCABLES,Cables - Electricals
+QUADFUTURE,Cables - Electricals
+UNIVCABLES,Cables - Electricals
+RRKABEL,Cables - Electricals
+DYCL,Cables - Electricals
+KEI,Cables - Electricals
+PTCIL,Castings & Forgings
+BALUFORGE,Castings & Forgings
+AIAENG,Castings & Forgings
+HAPPYFORGE,Castings & Forgings
+GRASIM,Cement & Cement Products
+NUVOCO,Cement & Cement Products
+ULTRACEMCO,Cement & Cement Products
+JSWCEMENT,Cement & Cement Products
+SHREECEM,Cement & Cement Products
+JKCEMENT,Cement & Cement Products
+INDIACEM,Cement & Cement Products
+ACC,Cement & Cement Products
+AMBUJACEM,Cement & Cement Products
+RAMCOCEM,Cement & Cement Products
+DALBHARAT,Cement & Cement Products
+VINDHYATEL,Civil Construction
+CEIGALL,Civil Construction
+KPIL,Civil Construction
+LT,Civil Construction
+CEMPRO,Civil Construction
+RITES,Civil Construction
+MBEL,Civil Construction
+IRB,Civil Construction
+NBCC,Civil Construction
+IRCON,Civil Construction
+RAMKY,Civil Construction
+AFCONS,Civil Construction
+RVNL,Civil Construction
+KEC,Civil Construction
+PNCINFRA,Civil Construction
+ENGINERSIN,Civil Construction
+WELENT,Civil Construction
+HCC,Civil Construction
+TECHNOE,Civil Construction
+NCC,Civil Construction
+SWSOLAR,Civil Construction
+VIKRAN,Civil Construction
+TATACHEM,Commodity Chemicals
+JGCHEM,Commodity Chemicals
+GNFC,Commodity Chemicals
+DEEPAKFERT,Commodity Chemicals
+SWARAJENG,Compressors Pumps & Diesel Engines
+CUMMINSIND,Compressors Pumps & Diesel Engines
+OSWALPUMPS,Compressors Pumps & Diesel Engines
+KIRLOSENG,Compressors Pumps & Diesel Engines
+GREAVESCOT,Compressors Pumps & Diesel Engines
+ELGIEQUIP,Compressors Pumps & Diesel Engines
+KIRLPNU,Compressors Pumps & Diesel Engines
+SHAKTIPUMP,Compressors Pumps & Diesel Engines
+COFORGE,Computers - Software & Consulting
+63MOONS,Computers - Software & Consulting
+TECHM,Computers - Software & Consulting
+PERSISTENT,Computers - Software & Consulting
+HCLTECH,Computers - Software & Consulting
+MPHASIS,Computers - Software & Consulting
+WIPRO,Computers - Software & Consulting
+BSOFT,Computers - Software & Consulting
+TCS,Computers - Software & Consulting
+INFY,Computers - Software & Consulting
+ZENSARTECH,Computers - Software & Consulting
+TATAELXSI,Computers - Software & Consulting
+FRACTAL,Computers - Software & Consulting
+LTM,Computers - Software & Consulting
+RATEGAIN,Computers - Software & Consulting
+HEXT,Computers - Software & Consulting
+HAPPSTMNDS,Computers - Software & Consulting
+KPITTECH,Computers - Software & Consulting
+AURIONPRO,Computers - Software & Consulting
+MASTEK,Computers - Software & Consulting
+NEWGEN,Computers - Software & Consulting
+SONATSOFTW,Computers - Software & Consulting
+INTELLECT,Computers - Software & Consulting
+LATENTVIEW,Computers - Software & Consulting
+EBGNG,Computers Hardware & Equipments
+RPTECH,Computers Hardware & Equipments
+NELCO,Computers Hardware & Equipments
+MOSCHIP,Computers Hardware & Equipments
+BLUSPRING,Diversified Commercial Services
+IBULLSLTD,Diversified Commercial Services
+IGIL,Diversified Commercial Services
+TEAMLEASE,Diversified Commercial Services
+CMSINFO,Diversified Commercial Services
+AWFIS,Diversified Commercial Services
+SANGHVIMOV,Diversified Commercial Services
+INOXGREEN,Diversified Commercial Services
+EMIL,Diversified Retail
+SHOPERSTOP,Diversified Retail
+DMART,Diversified Retail
+VMM,Diversified Retail
+MEESHO,E-Retail/ E-Commerce
+NYKAA,E-Retail/ E-Commerce
+ETERNAL,E-Retail/ E-Commerce
+FIRSTCRY,E-Retail/ E-Commerce
+URBANCO,E-Retail/ E-Commerce
+CARTRADE,E-Retail/ E-Commerce
+SWIGGY,E-Retail/ E-Commerce
+KRISHANA,Fertilizers
+MBAPL,Fertilizers
+COROMANDEL,Fertilizers
+PARADEEP,Fertilizers
+CHAMBLFERT,Fertilizers
+GSFC,Fertilizers
+TFCILTD,Financial Institution
+RECLTD,Financial Institution
+PFC,Financial Institution
+IRFC,Financial Institution
+IFCI,Financial Institution
+IREDA,Financial Institution
+HUDCO,Financial Institution
+PAYTM,Financial Technology (Fintech)
+MOBIKWIK,Financial Technology (Fintech)
+POLICYBZR,Financial Technology (Fintech)
+PINELABS,Financial Technology (Fintech)
+CCAVENUE,Financial Technology (Fintech)
+SBC,Garments & Apparels
+PGIL,Garments & Apparels
+ARVIND,Garments & Apparels
+PAGEIND,Garments & Apparels
+GOKEX,Garments & Apparels
+TBZ,Gems Jewellery And Watches
+SKYGOLD,Gems Jewellery And Watches
+PCJEWELLER,Gems Jewellery And Watches
+DPABHUSHAN,Gems Jewellery And Watches
+PNGSREVA,Gems Jewellery And Watches
+SHANTIGOLD,Gems Jewellery And Watches
+SHRINGARMS,Gems Jewellery And Watches
+MOTISONS,Gems Jewellery And Watches
+MVGJL,Gems Jewellery And Watches
+THANGAMAYL,Gems Jewellery And Watches
+BLUESTONE,Gems Jewellery And Watches
+KALYANKJIL,Gems Jewellery And Watches
+TITAN,Gems Jewellery And Watches
+GOLDIAM,Gems Jewellery And Watches
+PNGJL,Gems Jewellery And Watches
+SENCO,Gems Jewellery And Watches
+VAIBHAVGBL,Gems Jewellery And Watches
+NIACL,General Insurance
+ICICIGI,General Insurance
+GODIGIT,General Insurance
+STARHEALTH,General Insurance
+NIVABUPA,General Insurance
+GICRE,General Insurance
+VIJAYA,Healthcare Service Provider
+METROPOLIS,Healthcare Service Provider
+LALPATHLAB,Healthcare Service Provider
+NEPHROPLUS,Healthcare Service Provider
+THYROCARE,Healthcare Service Provider
+ATLANTAELE,Heavy Electrical Equipment
+VOLTAMP,Heavy Electrical Equipment
+GVT&D,Heavy Electrical Equipment
+MARSONS,Heavy Electrical Equipment
+CGPOWER,Heavy Electrical Equipment
+TARIL,Heavy Electrical Equipment
+ELECON,Heavy Electrical Equipment
+POWERINDIA,Heavy Electrical Equipment
+SCHNEIDER,Heavy Electrical Equipment
+ABB,Heavy Electrical Equipment
+SKIPPER,Heavy Electrical Equipment
+ENRIN,Heavy Electrical Equipment
+THERMAX,Heavy Electrical Equipment
+BBL,Heavy Electrical Equipment
+TRANSRAILL,Heavy Electrical Equipment
+SUZLON,Heavy Electrical Equipment
+TDPOWERSYS,Heavy Electrical Equipment
+QPOWER,Heavy Electrical Equipment
+AZAD,Heavy Electrical Equipment
+BHEL,Heavy Electrical Equipment
+INDOTECH,Heavy Electrical Equipment
+GVPIL,Heavy Electrical Equipment
+SIEMENS,Heavy Electrical Equipment
+TRITURBINE,Heavy Electrical Equipment
+INOXWIND,Heavy Electrical Equipment
+CHOICEIN,Holding Company
+BAJAJHLDNG,Holding Company
+BAJAJFINSV,Holding Company
+EDELWEISS,Holding Company
+JMFINANCIL,Holding Company
+GKSL,Hospital
+AGARWALEYE,Hospital
+APOLLOHOSP,Hospital
+KIMS,Hospital
+NH,Hospital
+YATHARTH,Hospital
+MEDANTA,Hospital
+PARKHOSPS,Hospital
+ASTERDM,Hospital
+RAINBOW,Hospital
+FORTIS,Hospital
+MAXHEALTH,Hospital
+THELEELA,Hotels & Resorts
+ORIENTHOT,Hotels & Resorts
+INDHOTEL,Hotels & Resorts
+ITCHOTELS,Hotels & Resorts
+LEMONTREE,Hotels & Resorts
+SAMHI,Hotels & Resorts
+STOVEKRAFT,Household Appliances
+LGEINDIA,Household Appliances
+ORIENTELEC,Household Appliances
+BLUESTARCO,Household Appliances
+VOLTAS,Household Appliances
+CROMPTON,Household Appliances
+EPACK,Household Appliances
+WHIRLPOOL,Household Appliances
+VGUARD,Household Appliances
+AMBER,Household Appliances
+BAJAJELEC,Household Appliances
+PNBHOUSING,Housing Finance Company
+HOMEFIRST,Housing Finance Company
+BAJAJHFL,Housing Finance Company
+CANFINHOME,Housing Finance Company
+LICHSGFIN,Housing Finance Company
+SAMMAANCAP,Housing Finance Company
+AAVAS,Housing Finance Company
+APTUS,Housing Finance Company
+ONWARDTEC,IT Enabled Services
+BBOX,IT Enabled Services
+CYIENT,IT Enabled Services
+SASKEN,IT Enabled Services
+LTTS,IT Enabled Services
+IKS,IT Enabled Services
+PROTEAN,IT Enabled Services
+SAGILITY,IT Enabled Services
+ZAGGLE,IT Enabled Services
+E2E,IT Enabled Services
+NETWEB,IT Enabled Services
+RSYSTEMS,IT Enabled Services
+GENESYS,IT Enabled Services
+AMAGI,IT Enabled Services
+AURUM,IT Enabled Services
+TATATECH,IT Enabled Services
+AFFLE,IT Enabled Services
+EMUDHRA,IT Enabled Services
+ORIENTTECH,IT Enabled Services
+GRAVITA,Industrial Minerals
+LLOYDSME,Industrial Minerals
+NMDC,Industrial Minerals
+GMDCLTD,Industrial Minerals
+ASHAPURMIN,Industrial Minerals
+RAYMOND,Industrial Products
+SETL,Industrial Products
+CPPLUS,Industrial Products
+SYRMA,Industrial Products
+MARINE,Industrial Products
+LOKESHMACH,Industrial Products
+EIMCOELECO,Industrial Products
+LMW,Industrial Products
+MACPOWER,Industrial Products
+OMNI,Industrial Products
+GMMPFAUDLR,Industrial Products
+LLOYDSENGG,Industrial Products
+DYNAMATECH,Industrial Products
+JYOTICNC,Industrial Products
+JASH,Industrial Products
+TEGA,Industrial Products
+DEEDEV,Industrial Products
+EPACKPEB,Industrial Products
+WALCHANNAG,Industrial Products
+HONAUT,Industrial Products
+KAYNES,Industrial Products
+PRAJIND,Industrial Products
+ABCAPITAL,Investment Company
+PNBGILTS,Investment Company
+RELIGARE,Investment Company
+CHOLAHLDNG,Investment Company
+TVSHLTD,Investment Company
+JIOFIN,Investment Company
+LTF,Investment Company
+TATAINVEST,Investment Company
+RATNAVEER,Iron & Steel Products
+AEROFLEX,Iron & Steel Products
+SAMBHV,Iron & Steel Products
+AEROENTER,Iron & Steel Products
+SHYAMMETL,Iron & Steel Products
+APLAPOLLO,Iron & Steel Products
+GALLANTT,Iron & Steel Products
+WELCORP,Iron & Steel Products
+SBCL,Iron & Steel Products
+MANINDS,Iron & Steel Products
+SUNFLAG,Iron & Steel Products
+VENUSPIPES,Iron & Steel Products
+GOODLUCK,Iron & Steel Products
+JAYNECOIND,Iron & Steel Products
+JTLIND,Iron & Steel Products
+MAHSEAMLES,Iron & Steel Products
+JINDALSAW,Iron & Steel Products
+USHAMART,Iron & Steel Products
+ELECTCAST,Iron & Steel Products
+GPIL,Iron & Steel Products
+RHETAN,Iron & Steel Products
+JSWSTEEL,Iron & Steel
+SAIL,Iron & Steel
+JINDALSTEL,Iron & Steel
+JSL,Iron & Steel
+NSLNISP,Iron & Steel
+TATASTEEL,Iron & Steel
+SARDAEN,Iron & Steel
+PETRONET,LPG/CNG/PNG/LNG Supplier
+MGL,LPG/CNG/PNG/LNG Supplier
+IGL,LPG/CNG/PNG/LNG Supplier
+GUJENERGY,LPG/CNG/PNG/LNG Supplier
+CONFIPET,LPG/CNG/PNG/LNG Supplier
+ATGL,LPG/CNG/PNG/LNG Supplier
+HDFCLIFE,Life Insurance
+LICI,Life Insurance
+SBILIFE,Life Insurance
+ICICILIFE,Life Insurance
+CANHLIFE,Life Insurance
+MFSL,Life Insurance
+MAHLOG,Logistics Solution Provider
+RIIL,Logistics Solution Provider
+DELHIVERY,Logistics Solution Provider
+SHADOWFAX,Logistics Solution Provider
+CONCOR,Logistics Solution Provider
+PANAMAPET,Lubricants
+CASTROLIND,Lubricants
+GANDHAR,Lubricants
+SOTL,Lubricants
+SAREGAMA,Media & Entertainment
+TIPSMUSIC,Media & Entertainment
+NETWORK18,Media & Entertainment
+PFOCUS,Media & Entertainment
+PAISALO,Non Banking Financial Company (NBFC)
+SGFIN,Non Banking Financial Company (NBFC)
+CGCL,Non Banking Financial Company (NBFC)
+MUFIN,Non Banking Financial Company (NBFC)
+POONAWALLA,Non Banking Financial Company (NBFC)
+FEDFINA,Non Banking Financial Company (NBFC)
+CHOLAFIN,Non Banking Financial Company (NBFC)
+BAJFINANCE,Non Banking Financial Company (NBFC)
+TATACAP,Non Banking Financial Company (NBFC)
+SBFC,Non Banking Financial Company (NBFC)
+IIFL,Non Banking Financial Company (NBFC)
+PIRAMALFIN,Non Banking Financial Company (NBFC)
+NORTHARC,Non Banking Financial Company (NBFC)
+MANAPPURAM,Non Banking Financial Company (NBFC)
+SHRIRAMFIN,Non Banking Financial Company (NBFC)
+AYE,Non Banking Financial Company (NBFC)
+SUNDARMFIN,Non Banking Financial Company (NBFC)
+FIVESTAR,Non Banking Financial Company (NBFC)
+M&MFIN,Non Banking Financial Company (NBFC)
+MUTHOOTFIN,Non Banking Financial Company (NBFC)
+HDBFS,Non Banking Financial Company (NBFC)
+SBICARD,Non Banking Financial Company (NBFC)
+AEROPLANE,Other Agricultural Products
+AVTNPL,Other Agricultural Products
+KRBL,Other Agricultural Products
+LTFOODS,Other Agricultural Products
+GRMOVER,Other Agricultural Products
+GAEL,Other Agricultural Products
+TRUALT,Other Agricultural Products
+AUBANK,Other Bank
+UJJIVANSFB,Other Bank
+EQUITASBNK,Other Bank
+JSFB,Other Bank
+FINOPB,Other Bank
+MTARTECH,Other Electrical Equipment
+APARINDS,Other Electrical Equipment
+PREMIERENE,Other Electrical Equipment
+GENUSPOWER,Other Electrical Equipment
+WAAREEENER,Other Electrical Equipment
+WEBELSOLAR,Other Electrical Equipment
+DIACABS,Other Electrical Equipment
+AVALON,Other Electrical Equipment
+RAMRAT,Other Electrical Equipment
+RISHABH,Other Electrical Equipment
+EMMVEE,Other Electrical Equipment
+WAAREERTL,Other Electrical Equipment
+VIKRAMSOLR,Other Electrical Equipment
+WELSPUNLIV,Other Textile Products
+PASHUPATI,Other Textile Products
+ICIL,Other Textile Products
+KPRMILL,Other Textile Products
+ALOKINDS,Other Textile Products
+FILATEX,Other Textile Products
+SPORTKING,Other Textile Products
+RAYMONDLSL,Other Textile Products
+BRITANNIA,Packaged Foods
+BECTORFOOD,Packaged Foods
+NESTLEIND,Packaged Foods
+BIKAJI,Packaged Foods
+JINDALPOLY,Packaging
+EPL,Packaging
+COMSYN,Packaging
+HUHTAMAKI,Packaging
+SIRCA,Paints
+BERGEPAINT,Paints
+ASIANPAINT,Paints
+JSWDULUX,Paints
+FORCEMOT,Passenger Cars & Utility Vehicles
+HYUNDAI,Passenger Cars & Utility Vehicles
+M&M,Passenger Cars & Utility Vehicles
+MARUTI,Passenger Cars & Utility Vehicles
+TMPV,Passenger Cars & Utility Vehicles
+OLECTRA,Passenger Cars & Utility Vehicles
+CUPID,Personal Care
+HONASA,Personal Care
+GILLETTE,Personal Care
+DABUR,Personal Care
+EMAMILTD,Personal Care
+GODREJCP,Personal Care
+BAJAJCON,Personal Care
+COLPAL,Personal Care
+DHANUKA,Pesticides & Agrochemicals
+UPL,Pesticides & Agrochemicals
+ADVANCE,Pesticides & Agrochemicals
+GSPCROP,Pesticides & Agrochemicals
+PIIND,Pesticides & Agrochemicals
+SUMICHEM,Pesticides & Agrochemicals
+MANALIPETC,Petrochemicals
+BEPL,Petrochemicals
+RAIN,Petrochemicals
+SWANCORP,Petrochemicals
+SHILPAMED,Pharmaceuticals
+BLISSGVS,Pharmaceuticals
+INDSWFTLAB,Pharmaceuticals
+MOREPENLAB,Pharmaceuticals
+LAURUSLABS,Pharmaceuticals
+ACUTAAS,Pharmaceuticals
+RUBICON,Pharmaceuticals
+IOLCP,Pharmaceuticals
+GLAND,Pharmaceuticals
+MARKSANS,Pharmaceuticals
+SAILIFE,Pharmaceuticals
+SMSPHARMA,Pharmaceuticals
+ALIVUS,Pharmaceuticals
+DIVISLAB,Pharmaceuticals
+PPLPHARMA,Pharmaceuticals
+AUROPHARMA,Pharmaceuticals
+IPCALAB,Pharmaceuticals
+ZYDUSLIFE,Pharmaceuticals
+GRANULES,Pharmaceuticals
+AJANTPHARM,Pharmaceuticals
+STAR,Pharmaceuticals
+DRREDDY,Pharmaceuticals
+GLENMARK,Pharmaceuticals
+TORNTPHARM,Pharmaceuticals
+AARTIDRUGS,Pharmaceuticals
+MANKIND,Pharmaceuticals
+HIKAL,Pharmaceuticals
+ZOTA,Pharmaceuticals
+APLLTD,Pharmaceuticals
+CIPLA,Pharmaceuticals
+COHANCE,Pharmaceuticals
+VIYASH,Pharmaceuticals
+SUNPHARMA,Pharmaceuticals
+ABBOTINDIA,Pharmaceuticals
+ONESOURCE,Pharmaceuticals
+BIOCON,Pharmaceuticals
+ALKEM,Pharmaceuticals
+LUPIN,Pharmaceuticals
+NATCOPHARM,Pharmaceuticals
+ERIS,Pharmaceuticals
+PFIZER,Pharmaceuticals
+AHCL,Pharmaceuticals
+SAKAR,Pharmaceuticals
+KOPRAN,Pharmaceuticals
+SYNCOMF,Pharmaceuticals
+AKUMS,Pharmaceuticals
+WOCKPHARMA,Pharmaceuticals
+AARTIPHARM,Pharmaceuticals
+NEULANDLAB,Pharmaceuticals
+SOLARA,Pharmaceuticals
+EMCURE,Pharmaceuticals
+SUPRIYA,Pharmaceuticals
+GLAXO,Pharmaceuticals
+GUJTHEM,Pharmaceuticals
+JUBLPHARMA,Pharmaceuticals
+SENORES,Pharmaceuticals
+CAPLIPOINT,Pharmaceuticals
+SPARC,Pharmaceuticals
+BETA,Pharmaceuticals
+CONCORDBIO,Pharmaceuticals
+BLUEJET,Pharmaceuticals
+SANOFICONR,Pharmaceuticals
+GRWRHITECH,Plastic Products - Industrial
+PREMIERPOL,Plastic Products - Industrial
+APOLLOPIPE,Plastic Products - Industrial
+JISLJALEQS,Plastic Products - Industrial
+ASTRAL,Plastic Products - Industrial
+JAICORPLTD,Plastic Products - Industrial
+SUPREMEIND,Plastic Products - Industrial
+TIMETECHNO,Plastic Products - Industrial
+ACMESOLAR,Power Generation
+ADANIGREEN,Power Generation
+NHPC,Power Generation
+JSWENERGY,Power Generation
+NTPC,Power Generation
+GMRP&UI,Power Generation
+NAVA,Power Generation
+RPOWER,Power Generation
+CLEANMAX,Power Generation
+ADANIPOWER,Power Generation
+NTPCGREEN,Power Generation
+NLCINDIA,Power Generation
+JPPOWER,Power Generation
+SJVN,Power Generation
+KPIGREEN,Power Generation
+SOUTHBANK,Private Sector Bank
+KARURVYSYA,Private Sector Bank
+FEDERALBNK,Private Sector Bank
+KOTAKBANK,Private Sector Bank
+DHANBANK,Private Sector Bank
+CUB,Private Sector Bank
+ICICIBANK,Private Sector Bank
+AXISBANK,Private Sector Bank
+IDBI,Private Sector Bank
+HDFCBANK,Private Sector Bank
+KTKBANK,Private Sector Bank
+TMB,Private Sector Bank
+DCBBANK,Private Sector Bank
+RBLBANK,Private Sector Bank
+INDUSINDBK,Private Sector Bank
+J&KBANK,Private Sector Bank
+BANDHANBNK,Private Sector Bank
+IDFCFIRSTB,Private Sector Bank
+CSBBANK,Private Sector Bank
+YESBANK,Private Sector Bank
+MAHABANK,Public Sector Bank
+UNIONBANK,Public Sector Bank
+PNB,Public Sector Bank
+INDIANB,Public Sector Bank
+SBIN,Public Sector Bank
+BANKINDIA,Public Sector Bank
+BANKBARODA,Public Sector Bank
+CANBK,Public Sector Bank
+CENTRALBK,Public Sector Bank
+UCOBANK,Public Sector Bank
+IOB,Public Sector Bank
+CHENNPETRO,Refineries & Marketing
+MRPL,Refineries & Marketing
+IOC,Refineries & Marketing
+BPCL,Refineries & Marketing
+RELIANCE,Refineries & Marketing
+HINDPETRO,Refineries & Marketing
+LOTUSDEV,Residential Commercial Projects
+KOLTEPATIL,Residential Commercial Projects
+PHOENIXLTD,Residential Commercial Projects
+DLF,Residential Commercial Projects
+HUBTOWN,Residential Commercial Projects
+OBEROIRLTY,Residential Commercial Projects
+PRESTIGE,Residential Commercial Projects
+SOBHA,Residential Commercial Projects
+SUNTECK,Residential Commercial Projects
+SIGNATURE,Residential Commercial Projects
+GODREJPROP,Residential Commercial Projects
+MANINFRA,Residential Commercial Projects
+RAYMONDREL,Residential Commercial Projects
+LODHA,Residential Commercial Projects
+BRIGADE,Residential Commercial Projects
+MAHLIFE,Residential Commercial Projects
+AGIIL,Residential Commercial Projects
+EMBDL,Residential Commercial Projects
+ANANTRAJ,Residential Commercial Projects
+ABREL,Residential Commercial Projects
+RBA,Restaurants
+WESTLIFE,Restaurants
+SAPPHIRE,Restaurants
+DEVYANI,Restaurants
+JUBLFOOD,Restaurants
+TANLA,Software Products
+QUICKHEAL,Software Products
+SUBEXLTD,Software Products
+CAPILLARY,Software Products
+OFSS,Software Products
+LENSKART,Speciality Retail
+TRENT,Speciality Retail
+ABLBL,Speciality Retail
+ABFRL,Speciality Retail
+STYLEBAAZA,Speciality Retail
+V2RETAIL,Speciality Retail
+OAL,Specialty Chemicals
+SUDEEPPHRM,Specialty Chemicals
+NAVINFLUOR,Specialty Chemicals
+FLUOROCHEM,Specialty Chemicals
+FINEORG,Specialty Chemicals
+GALAXYSURF,Specialty Chemicals
+ANURAS,Specialty Chemicals
+PLATIND,Specialty Chemicals
+CLEAN,Specialty Chemicals
+CHEMPLASTS,Specialty Chemicals
+AARTIIND,Specialty Chemicals
+PIDILITIND,Specialty Chemicals
+DEEPAKNTR,Specialty Chemicals
+SRF,Specialty Chemicals
+FCL,Specialty Chemicals
+YASHO,Specialty Chemicals
+AETHER,Specialty Chemicals
+NEOGEN,Specialty Chemicals
+TATVA,Specialty Chemicals
+PAUSHAKLTD,Specialty Chemicals
+DMCC,Specialty Chemicals
+BALAMINES,Specialty Chemicals
+PRIVISCL,Specialty Chemicals
+INDOAMIN,Specialty Chemicals
+ALKYLAMINE,Specialty Chemicals
+LXCHEM,Specialty Chemicals
+NOCIL,Specialty Chemicals
+JUBLINGREA,Specialty Chemicals
+ATUL,Specialty Chemicals
+ACI,Specialty Chemicals
+ALGOQUANT,Stockbroking & Allied
+SMCGLOBAL,Stockbroking & Allied
+NUVAMA,Stockbroking & Allied
+MOTILALOFS,Stockbroking & Allied
+IIFLCAPS,Stockbroking & Allied
+ANGELONE,Stockbroking & Allied
+GROWW,Stockbroking & Allied
+SHAREINDIA,Stockbroking & Allied
+360ONE,Stockbroking & Allied
+ARSSBL,Stockbroking & Allied
+AVADHSUGAR,Sugar
+UTTAMSUGAR,Sugar
+DCMSRIND,Sugar
+DHAMPURSUG,Sugar
+DALMIASUG,Sugar
+DWARKESH,Sugar
+TRIVENI,Sugar
+BALRAMCHIN,Sugar
+BAJAJHIND,Sugar
+RENUKA,Sugar
+BHARTIARTL,Telecom - Cellular & Fixed line services
+BHARTIHEXA,Telecom - Cellular & Fixed line services
+TATACOMM,Telecom - Cellular & Fixed line services
+TTML,Telecom - Cellular & Fixed line services
+MTNL,Telecom - Cellular & Fixed line services
+IDEA,Telecom - Cellular & Fixed line services
+STLTECH,Telecom - Equipment & Accessories
+OPTIEMUS,Telecom - Equipment & Accessories
+TEJASNET,Telecom - Equipment & Accessories
+BIRLACABLE,Telecom - Equipment & Accessories
+BLS,Tour Travel Related Services
+IRCTC,Tour Travel Related Services
+IXIGO,Tour Travel Related Services
+TBOTEK,Tour Travel Related Services
+REDINGTON,Trading & Distributors
+MSTCLTD,Trading & Distributors
+BUILDPRO,Trading & Distributors
+MMTC,Trading & Distributors
+BALKRISIND,Tyres & Rubber Products
+CEATLTD,Tyres & Rubber Products
+APOLLOTYRE,Tyres & Rubber Products
+MRF,Tyres & Rubber Products
+JKTYRE,Tyres & Rubber Products
