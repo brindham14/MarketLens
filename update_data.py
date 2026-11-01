@@ -353,7 +353,7 @@ def flag_cup_my(h, l, c):
 latest = max(df.index[-1] for df in frames.values())
 fe, closes = {}, {}
 for s, df in frames.items():
-    if len(df) < 260 or (latest - df.index[-1]).days > 7: continue        # need ~1 year of history, still trading
+    if len(df) < 150 or (latest - df.index[-1]).days > 7: continue        # need ~7 months of history (newer listings are scored on the periods they have), still trading
     o, h, l, c, v = (df[k].values.astype(float) for k in ("Open", "High", "Low", "Close", "Volume"))
     v = np.nan_to_num(v)
     price, prev = c[-1], c[-2]
@@ -391,7 +391,9 @@ print("scored stocks:", len(fe))
 # ---------------------------------------------------------------- RS rating (weighted return, ranked 1-99)
 def ret(n): return C / C.shift(n) - 1
 R21, R63, R126, R189, R252 = ret(21), ret(63), ret(126), ret(189), ret(252)
-RAW = 0.4 * R63 + 0.2 * R126 + 0.2 * R189 + 0.2 * R252            # 40% 3M + 20% 6M + 20% 9M + 20% 12M
+# 40% 3M + 20% 6M + 20% 9M + 20% 12M; a stock listed less than a year ago uses the periods it has (weights rescaled to add up to 1)
+_RW = ((R63, 0.4), (R126, 0.2), (R189, 0.2), (R252, 0.2))
+RAW = (sum(r.fillna(0) * w for r, w in _RW) / sum(r.notna() * w for r, w in _RW)).where(R63.notna())
 # like the reference: ranked against the Nifty Total Market stocks that actually trade (20-day average traded value >= Rs 6 cr; fitted
 # against 95 stock ratings and 35 sector/theme medians copied from the reference - the very thin stocks are left out of the ranking)
 RS_MIN_TURNOVER = 6
@@ -518,10 +520,10 @@ def _idx_ret(n):
     try: return float(idx_close.iloc[-1] / idx_close.iloc[-1 - n] - 1) * 100
     except Exception: return 0.0
 IDX_R21, IDX_R126 = _idx_ret(21), _idx_ret(126)
-def group_metrics(name, mem, k0=5.5):
+def group_metrics(name, mem, k0=5.5, kmin=5):
     allm = [by[s] for s in dict.fromkeys(mem) if s in by]
     ms = [m for m in allm if liq(m)]
-    if len(ms) < 5: return None
+    if len(ms) < kmin: return None
     n = len(ms); med = float(np.median([m["rs"] for m in ms]))
     a50 = 100 * np.mean([m.get("a50") == 1 for m in ms]); a200 = 100 * np.mean([m.get("a200") == 1 for m in ms])
     score = 50 + (0.6 * med + 0.2 * a50 + 0.2 * a200 - 50) * n / (n + k0)
@@ -533,7 +535,7 @@ def group_metrics(name, mem, k0=5.5):
                 x6=round(float(np.median([m["ret6"] for m in ms])) - IDX_R126, 1),
                 adv=sum(m["change"] > 0 for m in ms), dec=sum(m["change"] < 0 for m in ms),
                 aadv=sum(m["change"] > 0 for m in allm), adec=sum(m["change"] < 0 for m in allm),
-                top=[[m["symbol"], m["rs"]] for m in top], small=n < 10)
+                top=[[m["symbol"], m["rs"]] for m in top], small=n < 10, members=[m["symbol"] for m in ms])
 def rank_all(items, key):
     items = [i for i in items if i]; items.sort(key=lambda i: (-i["score"], -i["rs"]))
     for r, i in enumerate(items, 1): i["rank"] = r
@@ -562,18 +564,18 @@ if os.path.exists("industries.csv"):      # NSE industry of each stock (copied f
         for r_ in pd.read_csv("industries.csv", comment="#").fillna("").to_dict("records"):
             if str(r_["symbol"]).strip() and str(r_["industry"]).strip(): ind_groups.setdefault(str(r_["industry"]).strip(), []).append(str(r_["symbol"]).strip().upper())
     except Exception as e: print("industries.csv skipped:", e)
-ind_rot = rank_all([group_metrics(k, v) for k, v in ind_groups.items()], "I") if ind_groups else []
+ind_rot = rank_all([group_metrics(k, v, kmin=3) for k, v in ind_groups.items()], "I") if ind_groups else []
 print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes,", len(ind_rot), "industries")
 
 # "Where money is moving": rank of every sector/theme 1 day, 1 week, 3 weeks and 6 weeks ago, rebuilt from the price history
 # (same score formula, same liquid members as today, RS and 50/200-day averages as they were on that day)
 MOVE_K = {"1D": 1, "1W": 5, "3W": 15, "6W": 30}
 _SMA50, _SMA200 = C.rolling(50).mean(), C.rolling(200).mean()
-def _rank_then(grp, k):
+def _rank_then(grp, k, kmin=5):
     rs_k = rs_at(k); a50 = (C.iloc[-1 - k] > _SMA50.iloc[-1 - k]); a200 = (C.iloc[-1 - k] > _SMA200.iloc[-1 - k]); res = []
     for name, mem in grp.items():
         ms = [s for s in dict.fromkeys(mem) if s in by and liq(by[s]) and s in rs_k.index and rs_k[s] == rs_k[s]]
-        if len(ms) < 5: continue
+        if len(ms) < kmin: continue
         n = len(ms); med = float(np.median([rs_k[s] for s in ms]))
         p50 = 100 * np.mean([bool(a50.get(s, False)) for s in ms]); p200 = 100 * np.mean([bool(a200.get(s, False)) for s in ms])
         res.append((name, int(round(50 + (0.6 * med + 0.2 * p50 + 0.2 * p200 - 50) * n / (n + 5.5))), round(med, 1)))
@@ -584,7 +586,7 @@ try:
     for lab, k in MOVE_K.items():
         MOVE_SINCE[lab] = C.index[-1 - k].strftime("%Y-%m-%d")
         for items, grp in ((sector_rot, sec_groups), (theme_rot, groups), (ind_rot, ind_groups)):
-            rk = _rank_then(grp, k)
+            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5)
             for i in items: i.setdefault("pr", {})[lab] = rk.get(i["name"])
     for items in (sector_rot, theme_rot, ind_rot):
         for i in items:
