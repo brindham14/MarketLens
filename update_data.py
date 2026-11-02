@@ -689,7 +689,7 @@ try:
     _me = C.resample("ME").last()
     _lastd = C.groupby(C.index.to_period("M")).apply(lambda x: x.index[-1])
     _mret = _me.pct_change(fill_method=None) * 100
-    _elig = [s for s in C.columns if s in TM and s in fe and fe[s]["turnover"] >= 5]
+    _elig = [s for s in C.columns if s in fe and fe[s]["turnover"] >= 1]
     monthly = {"asOf": C.index[-1].strftime("%Y-%m-%d"), "months": [], "data": {}}
     for ts in _mret.index[1:]:
         key = ts.strftime("%Y-%m"); col = _mret.loc[ts, _elig].dropna()
