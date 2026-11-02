@@ -655,6 +655,33 @@ json.dump({"asOf": asof_now, "prevAsOf": prevs.get("asOf") if prevs else None, "
           open(f"{OUT}/changes.json", "w"), separators=(",", ":"))
 print("changes vs", prevs.get("asOf") if prevs else "nothing (first run)", "|", sum(len(g[1]) for g in chg_groups) + len(chg_quads), "items")
 
+# ---------------------------------------------------------------- shares outstanding (market cap), cached for 30 days
+import time as _t
+from concurrent.futures import ThreadPoolExecutor
+_SHP = f"{OUT}/shares.json"
+try: _SH = json.load(open(_SHP))
+except Exception: _SH = {}
+_now = _t.time()
+def _get_sh(s):
+    try:
+        v = yf.Ticker(s + ".NS").fast_info.get("shares")
+        return s, (float(v) if v and v == v and v > 0 else None)
+    except Exception:
+        return s, None
+_todo = [s for s in frames if s not in _SH or _now - _SH[s][1] > 30 * 86400]
+_t0 = _t.time(); _got = 0
+for _i in range(0, len(_todo), 120):
+    if _t.time() - _t0 > 900: break                      # 15 minute budget; the rest continues on the next run
+    with ThreadPoolExecutor(12) as ex:
+        for s, v in ex.map(_get_sh, _todo[_i:_i + 120]):
+            if v: _SH[s] = [v, _now]; _got += 1
+json.dump(_SH, open(_SHP, "w"), separators=(",", ":"))
+SHR = {s: v[0] for s, v in _SH.items()}
+print("shares known:", len(SHR), "| fetched now:", _got, "| pending:", len(_todo) - _got)
+for _r in rows:
+    _s = SHR.get(_r["symbol"])
+    if _s: _r["mcap"] = round(_s * _r["price"] / 1e7)
+
 # ---------------------------------------------------------------- gap-ups and recent IPOs (screener screens)
 gaps = []
 for s_, df in frames.items():
@@ -663,7 +690,8 @@ for s_, df in frames.items():
     for i in range(1, len(tail)):
         if c_[i - 1] > 0 and o_[i] / c_[i - 1] - 1 >= 0.03 and (len(df) - 130 + i) > 5:
             gaps.append(dict(symbol=s_, date=tail.index[i].strftime("%Y-%m-%d"), open=round(float(o_[i]), 2),
-                             prevClose=round(float(c_[i - 1]), 2), close=round(float(c_[i]), 2)))
+                             prevClose=round(float(c_[i - 1]), 2), close=round(float(c_[i]), 2),
+                             **({"marketCapCr": round(SHR[s_] * float(c_[i - 1]) / 1e7)} if s_ in SHR else {})))
 ipos = []
 cut = latest - pd.Timedelta(days=366)
 for s_, df in frames.items():
@@ -688,15 +716,16 @@ print("gap records:", len(gaps), "| recent IPOs:", len(ipos))
 try:
     _me = C.resample("ME").last()
     _lastd = C.groupby(C.index.to_period("M")).apply(lambda x: x.index[-1])
-    _mret = _me.pct_change(fill_method=None) * 100
+    _mret = _me.pct_change(fill_method=None) * 100; _pm = _me.shift(1)
     _elig = [s for s in C.columns if s in fe and fe[s]["turnover"] >= 1]
     monthly = {"asOf": C.index[-1].strftime("%Y-%m-%d"), "months": [], "data": {}}
     for ts in _mret.index[1:]:
         key = ts.strftime("%Y-%m"); col = _mret.loc[ts, _elig].dropna()
         if len(col) < 50: continue
-        top = col.sort_values(ascending=False).head(100)
+        top = col.sort_values(ascending=False).head(250)
         monthly["months"].append(key)
-        monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(fe[s]["turnover"]), 1)] for s, v in top.items()]
+        monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(fe[s]["turnover"]), 1),
+                                 (round(SHR[s] * float(_pm.loc[ts, s]) / 1e7) if s in SHR and _pm.loc[ts, s] == _pm.loc[ts, s] else None)] for s, v in top.items()]
     json.dump(monthly, open(f"{OUT}/monthly.json", "w"), separators=(",", ":"), allow_nan=False)
     print("monthly months:", len(monthly["months"]))
 except Exception as _e:
