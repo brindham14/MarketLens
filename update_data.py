@@ -727,15 +727,17 @@ try:
     _me = C.resample("ME").last()
     _lastd = C.groupby(C.index.to_period("M")).apply(lambda x: x.index[-1])
     _mret = _me.pct_change(fill_method=None) * 100; _pm = _me.shift(1)
-    _elig = [s for s in C.columns if s in fe and fe[s]["turnover"] >= 1]
+    _V = pd.DataFrame({s: frames[s].Volume for s in C.columns if s in frames}).reindex(C.index)
+    _TV = ((C[_V.columns] * _V).rolling(20, min_periods=10).mean() / 1e7).resample("ME").last().shift(1)   # traded value at the start of each month
+    _elig = [s for s in C.columns if s in fe and s in _V.columns]
     monthly = {"asOf": C.index[-1].strftime("%Y-%m-%d"), "months": [], "data": {}}
     for ts in _mret.index[1:]:
         key = ts.strftime("%Y-%m"); col = _mret.loc[ts, _elig].dropna()
         if len(col) < 50: continue
-        col = col[[s for s in col.index if key not in SPLIT_M.get(s, ()) ]]
+        col = col[[s for s in col.index if key not in SPLIT_M.get(s, ()) and _TV.loc[ts, s] == _TV.loc[ts, s] and _TV.loc[ts, s] >= 0.5]]
         top = col.sort_values(ascending=False).head(250)
         monthly["months"].append(key)
-        monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(fe[s]["turnover"]), 1),
+        monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(_TV.loc[ts, s]), 1) if _TV.loc[ts, s] == _TV.loc[ts, s] else 0,
                                  (round(SHR[s] * float(_pm.loc[ts, s]) / 1e7) if s in SHR and _pm.loc[ts, s] == _pm.loc[ts, s] else None)] for s, v in top.items()]
     json.dump(monthly, open(f"{OUT}/monthly.json", "w"), separators=(",", ":"), allow_nan=False)
     print("monthly months:", len(monthly["months"]))
