@@ -3044,13 +3044,45 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px"><div><div class="meta" style="font-weight:600;letter-spacing:.08em">CLIMBERS</div>${up.map(row).join("")||'<span class="meta">No climbers.</span>'}</div><div><div class="meta" style="font-weight:600;letter-spacing:.08em">FALLERS</div>${dn.map(row).join("")||'<span class="meta">No fallers.</span>'}</div></div>`;
   box.querySelectorAll("[data-mm]").forEach(b=>b.onclick=()=>{const [g,k]=b.dataset.mm.split(":");M[g]=k;mlRenderMoney()});
  };
+
+ const gQ=s=>(s.bi||0)>=0?((s.rsd||0)>=0?"Leading":"Weakening"):((s.rsd||0)>=0?"Improving":"Lagging");
+ window.mlCloseGroup=function(){const g=$("grpLayout");if(g)g.remove();const L=document.querySelector("#sectorPage .rotation-layout");if(L)L.style.display=""};
+ window.mlOpenGroup=function(name,kind){
+  const S=window.__mlSectors;if(!S)return;
+  const src=kind==="Theme"?S.themes:kind==="Industry"?S.industries:S.sectors,g=(src||[]).find(x=>x.name===name);if(!g)return;
+  const set=new Set(g.members||[]),rows=stocks.filter(s=>set.has(s.symbol)).map(s=>({s,q:gQ(s)})).sort((a,b)=>b.s.rs-a.s.rs);
+  const L=document.querySelector("#sectorPage .rotation-layout");mlCloseGroup();L.style.display="none";
+  const box=document.createElement("div");box.className="rotation-layout";box.id="grpLayout";L.parentNode.insertBefore(box,L);
+  const st={f:"All"},syms=rows.map(r=>r.s.symbol);
+  const draw=()=>{
+   const list=rows.filter(r=>st.f==="All"||r.q===st.f);
+   box.innerHTML=`<div class="panel rotation-list"><div style="padding:10px"><div style="display:flex;gap:10px;align-items:center"><button class="smallbtn" id="grpBack">← Back</button><div><b style="font-size:15px">${rEsc(name)}</b><div class="meta">${kind} · ${g.quad} · median RS ${g.rs} · ${rows.length} liquid stocks</div></div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="smallbtn" id="grpAdd">★ Add all ${rows.length} to watchlist</button><button class="smallbtn" id="grpTV">Copy to TradingView</button></div></div>
+    <div class="rotation-table-wrap"><table class="stocktable rotation-table"><thead><tr><th style="text-align:left">Stock</th><th>Quadrant</th><th>RS</th></tr></thead><tbody>${list.map(r=>`<tr data-gsym="${rEsc(r.s.symbol)}" style="cursor:pointer"><td style="text-align:left"><b>${rEsc(r.s.symbol)}</b><div class="meta">${rEsc(r.s.name||"")}</div></td><td><span class="dot" style="background:${rCol[r.q]}"></span> ${r.q}</td><td><span class="rsbadge ${r.s.rs<60?"low":r.s.rs<80?"mid":""}">${r.s.rs}</span></td></tr>`).join("")}</tbody></table></div></div>
+    <div class="panel rotation-chart-panel"><div class="panelhead"><span>${rEsc(name)} · constituents</span></div>
+    <div class="rotation-controls">${["All","Leading","Improving","Weakening","Lagging"].map(k=>`<button class="smallbtn" data-gf="${k}" style="${st.f===k?"background:var(--ink);color:#fff":""}">${k}</button>`).join(" ")}</div>
+    <div id="grpPlot" class="rotation-plot"></div><div class="meta" style="text-align:center;margin-top:7px">X: excess return vs Nifty 500, 3 months (%) · Y: RS change over the last month</div></div>`;
+   const w=560,h=350,l=34,r_=12,t=22,b=25,pw=w-l-r_,ph=h-t-b,mx=l+pw/2,my=t+ph/2,xm=Math.max(8,...rows.map(r=>Math.abs(r.s.bi||0)))*1.1,ym=Math.max(5,...rows.map(r=>Math.abs(r.s.rsd||0)))*1.1;
+   let sv=`<svg viewBox="0 0 ${w} ${h}"><rect x="${l}" y="${t}" width="${pw/2}" height="${ph/2}" fill="#e6edf4"/><rect x="${mx}" y="${t}" width="${pw/2}" height="${ph/2}" fill="#e0ede1"/><rect x="${l}" y="${my}" width="${pw/2}" height="${ph/2}" fill="#f5e7e2"/><rect x="${mx}" y="${my}" width="${pw/2}" height="${ph/2}" fill="#f7f0e2"/><text x="${l+6}" y="${t+11}" font-size="9" fill="#68766c">IMPROVING</text><text x="${w-r_-4}" y="${t+11}" text-anchor="end" font-size="9" fill="#68766c">LEADING</text><text x="${l+6}" y="${h-b-4}" font-size="9" fill="#68766c">LAGGING</text><text x="${w-r_-4}" y="${h-b-4}" text-anchor="end" font-size="9" fill="#68766c">WEAKENING</text>`;
+   const pts=list.map(r=>({r,x:Math.max(l+4,Math.min(w-r_-4,mx+(r.s.bi||0)/xm*pw/2)),y:Math.max(t+6,Math.min(h-b-4,my-(r.s.rsd||0)/ym*ph/2))}));
+   pts.forEach(P=>{sv+=`<circle cx="${P.x}" cy="${P.y}" r="4" fill="${rCol[P.r.q]}" opacity=".85"><title>${rEsc(P.r.s.symbol)} · RS ${P.r.s.rs} · ${P.r.q}</title></circle>`});
+   const placed=[];pts.slice().sort((a,c)=>c.r.s.rs-a.r.s.rs).slice(0,12).forEach(P=>{const nm=P.r.s.symbol,wd=nm.length*4.4,bx={x:P.x+6,y:P.y-8,w:wd,h:9};if(bx.x+bx.w>w-r_||placed.some(q=>bx.x<q.x+q.w&&q.x<bx.x+bx.w&&bx.y<q.y+q.h&&q.y<bx.y+bx.h))return;placed.push(bx);sv+=`<text x="${bx.x}" y="${P.y+1}" font-size="8" fill="#536157">${rEsc(nm)}</text>`});
+   $("grpPlot").innerHTML=sv+"</svg>";
+   $("grpBack").onclick=mlCloseGroup;
+   $("grpAdd").onclick=e=>{syms.forEach(x=>watchlist.add(x));e.target.textContent="Added ✓"};
+   $("grpTV").onclick=e=>{const t=syms.map(x=>"NSE:"+x).join(",");try{navigator.clipboard.writeText(t)}catch(_){}e.target.textContent="Copied ✓"};
+   box.querySelectorAll("[data-gf]").forEach(bn=>bn.onclick=()=>{st.f=bn.dataset.gf;draw()});
+   box.querySelectorAll("[data-gsym]").forEach(tr=>tr.onclick=()=>{selected=tr.dataset.gsym;document.querySelector('[data-tab="workspace"]').click();if(typeof renderAll==="function")renderAll()});
+  };
+  draw();box.scrollIntoView({block:"start"});
+ };
  window.mlRenderRealRotation=function(){
   const S=window.__mlSectors,u=document.querySelector(".rotation-tabs button.active")?.dataset.universe||"All",items=mlRotItems(u);
   const tabs=document.querySelectorAll(".rotation-tabs button");tabs.forEach(b=>{const k=b.dataset.universe;b.textContent=k==="All"?`All (${S.sectors.length+S.themes.length})`:k==="Sectors"?`Sectors (${S.sectors.length})`:`Themes (${S.themes.length})`});
   $("rotationTableTitle").textContent="Sector & theme (median stock)";
   if(window.__mlChanges)mlRenderChanges();else document.querySelectorAll(".changed-head,#changedPanel").forEach(e=>e.style.display="none");   /* no real changes file yet: hide the sample box */
   $("rotationRows").innerHTML=items.slice().sort((a,b)=>b.rs-a.rs).map(r=>`<tr data-rotname="${rEsc(r.name)}"><td style="text-align:left"><span class="dot" style="background:${rCol[r.quad]}"></span>${rEsc(r.name)}${u==="All"?` <span class="meta">· ${r.kind.toLowerCase()}</span>`:""}</td><td><span class="rsbadge ${r.rs<60?"low":r.rs<80?"mid":""}">${Math.round(r.rs)}</span></td><td class="chg ${r.x1>=0?"up":"down"}">${rFmt(r.x1)}</td><td class="chg ${r.x3>=0?"up":"down"}">${rFmt(r.x3)}</td><td class="chg ${r.x6>=0?"up":"down"}">${rFmt(r.x6)}</td><td style="color:${r.rsd>=0?"#347e56":"#b34d4d"}">${r.rsd>=0?"▲":"▼"}</td></tr>`).join("");
-  $("rotationRows").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{document.querySelectorAll("#rotationRows tr").forEach(x=>x.style.background="");tr.style.background="#e8eddf";$("rotationChartTitle").textContent=tr.dataset.rotname+" rotation"});
+  $("rotationRows").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{const it=items.find(x=>x.name===tr.dataset.rotname);if(it)mlOpenGroup(it.name,it.kind)});
   mlRotPlot(u);
   mlRenderMoney();
   const ty=$("strongestType"),hasI=(S.industries||[]).length>0,want=hasI?3:2;if(ty.options.length!==want){const v=ty.value;ty.innerHTML="<option>Sector</option>"+(hasI?"<option>Industry</option>":"")+"<option>Theme</option>";if([...ty.options].some(o=>o.value===v))ty.value=v}
@@ -3060,7 +3092,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
   const cards=cardsAll.filter(c=>all||sq.includes(c.quad));
   const arr=p=>p>0?`<span style="color:#347e56">▲${p}</span>`:p<0?`<span style="color:#b34d4d">▼${-p}</span>`:`<span class="meta">0</span>`;
   $("strongestCards").innerHTML=cards.map(c=>`<article class="rotation-card ${c.quad.toLowerCase()}" data-card="${rEsc(c.name)}"><h3>#${c.rank} ${c.prev==null?"":arr(c.prev)} ${rEsc(c.name)}${c.small?" · small group":""}</h3><div class="scorebar"><span style="width:${c.score}%"></span></div><div class="card-metrics"><span>Score<br><b>${c.score}</b></span><span>Median RS<br><b>${c.rs}</b> <span style="color:${c.rsd>=0?"#347e56":"#b34d4d"}">${c.rsd>=0?"▲":"▼"}${Math.abs(c.rsd)}</span></span><span>Adv / Dec<br><b>${c.adv} / ${c.dec}</b><br><small class="meta">all ${c.aadv} / ${c.adec}</small></span></div><div class="tickers">${c.top.map(x=>`<span class="ticker-chip">${rEsc(x[0])} ${x[1]}</span>`).join("")}</div><div style="text-align:right;font-size:10px;color:var(--muted);margin-top:5px">${c.n} liquid of ${c.nall} · Stocks ▸</div></article>`).join("")||'<p class="meta">No groups in this quadrant.</p>';
-  $("strongestCards").querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>{const nm=el.dataset.card,c=cardsAll.find(x=>x.name===nm),sel=$("sector");if([...sel.options].some(o=>o.value===nm))sel.value=nm;const top=c&&c.top&&c.top[0]&&c.top[0][0];if(top&&typeof selected!=="undefined")selected=top;document.querySelector('[data-tab="workspace"]').click();if(typeof renderAll==="function")renderAll();if(typeof renderRows==="function")renderRows()});
+  $("strongestCards").querySelectorAll("[data-card]").forEach(el=>el.onclick=()=>mlOpenGroup(el.dataset.card,ty.value));
   $("strongestDescription").textContent=(ty.value==="Theme"?"Theme baskets cut across sectors (a stock can sit in several). ":ty.value==="Industry"?"NSE industries at the finest level (e.g. Cables - Electricals, Stockbroking) with enough liquid members. ":"NSE sectors. ")+"Only liquid stocks count (≥ ₹10 cr a day). Score = 60% median RS rating + 20% members above 50 DMA + 20% above 200 DMA, with small groups pulled toward neutral. Click a card to see its stocks. Quadrant: median 3-month return vs Nifty 500 and the RS change over the last month. Data as of "+(S.asOf||"")+".";
  };
  window.mlApplyRealScans=async function(){
