@@ -684,6 +684,24 @@ for s_, df in frames.items():
                      base=bool(rng_ <= 15 and fromhi >= -15 and last_ > ma50_), inScan=bool(val_ >= 10 and fromhi >= -25)))
 print("gap records:", len(gaps), "| recent IPOs:", len(ipos))
 
+# ---------------------------------------------------------------- monthly top 100 (calendar-month returns)
+try:
+    _me = C.resample("ME").last()
+    _lastd = C.groupby(C.index.to_period("M")).apply(lambda x: x.index[-1])
+    _mret = _me.pct_change(fill_method=None) * 100
+    _elig = [s for s in C.columns if s in TM and s in fe and fe[s]["turnover"] >= 5]
+    monthly = {"asOf": C.index[-1].strftime("%Y-%m-%d"), "months": [], "data": {}}
+    for ts in _mret.index[1:]:
+        key = ts.strftime("%Y-%m"); col = _mret.loc[ts, _elig].dropna()
+        if len(col) < 50: continue
+        top = col.sort_values(ascending=False).head(100)
+        monthly["months"].append(key)
+        monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(fe[s]["turnover"]), 1)] for s, v in top.items()]
+    json.dump(monthly, open(f"{OUT}/monthly.json", "w"), separators=(",", ":"), allow_nan=False)
+    print("monthly months:", len(monthly["months"]))
+except Exception as _e:
+    print("monthly skipped:", _e)
+
 # ---------------------------------------------------------------- write
 rows.sort(key=lambda r: (-r["rs"], -r["ret3"]))
 for i, r in enumerate(rows, 1): r["rank"] = i
