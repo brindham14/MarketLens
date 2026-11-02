@@ -133,7 +133,7 @@ info = {r.symbol.strip().upper(): r for r in meta.itertuples()}
 # ---------------------------------------------------------------- prices
 def fetch(batch, tick=lambda s: s + ".NS"):
     return yf.download([tick(s) for s in batch], start="2019-01-01", group_by="ticker",
-                       auto_adjust=False, threads=True, progress=False)
+                       auto_adjust=False, threads=True, progress=False, actions=True)
 
 frames = {}
 for i in range(0, len(syms), 50):
@@ -163,12 +163,22 @@ def fix_jumps(df, lo=0.62, hi=1.6, window=300):
     for k in ("Open", "High", "Low", "Close"): df[k] = df[k].values.astype(float) * adj
     if "Volume" in df: df["Volume"] = df["Volume"].values.astype(float) / adj
     return df, fixed
+SPLIT_M = {}                                     # stock -> months (YYYY-MM) with a split / bonus; the reference leaves those months out
+for _s, _df in frames.items():
+    try:
+        if "Stock Splits" in _df:
+            _ss = _df["Stock Splits"].fillna(0)
+            for _d in _ss.index[_ss.values > 0]: SPLIT_M.setdefault(_s, set()).add(_d.strftime("%Y-%m"))
+    except Exception: pass
 _fx = {}
 for _s in list(frames):
     try:
         frames[_s], _f = fix_jumps(frames[_s])
         if _f: _fx[_s] = _f
     except Exception: pass
+for _s, _l in _fx.items():
+    for _d, _v in _l: SPLIT_M.setdefault(_s, set()).add(_d[:7])
+print("stocks with a split/bonus month:", len(SPLIT_M))
 print("price jumps rolled back (unadjusted corporate actions):", len(_fx), dict(list(_fx.items())[:12]))
 if not frames: sys.exit("no data downloaded - nothing written")
 # safeguard: a partly failed download must not overwrite a good release (the old files stay published)
@@ -722,6 +732,7 @@ try:
     for ts in _mret.index[1:]:
         key = ts.strftime("%Y-%m"); col = _mret.loc[ts, _elig].dropna()
         if len(col) < 50: continue
+        col = col[[s for s in col.index if key not in SPLIT_M.get(s, ()) ]]
         top = col.sort_values(ascending=False).head(250)
         monthly["months"].append(key)
         monthly["data"][key] = [[s, round(float(v), 1), round(float(_me.loc[ts, s]), 2), round(float(fe[s]["turnover"]), 1),
