@@ -598,9 +598,16 @@ except Exception as e:
 
 # ---------------------------------------------------------------- what changed since the previous trading day
 asof_now = C.index[-1].strftime("%Y-%m-%d")
+def _bc(r):                      # base-cycle state, same rule as the Stock Screener's Base cycle screen
+    pv = r.get("pv")
+    if not pv or (r.get("pivotHeldSessions") or 0) < 5: return None
+    below50 = r.get("a50") == 0 or (r.get("p50") is not None and r["p50"] < 0)
+    if r["price"] <= pv * 0.92 or below50: return "failed"
+    if r["price"] > pv: return "broke" if r.get("breakoutToday") else "holding"
+    return "basing"
 def _st(r):
     tc = r.get("ttc")
-    return dict(rs=int(r["rs"]), st=r.get("stage"), t8=bool(isinstance(tc, list) and len(tc) == 7 and all(tc) and r["rs"] >= 70),
+    return dict(rs=int(r["rs"]), st=r.get("stage"), bc=_bc(r), t8=bool(isinstance(tc, list) and len(tc) == 7 and all(tc) and r["rs"] >= 70),
                 su=bool(r.get("vcp") == 1 or r.get("fl") == 1))
 cur_state = {r["symbol"]: _st(r) for r in rows}
 _lp, _pp = f"{OUT}/last_state.json", f"{OUT}/prev_state.json"
@@ -630,8 +637,12 @@ chg_groups = [
     ["Volume breakouts today", _pick(lambda r: r.get("b50") == 1 and (r.get("v") or 0) >= 2)],
     ["Pocket pivots today", _pick(lambda r: r.get("pp") == 1)],
     ["New setups (VCP, flag)", _pick(lambda r: _st(r)["su"] and "st" in PS.get(r["symbol"], {}) and not _p(r, "su"))]]
+_hasbc = lambda r: "bc" in PS.get(r["symbol"], {})
+bc_chg = {"broke": _pick(lambda r: _hasbc(r) and _p(r, "bc") == "basing" and _bc(r) in ("broke", "holding")),
+          "failed": _pick(lambda r: _hasbc(r) and _p(r, "bc") in ("basing", "broke", "holding") and _bc(r) == "failed"),
+          "bases": _pick(lambda r: _hasbc(r) and _p(r, "bc") is None and _bc(r) == "basing")}
 chg_quads = [f'{i["name"]}: {i["pq"]} → {i["quad"]}' for i in sector_rot if i.get("pq") and i["pq"] != i["quad"]]
-json.dump({"asOf": asof_now, "prevAsOf": prevs.get("asOf") if prevs else None, "quads": chg_quads, "groups": chg_groups},
+json.dump({"asOf": asof_now, "prevAsOf": prevs.get("asOf") if prevs else None, "quads": chg_quads, "groups": chg_groups, "bc": bc_chg},
           open(f"{OUT}/changes.json", "w"), separators=(",", ":"))
 print("changes vs", prevs.get("asOf") if prevs else "nothing (first run)", "|", sum(len(g[1]) for g in chg_groups) + len(chg_quads), "items")
 

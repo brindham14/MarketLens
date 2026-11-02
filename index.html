@@ -931,7 +931,8 @@ const popularScanDefs=[
  {id:"near",title:"Near breakout",count:6,desc:"Closing just below pivot, 10-week range ≤ 15%, above 50 DMA, 6+ trend checks · RS ≥ 80",symbols:["KTKBANK","KARURVYSYA","SOUTHBANK","AUROPHARMA","MAHABANK","RADICO"],tune:true},
  {id:"vcp",title:"VCP setups",count:1,desc:"Three shrinking 4-week pullbacks (latest ≤ 8%), volume drying up · RS ≥ 70",symbols:["NAVINFLUOR"]},
  {id:"cup",title:"Cup with handle",count:18,desc:"A 12–40% cup of 7+ weeks with a shallow handle in its upper half · RS ≥ 60",symbols:["HFCL","E2E","TDPOWERSYS","FINCABLES","EBGNG","AZAD","PGIL","DYNAMATECH","SUNFLAG"]},
- {id:"pocket",title:"Pocket pivots",count:28,desc:"Latest session: up day above the 50 DMA on volume above any down day of the last 10 · RS ≥ 70",symbols:["INDIAGLYCO","NIACL","KARURVYSYA","TIPSMUSIC","ABDL","PERSISTENT","BHEL","GAEL","SKYGOLD"]}
+ {id:"pocket",title:"Pocket pivots",count:28,desc:"Latest session: up day above the 50 DMA on volume above any down day of the last 10 · RS ≥ 70",symbols:["INDIAGLYCO","NIACL","KARURVYSYA","TIPSMUSIC","ABDL","PERSISTENT","BHEL","GAEL","SKYGOLD"]},
+ {id:"flags",title:"Flags",count:6,desc:"A 25%+ run-up into a recent high, then a tight pullback of 12% or less · RS ≥ 60",symbols:["PTCIL","GRWRHITECH","TECHM","SHYAMMETL","ALGOQUANT","HCLTECH"]}
 ];
 const popularScanNames={
  CYIENTDLM:"Cyient DLM Limited",NEOGEN:"NEOGEN CHEMICALS LTD.",PVRINOX:"PVR INOX Ltd.",CPPLUS:"Aditya Infotech Ltd.",PNBHOUSING:"PNB Housing Finance Ltd.",SKYGOLD:"SKY GOLD AND DIAMONDS Ltd.",
@@ -962,6 +963,14 @@ function renderPopularScans(){
   const rows=symbols.slice(0,10).map((sym,i)=>{const st=stocks.find(x=>x.symbol===sym);const score=st?st.rs:Math.max(70,98-i*3);const nm=st?st.name:(popularScanNames[sym]||sym);const isNew=autoNew.has(sym);return `<div class="ps-row ${isNew?'ps-added':''}"><span class="ps-rank">${i+1}</span><div style="min-width:0"><div class="ps-symbol">${sym} <button class="ps-star" data-ps-star="${sym}" title="Add ${sym} to watchlist">☆</button>${isNew?'<span class="ps-new-badge">New</span>':''}</div><div class="ps-name">${nm}</div></div><span class="ps-score">${score}</span><button class="ps-info" data-ps-info="${sym}" title="About ${sym}" aria-label="About ${sym}">i</button></div>`}).join("");
   return `<article class="popular-scan-card" data-scan-card="${d.id}"><div class="ps-head"><span style="color:#899084">⠿</span><h3>${d.title}</h3><span class="ps-count">${symbols.length}</span><button class="ps-info" data-remove-scan="${d.id}" title="Hide this scan" style="margin-left:auto;border:0;font-size:15px">×</button></div><div class="ps-desc">${d.desc}</div>${d.tune?'<div class="ps-tune"><label for="nearPivotPct"> % below pivot</label><input id="nearPivotPct" type="number" min="1" max="15" value="5"></div>':''}<div class="ps-note">Screen result, not investment advice</div><div class="ps-results">${rows}</div><div class="ps-actions"><button data-add-stock="${d.id}">＋ Add stock</button><button data-add-scan="${d.id}">Add all to my watchlist</button><button data-open-scan="${d.id}">${symbols.length>10?'See all '+symbols.length:'Open screen'} →</button></div></article>`;
  }).join("");
+ (function(){const C=window.__mlChanges&&window.__mlChanges.bc;let el=$("psBaseLine");
+  if(!C||!(C.broke.length+C.failed.length+C.bases.length)){if(el)el.remove();return}
+  if(!el){el=document.createElement("p");el.id="psBaseLine";el.className="meta";el.style.margin="2px 0 10px";root.parentNode.insertBefore(el,root)}
+  const lk=(k,n,t)=>`<a href="#" data-bcgo="${k}" style="text-decoration:underline;color:inherit">${n} ${t}</a>`;
+  el.innerHTML=`Base cycle since ${window.__mlChanges.prevAsOf||""}: ${lk("broke",C.broke.length,"broke out")} · ${lk("failed",C.failed.length,"failed")} · ${lk("basing",C.bases.length,"new bases")}`;
+  el.querySelectorAll("[data-bcgo]").forEach(a=>a.onclick=e=>{e.preventDefault();const st=a.dataset.bcgo;document.querySelector('[data-tab="screener"]').click();const sel=document.getElementById("scSel");if(sel){sel.value="basecycle";sel.dispatchEvent(new Event("change"))}
+   setTimeout(()=>{const b=document.querySelector('[data-bc-status="'+st+'"]');if(b)b.click()},80)});
+ })();
  root.querySelectorAll("[data-remove-scan]").forEach(b=>b.onclick=()=>{if(!confirm('Hide this scan card?'))return;const id=b.dataset.removeScan;if(popularScanDefs.some(d=>d.id===id)){b.closest('[data-scan-card]')?.remove()}else{custom=custom.filter(d=>d.id!==id);localStorage.setItem(customKey,JSON.stringify(custom));renderPopularScans()}});
  root.querySelectorAll("[data-add-stock]").forEach(b=>b.onclick=()=>{const d=defs.find(x=>x.id===b.dataset.addStock);if(!d)return;const raw=prompt('Enter stock symbol to add to '+d.title+' (example: CUPID):');if(!raw)return;const sym=raw.trim().toUpperCase().replace(/[^A-Z0-9&._-]/g,'');if(!sym)return;const current=added[d.id]||[];if([...(d.symbols||[]),...current].includes(sym)){alert(sym+' is already in this scan.');return}added[d.id]=[...current,sym];try{localStorage.setItem(addedKey,JSON.stringify(added))}catch{}renderPopularScans()});
  root.querySelectorAll("[data-ps-star]").forEach(b=>b.onclick=()=>{const sym=b.dataset.psStar;const wl=window.watchlist instanceof Set?window.watchlist:new Set();if(wl.has(sym)){wl.delete(sym);b.textContent='☆';b.title='Add '+sym+' to watchlist'}else{wl.add(sym);b.textContent='★';b.title='Remove '+sym+' from watchlist'}try{localStorage.setItem('marketlensWatchlist',JSON.stringify([...wl]))}catch{}});
@@ -2974,13 +2983,14 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  let nearVal=5;const NEAR=()=>nearVal;
  function compute(){
   const nz=window.scNz||(x=>x),rows=stocks.map(nz),by=(a,b)=>(b.rs-a.rs)||((b.mom||0)-(a.mom||0));
-  const set=(id,fn)=>{const d=popularScanDefs.find(x=>x.id===id);if(!d)return;const l=rows.filter(fn).sort(by).map(x=>x.symbol);d.symbols=l;d.count=l.length};
+  const set=(id,fn0)=>{const d=popularScanDefs.find(x=>x.id===id);if(!d)return;const fn=x=>(x.turnover==null||x.turnover>=10)&&fn0(x);const l=rows.filter(fn).sort(by).map(x=>x.symbol);d.symbols=l;d.count=l.length};
   set('darvas',x=>x.dvb===1&&x.rs>=70);
   set('inside',x=>x.dvi===1&&x.rs>=80);
   set('near',x=>x.pv!=null&&x.pv>=x.price&&((x.pv-x.price)/x.pv*100)<=NEAR()&&x.rng10!=null&&x.rng10<=15&&!!x.a50&&x.tr>=6&&x.rs>=80);
   set('vcp',x=>x.vcp===1&&x.rs>=70);
   set('cup',x=>x.cup===1&&x.rs>=60);
   set('pocket',x=>x.pp===1&&x.rs>=70);
+  set('flags',x=>x.fl===1&&x.rs>=60);
   return rows;
  }
  function relabel(asOf){
@@ -3050,7 +3060,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  window.mlOpenGroup=function(name,kind){
   const S=window.__mlSectors;if(!S)return;
   const src=kind==="Theme"?S.themes:kind==="Industry"?S.industries:S.sectors,g=(src||[]).find(x=>x.name===name);if(!g)return;
-  const set=new Set(g.members||[]),rows=stocks.filter(s=>set.has(s.symbol)).map(s=>({s,q:gQ(s)})).sort((a,b)=>b.s.rs-a.s.rs);
+  const set=new Set(g.members||[]),rows=stocks.filter(s=>set.has(s.symbol)).map(s=>({s,q:gQ(s)})).sort((a,b)=>(b.s.rs-a.s.rs)||((b.s.mom||0)-(a.s.mom||0)));
   const L=document.querySelector("#sectorPage .rotation-layout");mlCloseGroup();L.style.display="none";
   const box=document.createElement("div");box.className="rotation-layout";box.id="grpLayout";L.parentNode.insertBefore(box,L);
   const st={f:"All"},syms=rows.map(r=>r.s.symbol);
@@ -3058,7 +3068,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
    const list=rows.filter(r=>st.f==="All"||r.q===st.f);
    box.innerHTML=`<div class="panel rotation-list"><div style="padding:10px"><div style="display:flex;gap:10px;align-items:center"><button class="smallbtn" id="grpBack">← Back</button><div><b style="font-size:15px">${rEsc(name)}</b><div class="meta">${kind} · ${g.quad} · median RS ${g.rs} · ${rows.length} liquid stocks</div></div></div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="smallbtn" id="grpAdd">★ Add all ${rows.length} to watchlist</button><button class="smallbtn" id="grpTV">Copy to TradingView</button></div></div>
-    <div class="rotation-table-wrap"><table class="stocktable rotation-table"><thead><tr><th style="text-align:left">Stock</th><th>Quadrant</th><th>RS</th></tr></thead><tbody>${list.map(r=>`<tr data-gsym="${rEsc(r.s.symbol)}" style="cursor:pointer"><td style="text-align:left"><b>${rEsc(r.s.symbol)}</b><div class="meta">${rEsc(r.s.name||"")}</div></td><td><span class="dot" style="background:${rCol[r.q]}"></span> ${r.q}</td><td><span class="rsbadge ${r.s.rs<60?"low":r.s.rs<80?"mid":""}">${r.s.rs}</span></td></tr>`).join("")}</tbody></table></div></div>
+    <div class="rotation-table-wrap"><table class="stocktable rotation-table"><thead><tr><th style="text-align:left">Stock</th><th>Quadrant</th><th>RS</th></tr></thead><tbody>${list.map(r=>`<tr data-gsym="${rEsc(r.s.symbol)}" style="cursor:pointer"><td style="text-align:left"><b>${rEsc(r.s.symbol)}</b>${r.s.rn?` <span style="background:#3a6ea5;color:#fff;border-radius:4px;padding:1px 4px;font-size:9px;font-weight:700">R ${r.s.rn}d</span>`:""}<div class="meta">${rEsc(r.s.name||"")}</div></td><td><span class="dot" style="background:${rCol[r.q]}"></span> ${r.q}</td><td><span class="rsbadge ${r.s.rs<60?"low":r.s.rs<80?"mid":""}">${r.s.rs}</span></td></tr>`).join("")}</tbody></table></div></div>
     <div class="panel rotation-chart-panel"><div class="panelhead"><span>${rEsc(name)} · constituents</span></div>
     <div class="rotation-controls">${["All","Leading","Improving","Weakening","Lagging"].map(k=>`<button class="smallbtn" data-gf="${k}" style="${st.f===k?"background:var(--ink);color:#fff":""}">${k}</button>`).join(" ")}</div>
     <div id="grpPlot" class="rotation-plot"></div><div class="meta" style="text-align:center;margin-top:7px">X: excess return vs Nifty 500, 3 months (%) · Y: RS change over the last month</div></div>`;
