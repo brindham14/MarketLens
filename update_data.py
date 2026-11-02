@@ -520,9 +520,9 @@ def _idx_ret(n):
     try: return float(idx_close.iloc[-1] / idx_close.iloc[-1 - n] - 1) * 100
     except Exception: return 0.0
 IDX_R21, IDX_R126 = _idx_ret(21), _idx_ret(126)
-def group_metrics(name, mem, k0=5.5, kmin=5):
+def group_metrics(name, mem, k0=5.5, kmin=5, tm_only=False):
     allm = [by[s] for s in dict.fromkeys(mem) if s in by]
-    ms = [m for m in allm if liq(m)]
+    ms = [m for m in allm if liq(m) and (not tm_only or m.get("tm", 1) == 1)]       # sectors: only liquid Nifty Total Market members, like the reference
     if len(ms) < kmin: return None
     n = len(ms); med = float(np.median([m["rs"] for m in ms]))
     a50 = 100 * np.mean([m.get("a50") == 1 for m in ms]); a200 = 100 * np.mean([m.get("a200") == 1 for m in ms])
@@ -556,7 +556,7 @@ def rank_all(items, key):
 sec_groups = {}
 for r in rows:
     if r.get("sector"): sec_groups.setdefault(r["sector"], []).append(r["symbol"])
-sector_rot = rank_all([group_metrics(k, v) for k, v in sec_groups.items()], "S")
+sector_rot = rank_all([group_metrics(k, v, tm_only=True) for k, v in sec_groups.items()], "S")
 theme_rot = rank_all([group_metrics(k, v) for k, v in groups.items()], "T")
 ind_groups = {}
 if os.path.exists("industries.csv"):      # NSE industry of each stock (copied from the reference), used for the Industry level of Sector Rotation
@@ -571,10 +571,10 @@ print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes,", len(i
 # (same score formula, same liquid members as today, RS and 50/200-day averages as they were on that day)
 MOVE_K = {"1D": 1, "1W": 5, "3W": 15, "6W": 30}
 _SMA50, _SMA200 = C.rolling(50).mean(), C.rolling(200).mean()
-def _rank_then(grp, k, kmin=5):
+def _rank_then(grp, k, kmin=5, tm_only=False):
     rs_k = rs_at(k); a50 = (C.iloc[-1 - k] > _SMA50.iloc[-1 - k]); a200 = (C.iloc[-1 - k] > _SMA200.iloc[-1 - k]); res = []
     for name, mem in grp.items():
-        ms = [s for s in dict.fromkeys(mem) if s in by and liq(by[s]) and s in rs_k.index and rs_k[s] == rs_k[s]]
+        ms = [s for s in dict.fromkeys(mem) if s in by and liq(by[s]) and (not tm_only or by[s].get("tm", 1) == 1) and s in rs_k.index and rs_k[s] == rs_k[s]]
         if len(ms) < kmin: continue
         n = len(ms); med = float(np.median([rs_k[s] for s in ms]))
         p50 = 100 * np.mean([bool(a50.get(s, False)) for s in ms]); p200 = 100 * np.mean([bool(a200.get(s, False)) for s in ms])
@@ -586,7 +586,7 @@ try:
     for lab, k in MOVE_K.items():
         MOVE_SINCE[lab] = C.index[-1 - k].strftime("%Y-%m-%d")
         for items, grp in ((sector_rot, sec_groups), (theme_rot, groups), (ind_rot, ind_groups)):
-            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5)
+            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5, tm_only=grp is sec_groups)
             for i in items: i.setdefault("pr", {})[lab] = rk.get(i["name"])
     for items in (sector_rot, theme_rot, ind_rot):
         for i in items:
