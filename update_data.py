@@ -697,8 +697,11 @@ gaps = []
 for s_, df in frames.items():
     tail = df.tail(130)
     o_, c_ = tail.Open.values, tail.Close.values
+    _tv = float(np.mean(c_[-20:] * tail.Volume.fillna(0).values[-20:]) / 1e7)
+    if s_ in SHR and SHR[s_] * float(c_[-1]) / 1e7 < 300: continue      # screen is for market cap 300 cr and above
+    if s_ not in SHR and _tv < 5: continue
     for i in range(1, len(tail)):
-        if c_[i - 1] > 0 and o_[i] / c_[i - 1] - 1 >= 0.03 and (len(df) - 130 + i) > 5:
+        if c_[i - 1] > 0 and o_[i] / c_[i - 1] - 1 >= 0.02 and (len(df) - 130 + i) > 5:
             gaps.append(dict(symbol=s_, date=tail.index[i].strftime("%Y-%m-%d"), open=round(float(o_[i]), 2),
                              prevClose=round(float(c_[i - 1]), 2), close=round(float(c_[i]), 2),
                              **({"marketCapCr": round(SHR[s_] * float(c_[i - 1]) / 1e7)} if s_ in SHR else {})))
