@@ -322,6 +322,12 @@ def pattern_fields(o, h, l, c, v):
     f["a50"] = int(price > ma50) if ma50 == ma50 else 0
     f["a200"] = int(price > ma200) if ma200 == ma200 else 0
     f["p50"] = round((price / ma50 - 1) * 100, 1) if ma50 == ma50 else None
+    f["p200"] = round((price / ma200 - 1) * 100, 1) if ma200 == ma200 else None
+    for _n in (21, 50):                                                     # % above the exponential averages (used by "Groups above an average")
+        if n >= _n * 3:
+            _a = 2.0 / (_n + 1); _e = float(c[-_n * 3])
+            for _x in c[-_n * 3 + 1:]: _e = _a * float(_x) + (1 - _a) * _e
+            f["e%d" % _n] = round((price / _e - 1) * 100, 1)
     # volume
     avg50 = np.mean(v[-51:-1]) if n > 51 else np.nan
     f["v"] = round(float(v[-1] / avg50), 2) if avg50 and avg50 == avg50 else None
@@ -443,6 +449,7 @@ for s, df in frames.items():
     f = dict(symbol=s, name=(info[s].name if info[s].name else s), sector=info[s].sector or "",
              price=round(float(price), 2), change=round(float((price / prev - 1) * 100), 2), stage=stage, ns2=ns2,
              fromHigh=round(float((price / np.max(h[-252:]) - 1) * 100), 1),
+             fromAth=round(float((price / np.max(h) - 1) * 100), 1),
              nh=int(len(h) > 252 and h[-1] >= np.max(h[-253:-1])),            # hit a new 52-week high today (intraday high)
              turnover=round(float(np.mean(c[-20:] * v[-20:]) / 1e7), 1))
     if BAND.get(s): f["pb"] = BAND[s]
@@ -498,6 +505,7 @@ for s, f in fe.items():
     r = C[s]
     rs1m = RS_1M.get(s, np.nan); rs1m = rs if rs1m != rs1m else rs1m
     f["rs"] = int(rs); f["rsd"] = int(rs - rs1m)
+    _rw = RS_HIST[5].get(s, np.nan); f["rsw"] = 0 if _rw != _rw else int(rs - _rw)       # RS change over the last week (5 sessions)
     f["ret3"] = safe(round(float(R63[s].iloc[-1]) * 100, 1)); f["ret6"] = safe(round(float(R126[s].iloc[-1]) * 100, 1))
     f["ret1"] = safe(round(float(R252[s].iloc[-1]) * 100, 1)); f["r1"] = safe(round(float(R21[s].iloc[-1]) * 100, 1))
     f["ret1w"] = safe(round(float(C[s].iloc[-1] / C[s].iloc[-6] - 1) * 100, 1))
