@@ -1879,7 +1879,7 @@ $('shCp').onclick=async()=>{try{await navigator.clipboard.write([new ClipboardIt
 const msg=()=>encodeURIComponent(current().symbol+' chart · RS '+current().rs+' · Market Strength Scanner');
 $('shX').onclick=()=>window.open('https://twitter.com/intent/tweet?text='+msg(),'_blank');$('shWa').onclick=()=>window.open('https://wa.me/?text='+msg(),'_blank');
 /* ---------- optional: load full NSE summary produced by build_data.py ---------- */
-fetch('data/summary.json').then(r=>r.ok?r.json():0).then(j=>{if(j&&j.length){window.__mlRealData=true;const _nc=(()=>{try{return localStorage.getItem('mlNoCirc')!=='0'}catch(e){return true}})();window.__mlNoCirc=_nc;if(_nc){const _f=j.filter(s=>!(s.pb===2||s.pb===5));if(_f.length>100)j=_f}stocks.splice(0,stocks.length,...j);setTimeout(()=>{const b0=document.getElementById('liveSheetBtn');if(!b0||document.getElementById('noCircBtn'))return;const b=document.createElement('button');b.className='pillbtn';b.id='noCircBtn';b.textContent=(_nc?'✓ ':'')+'No 2/5% circuit';b.title='Hide stocks that trade in a 2% or 5% circuit band (needs the NSE price-band list in the daily data)';b.onclick=()=>{try{localStorage.setItem('mlNoCirc',_nc?'0':'1')}catch(e){}location.reload()};b0.parentNode.insertBefore(b,b0)},1500);selected=stocks[0].symbol;renderAll();window.scRender&&scRender();window.mlApplyRealScans&&mlApplyRealScans()}else throw 0}).catch(()=>{const u=document.getElementById('updated');if(u)u.textContent='⚠ Could not load data/summary.json — showing DEMO data, not real market data. Check that the daily update has run.'});
+fetch('data/summary.json',{cache:'no-store'}).then(r=>r.ok?r.json():0).then(j=>{if(j&&j.length){window.__mlRealData=true;const _nc=(()=>{try{return localStorage.getItem('mlNoCirc')!=='0'}catch(e){return true}})();window.__mlNoCirc=_nc;if(_nc){const _f=j.filter(s=>!(s.pb===2||s.pb===5));if(_f.length>100)j=_f}stocks.splice(0,stocks.length,...j);setTimeout(()=>{const b0=document.getElementById('liveSheetBtn');if(!b0||document.getElementById('noCircBtn'))return;const b=document.createElement('button');b.className='pillbtn';b.id='noCircBtn';b.textContent=(_nc?'✓ ':'')+'No 2/5% circuit';b.title='Hide stocks that trade in a 2% or 5% circuit band (needs the NSE price-band list in the daily data)';b.onclick=()=>{try{localStorage.setItem('mlNoCirc',_nc?'0':'1')}catch(e){}location.reload()};b0.parentNode.insertBefore(b,b0)},1500);selected=stocks[0].symbol;renderAll();window.scRender&&scRender();window.mlApplyRealScans&&mlApplyRealScans()}else throw 0}).catch(()=>{const u=document.getElementById('updated');if(u)u.textContent='⚠ Could not load data/summary.json — showing DEMO data, not real market data. Check that the daily update has run.'});
 fetch('data/monthly.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.MONTHLY=j}).catch(()=>{});
 fetch('data/gaps.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.GAP_UP_HISTORY=j}).catch(()=>{});
 fetch('data/ipos.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.IPO_LIST=j}).catch(()=>{});
@@ -2258,6 +2258,36 @@ g('scMore').style.display=a.length>lim?'':'none';g('scMore').textContent=`Show m
 window.scRender=render;window.scNz=nz;
 g('scSel').onchange=()=>{key=g('scSel').value;const sc=cur();sk=sc.sort[0];dir=sc.sort[1];lim=50;sec.querySelectorAll('[data-refscreen]').forEach(b=>b.classList.toggle('active',b.dataset.refscreen===key));if(key==='vcp'){g('scRsMin').value='50';renderVcpColumnChoices()}if(key==='tw'){g('scRsMin').value='50';renderTightWeeksColumnChoices()}drawParams();render()};
 (g('scBaseCycleQuick')||{}).onclick=()=>{g('scSel').value='basecycle';g('scSel').dispatchEvent(new Event('change'))};
+/* Screen picker: search box, Most used / Recent chips and a grouped list, like the reference */
+(function(){const sel=g('scSel');if(!sel||g('scMenuBtn'))return;
+ const NEW=new Set(['gapup','top30m','nearhigh13','grpnear','grpimp','grpath','grpavg']),DEF_USED=['darvas','vcp','near','my','basecycle','cup'];
+ const ls={get(k){try{return JSON.parse(localStorage.getItem(k)||'null')}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+ const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+ const name=id=>(SCR.find(x=>x.id===id)||{}).n||id;
+ const btn=document.createElement('button');btn.type='button';btn.id='scMenuBtn';btn.setAttribute('aria-haspopup','listbox');
+ btn.style.cssText='width:min(360px,100%);min-height:43px;text-align:left;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:10px 34px 10px 12px;color:var(--ink);font-weight:700;position:relative;cursor:pointer';
+ sel.parentNode.insertBefore(btn,sel);sel.style.display='none';
+ const pan=document.createElement('div');pan.id='scMenuPanel';pan.style.cssText='display:none;position:absolute;left:0;right:0;top:100%;z-index:60;margin-top:6px;padding:12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 32px #0006;max-height:72vh;overflow:auto;color:var(--ink)';
+ const wrap=document.createElement('div');wrap.style.cssText='position:relative;display:inline-block;width:min(360px,100%)';
+ btn.parentNode.insertBefore(wrap,btn);wrap.appendChild(btn);wrap.appendChild(pan);
+ const label=()=>{btn.innerHTML=esc(name(sel.value))+'<span style="position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:.7">▾</span>'};label();
+ let last=sel.value;setInterval(()=>{if(sel.value!==last){last=sel.value;label()}},400);
+ const chip=id=>`<button type="button" data-pick="${id}" style="margin:0 6px 6px 0;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--panel2,#ffffff0d);color:inherit;cursor:pointer">${esc(name(id))}</button>`;
+ function build(q){q=(q||'').trim().toLowerCase();const use=ls.get('mlScrUse')||{},rec=(ls.get('mlScrRecent')||[]).filter(id=>SCR.some(x=>x.id===id));
+  let used=Object.keys(use).filter(id=>SCR.some(x=>x.id===id)).sort((a,b)=>use[b]-use[a]);DEF_USED.forEach(id=>{if(used.length<6&&!used.includes(id)&&SCR.some(x=>x.id===id))used.push(id)});used=used.slice(0,6);
+  const groups=[...new Set(SCR.map(x=>x.g))];
+  const match=x=>!q||(x.n+' '+x.g+' '+(x.d||'')).toLowerCase().includes(q);
+  const cols=groups.map(gr=>{const items=SCR.filter(x=>x.g===gr&&match(x));return items.length?`<div style="min-width:0"><div style="font-size:11px;letter-spacing:.06em;text-transform:uppercase;opacity:.7;margin:6px 0 6px">${esc(gr)}</div>${items.map(x=>`<button type="button" data-pick="${x.id}" style="display:block;width:100%;text-align:left;padding:7px 8px;border:0;border-radius:7px;background:${x.id===sel.value?'#ffffff14':'transparent'};color:inherit;cursor:pointer">${esc(x.n)}${NEW.has(x.id)?' <span style="font-size:10px;background:#267b54;color:#fff;border-radius:5px;padding:1px 5px;margin-left:4px">New</span>':''}</button>`).join('')}</div>`:''}).join('');
+  pan.innerHTML=`<input id="scMenuQ" type="search" placeholder="Search screens: breakout, VCP, 52-week, sector…" value="${esc(q)}" autocomplete="off" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:inherit;margin-bottom:10px">`+(q?'':`<div style="margin-bottom:6px"><span style="font-size:11px;opacity:.7;margin-right:8px">MOST USED</span>${used.map(chip).join('')}</div>${rec.length?`<div style="margin-bottom:8px"><span style="font-size:11px;opacity:.7;margin-right:8px">RECENT</span>${rec.slice(0,5).map(chip).join('')}</div>`:''}`)+`<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">${cols||'<p class="meta">No screens match.</p>'}</div>`;
+  const qi=pan.querySelector('#scMenuQ');qi.oninput=()=>{const p=qi.selectionStart;build(qi.value);const n=pan.querySelector('#scMenuQ');n.focus();try{n.setSelectionRange(p,p)}catch(e){}};
+  pan.querySelectorAll('[data-pick]').forEach(b=>b.onclick=()=>pick(b.dataset.pick))}
+ function pick(id){const use=ls.get('mlScrUse')||{};use[id]=(use[id]||0)+1;ls.set('mlScrUse',use);ls.set('mlScrRecent',[id,...(ls.get('mlScrRecent')||[]).filter(x=>x!==id)].slice(0,8));
+  sel.value=id;sel.dispatchEvent(new Event('change'));last=sel.value;label();close()}
+ const open=()=>{build('');pan.style.display='block';const q=pan.querySelector('#scMenuQ');if(q&&!/Mobi|Android/i.test(navigator.userAgent))q.focus()},close=()=>{pan.style.display='none'};
+ btn.onclick=()=>pan.style.display==='block'?close():open();
+ document.addEventListener('click',e=>{if(pan.style.display==='block'&&!wrap.contains(e.target))close()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')close()})})();
+
 /* Momentum ranking controls */
 window.__momView='list';
 const momWeightPairs=[['mw12','mw12n','w12'],['mw6','mw6n','w6'],['mw3','mw3n','w3'],['mw1','mw1n','w1']];
