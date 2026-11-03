@@ -372,6 +372,12 @@ def flag_cup_my(h, l, c):
     return f
 
 # ---------------------------------------------------------------- per-stock features
+# Yahoo publishes a new session for only a few stocks first: use the newest date that most stocks have, and cut the rest
+_lasts = pd.Series([df.index[-1] for df in frames.values()]).sort_values()
+_cut = _lasts.iloc[int(len(_lasts) * 0.4)]                    # 60% of the stocks have data up to this date or later
+if _cut < _lasts.iloc[-1]:
+    print("session", _lasts.iloc[-1].date(), "is only partly published; using", _cut.date())
+    frames = {s: df[df.index <= _cut] for s, df in frames.items()}
 latest = max(df.index[-1] for df in frames.values())
 try:
     _pa = json.load(open(f"{OUT}/themes.json")).get("asOf")
