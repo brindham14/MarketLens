@@ -163,6 +163,13 @@ for i in range(0, len(syms), 50):
             if len(df) >= 30: frames[s] = df
         except Exception: pass
 print(f"{len(frames)}/{len(syms)} symbols downloaded")
+# a session that is still being traded (run during market hours) is incomplete: never keep today's partial bar
+_now_ist = dt.datetime.utcnow() + dt.timedelta(hours=5, minutes=30)
+if _now_ist.weekday() < 5 and _now_ist.hour * 60 + _now_ist.minute < 16 * 60 + 15:
+    _today = pd.Timestamp(_now_ist.date())
+    frames = {s: df[df.index.normalize() < _today] for s, df in frames.items()}
+    frames = {s: df for s, df in frames.items() if len(df) >= 30}
+    print("market still open (IST):", _now_ist.strftime("%H:%M"), "- today's partial bar removed")
 
 # Yahoo sometimes misses a bonus / split / demerger: the price then "falls" 40-80% in one day, which NSE price bands do not allow.
 # Roll such a day back so the history is continuous (otherwise RS and the charts show a fake crash).
