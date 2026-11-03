@@ -138,10 +138,13 @@ def fetch(batch, tick=lambda s: s + ".NS"):
 frames = {}
 for i in range(0, len(syms), 50):
     b = syms[i:i + 50]
-    try:
-        raw = fetch(b)
-    except Exception as e:
-        print("batch failed", b[:3], e); continue
+    raw = None
+    for _try in range(2):                                   # one retry per batch
+        try:
+            raw = fetch(b); break
+        except Exception as e:
+            print("batch failed", b[:3], e)
+    if raw is None: continue
     for s in b:
         try:
             df = raw[s + ".NS"].dropna(subset=["Open", "High", "Low", "Close"])
@@ -370,6 +373,12 @@ def flag_cup_my(h, l, c):
 
 # ---------------------------------------------------------------- per-stock features
 latest = max(df.index[-1] for df in frames.values())
+try:
+    _pa = json.load(open(f"{OUT}/themes.json")).get("asOf")
+    if _pa and latest.strftime("%Y-%m-%d") < _pa:
+        sys.exit(f"Yahoo returned data only up to {latest:%Y-%m-%d}, older than the published {_pa} - keeping the published data, nothing written")
+except (FileNotFoundError, ValueError):
+    pass
 fe, closes = {}, {}
 for s, df in frames.items():
     if len(df) < 150 or (latest - df.index[-1]).days > 7: continue        # need ~7 months of history (newer listings are scored on the periods they have), still trading
