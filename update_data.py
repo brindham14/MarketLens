@@ -170,6 +170,31 @@ if _now_ist.weekday() < 5 and _now_ist.hour * 60 + _now_ist.minute < 16 * 60 + 1
     frames = {s: df[df.index.normalize() < _today] for s, df in frames.items()}
     frames = {s: df for s, df in frames.items() if len(df) >= 30}
     print("market still open (IST):", _now_ist.strftime("%H:%M"), "- today's partial bar removed")
+# Yahoo is often a day late for most stocks: fill the missing sessions from NSE's own daily file (bhavcopy)
+try:
+    _base = pd.Series([df.index[-1] for df in frames.values()]).mode().iloc[0]
+    _end = pd.Timestamp(_now_ist.date()) if _now_ist.hour * 60 + _now_ist.minute >= 16 * 60 + 15 else pd.Timestamp(_now_ist.date()) - pd.Timedelta(days=1)
+    for _d in pd.bdate_range(_base + pd.Timedelta(days=1), _end):
+        try:
+            _b = get_csv(f"https://nsearchives.nseindia.com/products/content/sec_bhavdata_full_{_d:%d%m%Y}.csv")
+        except Exception as _e:
+            print("bhavcopy", _d.date(), "not available:", str(_e)[:60]); continue
+        _b.columns = [str(c).strip() for c in _b.columns]
+        _b["SYMBOL"] = _b["SYMBOL"].astype(str).str.strip().str.upper(); _b["SERIES"] = _b["SERIES"].astype(str).str.strip()
+        _b = _b[_b["SERIES"].isin(["EQ", "BE", "BZ", "SM", "ST"])].drop_duplicates("SYMBOL").set_index("SYMBOL")
+        for _c in ("OPEN_PRICE", "HIGH_PRICE", "LOW_PRICE", "CLOSE_PRICE", "TTL_TRD_QNTY"): _b[_c] = pd.to_numeric(_b[_c], errors="coerce")
+        _n = 0
+        for _s in list(frames):
+            _df = frames[_s]
+            if _s in _b.index and _df.index[-1] < _d:
+                _r = _b.loc[_s]
+                if not (_r.OPEN_PRICE > 0 and _r.HIGH_PRICE > 0 and _r.LOW_PRICE > 0 and _r.CLOSE_PRICE > 0): continue
+                _row = pd.DataFrame({"Open": [_r.OPEN_PRICE], "High": [_r.HIGH_PRICE], "Low": [_r.LOW_PRICE], "Close": [_r.CLOSE_PRICE],
+                                     "Adj Close": [_r.CLOSE_PRICE], "Volume": [_r.TTL_TRD_QNTY]}, index=[_d])
+                frames[_s] = pd.concat([_df, _row.reindex(columns=_df.columns)]); _n += 1
+        print("bhavcopy", _d.date(), "- sessions added for", _n, "stocks")
+except Exception as _e:
+    print("bhavcopy fill skipped:", _e)
 
 # Yahoo sometimes misses a bonus / split / demerger: the price then "falls" 40-80% in one day, which NSE price bands do not allow.
 # Roll such a day back so the history is continuous (otherwise RS and the charts show a fake crash).
@@ -400,7 +425,7 @@ if _cut < _lasts.iloc[-1]:
 latest = max(df.index[-1] for df in frames.values())
 try:
     _pa = json.load(open(f"{OUT}/themes.json")).get("asOf")
-    if _pa and latest.strftime("%Y-%m-%d") < _pa:
+    if _pa and _pa < _now_ist.strftime("%Y-%m-%d") and latest.strftime("%Y-%m-%d") < _pa:
         sys.exit(f"Yahoo returned data only up to {latest:%Y-%m-%d}, older than the published {_pa} - keeping the published data, nothing written")
 except (FileNotFoundError, ValueError):
     pass
