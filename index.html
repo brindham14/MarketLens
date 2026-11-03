@@ -1024,7 +1024,7 @@ function renderPopularScans(){
    if(s.breakoutToday===1||s.b50===1)tags.push('Breakout');
    if(pvv>0&&px<=pvv&&(pvv-px)/pvv<=.05&&Number(s.rng10)<=15&&s.a50)tags.push('Near breakout');
    if(s.pp===1)tags.push('Pocket pivot');if(s.vcp===1)tags.push('VCP');if(s.cup===1)tags.push('Cup &amp; handle');if(s.fl===1)tags.push('Flag');
-   if(s.dvb===1)tags.push('Darvas breakout');if(s.dvi===1)tags.push('Inside Darvas');if(s.my===1)tags.push('Multi-year breakout');
+   if(s.pb===2||s.pb===5||s.pb===10)tags.push(s.pb+'% circuit');if(s.dvb===1)tags.push('Darvas breakout');if(s.dvi===1)tags.push('Inside Darvas');if(s.my===1)tags.push('Multi-year breakout');
    if(has(s.fromHigh)&&Number(s.fromHigh)>=-3)tags.push('Near 52w high');}
   const setups=tags.length?tags.map(x=>'<span class="smallbtn">'+x+'</span>').join(' '):'<span class="meta">No setup today</span>';
   const note=real?'Ratings, trend checks and setups are calculated from end-of-day data. The price and 1-day change use the latest quote while the market is open.':'Sample values are illustrative until verified market-data feeds are connected.';
@@ -1879,7 +1879,7 @@ $('shCp').onclick=async()=>{try{await navigator.clipboard.write([new ClipboardIt
 const msg=()=>encodeURIComponent(current().symbol+' chart · RS '+current().rs+' · Market Strength Scanner');
 $('shX').onclick=()=>window.open('https://twitter.com/intent/tweet?text='+msg(),'_blank');$('shWa').onclick=()=>window.open('https://wa.me/?text='+msg(),'_blank');
 /* ---------- optional: load full NSE summary produced by build_data.py ---------- */
-fetch('data/summary.json').then(r=>r.ok?r.json():0).then(j=>{if(j&&j.length){window.__mlRealData=true;stocks.splice(0,stocks.length,...j);selected=stocks[0].symbol;renderAll();window.scRender&&scRender();window.mlApplyRealScans&&mlApplyRealScans()}else throw 0}).catch(()=>{const u=document.getElementById('updated');if(u)u.textContent='⚠ Could not load data/summary.json — showing DEMO data, not real market data. Check that the daily update has run.'});
+fetch('data/summary.json').then(r=>r.ok?r.json():0).then(j=>{if(j&&j.length){window.__mlRealData=true;const _nc=(()=>{try{return localStorage.getItem('mlNoCirc')!=='0'}catch(e){return true}})();window.__mlNoCirc=_nc;if(_nc){const _f=j.filter(s=>!(s.pb===2||s.pb===5));if(_f.length>100)j=_f}stocks.splice(0,stocks.length,...j);setTimeout(()=>{const b0=document.getElementById('liveSheetBtn');if(!b0||document.getElementById('noCircBtn'))return;const b=document.createElement('button');b.className='pillbtn';b.id='noCircBtn';b.textContent=(_nc?'✓ ':'')+'No 2/5% circuit';b.title='Hide stocks that trade in a 2% or 5% circuit band (needs the NSE price-band list in the daily data)';b.onclick=()=>{try{localStorage.setItem('mlNoCirc',_nc?'0':'1')}catch(e){}location.reload()};b0.parentNode.insertBefore(b,b0)},1500);selected=stocks[0].symbol;renderAll();window.scRender&&scRender();window.mlApplyRealScans&&mlApplyRealScans()}else throw 0}).catch(()=>{const u=document.getElementById('updated');if(u)u.textContent='⚠ Could not load data/summary.json — showing DEMO data, not real market data. Check that the daily update has run.'});
 fetch('data/monthly.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.MONTHLY=j}).catch(()=>{});
 fetch('data/gaps.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.GAP_UP_HISTORY=j}).catch(()=>{});
 fetch('data/ipos.json').then(r=>r.ok?r.json():0).then(j=>{if(j)window.IPO_LIST=j}).catch(()=>{});

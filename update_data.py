@@ -130,6 +130,18 @@ meta = pd.DataFrame([{k: v for k, v in r.items() if k != "ld"} for r in d.values
 syms = meta["symbol"].str.strip().str.upper().tolist()
 info = {r.symbol.strip().upper(): r for r in meta.itertuples()}
 
+# ---------------------------------------------------------------- circuit (price band) limits
+BAND = {}
+try:
+    _sl = get_csv("https://nsearchives.nseindia.com/content/equities/sec_list.csv"); _sl.columns = [str(c).strip() for c in _sl.columns]
+    _bc = next(c for c in _sl.columns if "band" in c.lower()); _sc = next(c for c in _sl.columns if c.lower().startswith("symbol"))
+    for _s, _b in zip(_sl[_sc].astype(str).str.strip().str.upper(), _sl[_bc].astype(str).str.strip()):
+        try: BAND[_s] = int(float(_b))
+        except ValueError: pass
+    print("price bands:", len(BAND), "| 2%:", sum(v == 2 for v in BAND.values()), "| 5%:", sum(v == 5 for v in BAND.values()))
+except Exception as _e:
+    print("price bands unavailable:", _e)
+
 # ---------------------------------------------------------------- prices
 def fetch(batch, tick=lambda s: s + ".NS"):
     return yf.download([tick(s) for s in batch], start="2019-01-01", group_by="ticker",
@@ -409,6 +421,7 @@ for s, df in frames.items():
              fromHigh=round(float((price / np.max(h[-252:]) - 1) * 100), 1),
              nh=int(len(h) > 252 and h[-1] >= np.max(h[-253:-1])),            # hit a new 52-week high today (intraday high)
              turnover=round(float(np.mean(c[-20:] * v[-20:]) / 1e7), 1))
+    if BAND.get(s): f["pb"] = BAND[s]
     f.update(pattern_fields(o, h, l, c, v)); f.update(flag_cup_my(h, l, c))
     f["tw"] = weekly_tight(df.Close)
     # trend-template pieces that do not depend on RS
