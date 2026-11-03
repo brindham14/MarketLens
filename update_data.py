@@ -290,36 +290,28 @@ def pivot_highs(h, c, N=5, within=10, cancel=25, per=252, span=320):
         if not canc: out.append((k, float(hk), brk))
     return out
 
-def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.10, minHandle=3, maxHandle=25, maxHD=.12):
-    """Port of the chart's CupHandle indicator for a handle that ends on the latest bar."""
+def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.10, minHandle=4, maxHandle=25, maxHD=.12):
+    """Cup with handle: 12-40% cup of 7+ weeks whose right side recovered to within 10% of the left high,
+    then a handle of 3-25 sessions no deeper than 12% that stays in the upper half of the cup.
+    The handle starts at its own high (the pivot) and runs to the latest bar."""
     n = len(h); end = n - 1; best = None
     for hlen in range(minHandle, maxHandle + 1):
         hs = end - hlen + 1
-        if hs < 1: continue
-        hh, hl = float(h[hs:end + 1].max()), float(l[hs:end + 1].min())
-        if hh <= 0 or (hh - hl) / hh > maxHD: continue
-        hd = (hh - hl) / hh
-        for cupLen in range(minCup, min(maxCup, hs) + 1, 2):
-            cs, ce = hs - cupLen, hs - 1
-            if cs < 0: continue
-            rw = max(3, int(cupLen * .22))
-            leftAt = cs + int(np.argmax(h[cs:min(ce, cs + rw) + 1])); leftHigh = float(h[leftAt])
-            if leftAt + 8 >= ce or ce - 3 < leftAt + 3: continue
-            bottomAt = leftAt + 3 + int(np.argmin(l[leftAt + 3:ce - 2])); bottom = float(l[bottomAt])
-            if leftHigh <= 0: continue
-            depth = (leftHigh - bottom) / leftHigh
-            if depth < minDepth or depth > maxDepth: continue
-            bp = (bottomAt - leftAt) / max(1, ce - leftAt)
-            if bp < .30 or bp > .70: continue
-            a2 = max(bottomAt + 3, ce - rw)
-            if a2 > ce: continue
-            rightHigh = float(h[a2:ce + 1].max())
-            if abs(rightHigh - leftHigh) / leftHigh > rimTol: continue
-            mid = bottom + (leftHigh - bottom) * .5
-            if hl < mid or hl < rightHigh * (1 - maxHD * 1.25): continue
-            if hh > max(leftHigh, rightHigh) * (1 + rimTol * .5): continue
-            if best is None or cupLen > best["cupLen"]:
-                best = dict(depth=depth * 100, hD=hd * 100, cupLen=cupLen, rightHigh=rightHigh)
+        if hs < minCup: continue
+        hh = float(h[hs:].max())
+        if h[hs] < hh or hh <= 0: continue
+        hl = float(l[hs:].min()); hd = (hh - hl) / hh
+        if hd > maxHD: continue
+        lo = max(0, hs - maxCup); seg = h[lo:hs]
+        if len(seg) < minCup: continue
+        la = lo + int(np.argmax(seg)); LH = float(h[la]); cupLen = hs - la
+        if cupLen < minCup or LH <= 0: continue
+        bot = float(l[la:hs].min()); depth = (LH - bot) / LH
+        if depth < minDepth or depth > maxDepth: continue
+        if hh < LH * (1 - rimTol): continue
+        if hl < bot + (LH - bot) * .5: continue
+        if best is None or cupLen > best["cupLen"]:
+            best = dict(depth=depth * 100, hD=hd * 100, cupLen=cupLen, rightHigh=hh)
     return best
 
 def pattern_fields(o, h, l, c, v):
@@ -385,7 +377,7 @@ def flag_cup_my(h, l, c):
     # Cup with handle (port of the chart's indicator): 12-40% cup of 7+ weeks, shallow handle in its upper half, still below the right rim
     if n > 200 and price > sma(c, 50):
         cu = cup_handle(h[-400:], l[-400:])
-        if cu and -6 <= (price / cu["rightHigh"] - 1) * 100 <= 0:
+        if cu and -5 <= (price / cu["rightHigh"] - 1) * 100 <= 0:
             f["cup"] = 1; f["cupD"] = round(cu["depth"], 1); f["hD"] = round(cu["hD"], 1); f["pv"] = round(cu["rightHigh"], 2)
             f["pivotHeldSessions"] = max(5, int(cu["cupLen"] // 10)); f["breakoutToday"] = 0
     # Multi-year breakout: closes above the highest high of the last ~3 years (older than 60 sessions)
