@@ -37,6 +37,15 @@ try:   # sectors + the scan universe (Nifty Total Market) used for ranking
     TM = set(sec)
     for r in rows_: r["sector"] = sec.get(r["symbol"], "")
     print("Nifty Total Market:", len(TM), "stocks")
+    for _u in ("ind_nifty500list.csv", "ind_niftymicrocap250_list.csv"):          # Nifty 500 + Microcap 250 = the reference's scan list; add any the total-market file misses
+        try:
+            _x = get_csv("https://nsearchives.nseindia.com/content/indices/" + _u); _x.columns = [c.strip() for c in _x.columns]
+            _new = {r["Symbol"].strip(): r["Industry"].strip() for _, r in _x.iterrows() if r["Symbol"].strip() not in sec}
+            sec.update(_new); TM |= set(_new)
+            for r in rows_: r["sector"] = r["sector"] or sec.get(r["symbol"], "")
+            print(_u, "added", len(_new), "stocks missing from the total-market list")
+        except Exception as e:
+            print(_u, "not available:", str(e)[:60])
 except Exception as e:
     print("could not download sector list:", e)
 # index membership (Nifty 50/Next 50/100/500/Midcap/Smallcap/Microcap) and F&O list - each is optional
@@ -474,7 +483,7 @@ _RW = ((R63, 0.4), (R126, 0.2), (R189, 0.2), (R252, 0.2))
 RAW = (sum(r.fillna(0) * w for r, w in _RW) / sum(r.notna() * w for r, w in _RW)).where(R63.notna())
 # like the reference: ranked against the Nifty Total Market stocks that actually trade (20-day average traded value >= Rs 6 cr; fitted
 # against 95 stock ratings and 35 sector/theme medians copied from the reference - the very thin stocks are left out of the ranking)
-RS_MIN_TURNOVER = 6
+RS_MIN_TURNOVER = 0                                                 # rank against every Nifty Total Market stock (fits the reference's RS best)
 _liq_tm = [s for s in C.columns if s in TM and s in fe and fe[s]["turnover"] >= RS_MIN_TURNOVER]
 uni = _liq_tm if len(_liq_tm) >= 300 else ([s for s in C.columns if s in TM] if len(TM & set(C.columns)) >= 300 else list(C.columns))
 print("RS ranked against", len(uni), "stocks")
@@ -483,7 +492,7 @@ def pct_of(series_now, series_ref):
     ref = np.sort(series_ref.dropna().values)
     out = {}
     for s, x in series_now.items():
-        out[s] = np.nan if (x != x or len(ref) == 0) else np.searchsorted(ref, x, side="right") / len(ref)
+        out[s] = np.nan if (x != x or len(ref) == 0) else (np.searchsorted(ref, x, side="left") + np.searchsorted(ref, x, side="right")) / 2 / len(ref)
     return pd.Series(out)
 rs_of = lambda p: np.clip(np.round(1 + 98 * p), 1, 99)
 
@@ -751,6 +760,68 @@ print("shares known:", len(SHR), "| fetched now:", _got, "| pending:", len(_todo
 for _r in rows:
     _s = SHR.get(_r["symbol"])
     if _s: _r["mcap"] = round(_s * _r["price"] / 1e7)
+
+# ---------------------------------------------------------------- upcoming results dates ("Results coming up")
+def _res_date(x):
+    for f_ in ("%d-%b-%Y", "%Y-%m-%d", "%d-%m-%Y", "%d %b %Y", "%d/%m/%Y"):
+        try: return dt.datetime.strptime(str(x).strip()[:11 if "%b" in f_ and "-" in f_ else 10], f_).date()
+        except Exception: pass
+    return None
+def parse_board_meetings(data, today):
+    """NSE board-meeting list -> {symbol: earliest date >= today} for meetings about financial results."""
+    items = data.get("data", []) if isinstance(data, dict) else (data or [])
+    out = {}
+    for e in items:
+        if not isinstance(e, dict): continue
+        sym = (e.get("bm_symbol") or e.get("symbol") or "").strip()
+        d = _res_date(e.get("bm_date") or e.get("date") or "")
+        txt = " ".join(str(e.get(k) or "") for k in ("bm_purpose", "purpose", "bm_desc", "desc", "sub")).lower()
+        if sym and d and d >= today and "result" in txt and (sym not in out or d < out[sym]): out[sym] = d
+    return out
+_RESP = f"{OUT}/results.json"
+try: _RC = json.load(open(_RESP))
+except Exception: _RC = {}
+_today_d = C.index[-1].date(); RESD = {}
+try:
+    import http.cookiejar
+    _op = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    _hd = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)", "Accept": "application/json,*/*", "Referer": "https://www.nseindia.com/companies-listing/corporate-filings-board-meetings"}
+    try: _op.open(urllib.request.Request("https://www.nseindia.com/", headers=_hd), timeout=30).read()
+    except Exception: pass
+    _u = "https://www.nseindia.com/api/corporate-board-meetings?index=equities&from_date=%s&to_date=%s" % (_today_d.strftime("%d-%m-%Y"), (_today_d + dt.timedelta(days=200)).strftime("%d-%m-%Y"))
+    RESD = parse_board_meetings(json.loads(_op.open(urllib.request.Request(_u, headers=_hd), timeout=90).read()), _today_d)
+    print("results dates from NSE board meetings:", len(RESD))
+except Exception as _e:
+    print("NSE board meetings not available:", str(_e)[:80])
+# Yahoo calendar as a backup for strong, liquid stocks that NSE did not list (cached for 7 days)
+def _yf_res(s):
+    try:
+        cal = yf.Ticker(s + ".NS").calendar
+        ds = (cal or {}).get("Earnings Date") or []
+        ds = [d for d in ds if hasattr(d, "year") and d >= _today_d]
+        return s, (min(ds) if ds else None)
+    except Exception:
+        return s, None
+_want = [r["symbol"] for r in rows if r["symbol"] not in RESD and r.get("rs", 0) >= 60 and r.get("turnover", 0) >= 10]
+_yf_todo = []
+for _s in _want:
+    _c = _RC.get(_s)
+    _d = _res_date(_c[0]) if _c and _c[0] else None
+    if _c and _t.time() - _c[1] < 7 * 86400 and (_d is None or _d >= _today_d):
+        if _d: RESD[_s] = _d
+    else: _yf_todo.append(_s)
+_t0 = _t.time(); _yf_got = 0
+for _i in range(0, len(_yf_todo), 60):
+    if _t.time() - _t0 > 420: break                                    # 7 minute budget
+    with ThreadPoolExecutor(8) as ex:
+        for s, d in ex.map(_yf_res, _yf_todo[_i:_i + 60]):
+            _RC[s] = [d.isoformat() if d else "", _t.time()]
+            if d: RESD[s] = d; _yf_got += 1
+json.dump(_RC, open(_RESP, "w"), separators=(",", ":"))
+for _r in rows:
+    _d = RESD.get(_r["symbol"])
+    if _d: _r["rdate"] = _d.isoformat(); _r["nr"] = (_d - _today_d).days
+print("results dates known:", len(RESD), "| from Yahoo now:", _yf_got, "| checked:", len(_yf_todo))
 
 # ---------------------------------------------------------------- gap-ups and recent IPOs (screener screens)
 gaps = []
