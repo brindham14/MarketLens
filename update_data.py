@@ -644,7 +644,7 @@ def rank_all(items, key):
 sec_groups = {}
 for r in rows:
     if r.get("sector"): sec_groups.setdefault(r["sector"], []).append(r["symbol"])
-sector_rot = rank_all([group_metrics(k, v, tm_only=True) for k, v in sec_groups.items()], "S")
+sector_rot = rank_all([group_metrics(k, v, tm_only=True, kmin=3) for k, v in sec_groups.items()], "S")
 theme_rot = rank_all([group_metrics(k, v) for k, v in groups.items()], "T")
 ind_groups = {}
 if os.path.exists("industries.csv"):      # NSE industry of each stock (copied from the reference), used for the Industry level of Sector Rotation
