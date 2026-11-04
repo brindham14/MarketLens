@@ -1624,7 +1624,7 @@ for(const e of ind.filter(q=>q.on&&['FlagPole','CupHandle','Bases','Darvas','VCP
  const o=candidates.sort((u,v)=>u.end-v.end).at(-1),entry=o.pivot*1.001,stop=o.base*.995,risk=entry-stop;
  if(!(entry>0&&stop>0&&risk>0))continue;
  const ti=({FlagPole:7,CupHandle:10,Bases:4,Darvas:3,VCP:7,RangeExpansion:6})[e.t],t1=Math.max(.1,Number(e.p?.[ti]??10))/100,t2=Math.max(t1*100,Number(e.p?.[ti+1]??15))/100,t3=Math.max(t2*100,Number(e.p?.[ti+2]??20))/100;
- const tp=e.targetEnabled&&Array.isArray(e.targetPercents)?e.targetPercents.map(Number).filter(x=>x>0):[];tradePlans.push({start:o.start,end:o.end,entry,stop,targets:tp.map(x=>entry*(1+x/100)),targetPct:tp,kind:o.kind,lineStyles:e.lineStyles||{entry:'solid',stop:'dashed',target:targetLineStyle}});
+ const tp=[];/* target lines are drawn by the per-indicator Targets setting */tradePlans.push({start:o.start,end:o.end,entry,stop,targets:tp.map(x=>entry*(1+x/100)),targetPct:tp,kind:o.kind,lineStyles:e.lineStyles||{entry:'solid',stop:'dashed',target:targetLineStyle}});
 }
 let hi=-1e99,lo=1e99;for(let i=a;i<=b;i++){hi=Math.max(hi,D.h[i]);lo=Math.min(lo,D.l[i])}for(const q of tradePlans){hi=Math.max(hi,...q.targets,q.entry);lo=Math.min(lo,q.stop)}const pad=(hi-lo)*.06||1;hi+=pad;lo-=pad;if(yScale!==1||yShift!==0){const rg=hi-lo,c=(hi+lo)/2+yShift*rg,hh=rg/2*yScale;hi=c+hh;lo=c-hh}
 const y0=10,PH=270,Y=v=>+(y0+(hi-v)/(hi-lo)*PH).toFixed(1),fmtP=v=>v>=1000?Math.round(v):v.toFixed(2);
