@@ -1624,7 +1624,7 @@ for(const e of ind.filter(q=>q.on&&['FlagPole','CupHandle','Bases','Darvas','VCP
  const o=candidates.sort((u,v)=>u.end-v.end).at(-1),entry=o.pivot*1.001,stop=o.base*.995,risk=entry-stop;
  if(!(entry>0&&stop>0&&risk>0))continue;
  const ti=({FlagPole:7,CupHandle:10,Bases:4,Darvas:3,VCP:7,RangeExpansion:6})[e.t],t1=Math.max(.1,Number(e.p?.[ti]??10))/100,t2=Math.max(t1*100,Number(e.p?.[ti+1]??15))/100,t3=Math.max(t2*100,Number(e.p?.[ti+2]??20))/100;
- tradePlans.push({start:o.start,end:o.end,entry,stop,targets:[entry*(1+t1),entry*(1+t2),entry*(1+t3)],targetPct:[t1*100,t2*100,t3*100],kind:o.kind,lineStyles:e.lineStyles||{entry:'solid',stop:'dashed',target:targetLineStyle}});
+ const tp=e.targetEnabled&&Array.isArray(e.targetPercents)?e.targetPercents.map(Number).filter(x=>x>0):[];tradePlans.push({start:o.start,end:o.end,entry,stop,targets:tp.map(x=>entry*(1+x/100)),targetPct:tp,kind:o.kind,lineStyles:e.lineStyles||{entry:'solid',stop:'dashed',target:targetLineStyle}});
 }
 let hi=-1e99,lo=1e99;for(let i=a;i<=b;i++){hi=Math.max(hi,D.h[i]);lo=Math.min(lo,D.l[i])}for(const q of tradePlans){hi=Math.max(hi,...q.targets,q.entry);lo=Math.min(lo,q.stop)}const pad=(hi-lo)*.06||1;hi+=pad;lo-=pad;
 const y0=10,PH=270,Y=v=>+(y0+(hi-v)/(hi-lo)*PH).toFixed(1),fmtP=v=>v>=1000?Math.round(v):v.toFixed(2);
@@ -1993,7 +1993,7 @@ const SCR=[
 {g:'Strength & leadership',id:'sl',n:'Sector leaders',d:'The highest-RS stocks inside the strongest sectors.',P:[['ts','Top sectors',5],['ps','Stocks per sector',3]],f:()=>1,cols:['rs','rsd','tr','bi','fh'],sort:['rs',-1],cards:1},
 {g:'Strength & leadership',id:'mt',n:'Multi-timeframe RS leaders',d:'Stocks ranked highly on 1-month, 3-month and 6-month relative strength at the same time: strength that is both recent and lasting.',P:[['m','RS 1M, 3M and 6M all ≥',80],['y','RS 12M ≥',0]],f:(s,p)=>(s.rs1!=null&&s.rs3!=null&&s.rs6!=null?Math.min(s.rs1,s.rs3,s.rs6)>=p.m:s.rs>=p.m)&&(s.rs12==null||s.rs12>=p.y),cols:['rs1','rs3','rs6','rs12','rs','tr','fh','close'],sort:['rs3',-1]},
 {g:'Strength & leadership',id:'s2',n:'Just entered Stage 2',d:'In Stage 2 (advancing) today but not 15 trading days ago: fresh uptrends, often the earliest point of a new move.',P:[['rs','RS ≥',50]],f:(s,p)=>s.stage==2&&s.ns2<=15&&s.rs>=p.rs,cols:['stage','rs','rsd','tr','bi','fh'],sort:['rs',-1]},
-{g:'Strength & leadership',id:'res',n:'Results coming up',d:'Strong stocks with quarterly results scheduled soon. Results can move a stock sharply either way, so many traders avoid fresh entries just before them.',P:[['d','Within days',200,'max'],['rs','RS ≥',60]],f:(s,p)=>s.nr!=null&&s.nr>=0&&s.nr<=p.d&&s.rs>=p.rs,cols:['nr','rs','tr','r1','fh','close'],sort:['nr',1],needs:'nr',needMsg:'Needs results-date data (field rdate or nr in the data file); not available yet.'},
+{g:'Strength & leadership',id:'res',n:'Results coming up',d:'Strong stocks with quarterly results scheduled soon. Results can move a stock sharply either way, so many traders avoid fresh entries just before them.',P:[['d','Within days',200,'max'],['rs','RS ≥',60],['rsx','RS ≤',99,'max']],f:(s,p)=>s.nr!=null&&s.nr>=0&&s.nr<=p.d&&s.rs>=p.rs&&s.rs<=(p.rsx===Infinity?99:p.rsx),cols:['nr','rs','tr','r1','fh','close'],sort:['nr',1],needs:'nr',needMsg:'Needs results-date data (field rdate or nr in the data file); not available yet.'},
 {g:'Setups & patterns',id:'vcp',n:'Volatility contraction (VCP)',d:'Three progressively shallower pullbacks, tight near the high, above the 50 DMA, with volume drying up. Requires verified daily OHLCV history or explicit VCP fields.',P:[],f:(s,p)=>s.vcp===1,cols:['pbs','v10','fh','rs','tr','close'],sort:['rs',-1],patternData:'vcp'},
 {g:'Setups & patterns',id:'tw',n:'Tight weeks',d:'Consecutive weekly closes within 1.5% of each other: a quiet, tight base. Only stocks above the 50 DMA.',P:[['t','Tight weeks ≥',3],['rs','RS ≥',60]],f:(s,p)=>s.tw>=p.t&&s.rs>=p.rs&&s.a50,cols:['tw','rng','fh','rs','tr','close'],sort:['tw',-1]},
 {g:'Setups & patterns',id:'vb',n:'Volume breakout (latest day)',d:()=>`Closed above its prior 50-day high on verified heavy volume on ${asOf()}. Requires prior 50-day highs and daily volume history.`,P:[['v','Volume ≥ × average',2]],f:(s,p)=>s.b50===1&&s.v!=null&&s.v>=p.v,cols:['v','r1','rs','tr','fh','close'],sort:['v',-1],patternData:'b50'},
@@ -2433,7 +2433,7 @@ ma.innerHTML=`<style>
 <label><input id="maCosts" type="checkbox" checked> Brokerage &amp; taxes (STT, stamp, fees, DP)</label>
 </div><div class="ma-col"><h3>Data &amp; run</h3>
 <label>Historical weekly/daily data JSON <input id="maHistoryFile" type="file" accept=".json,application/json"></label>
-<p class="ma-note" id="maDataStatus">No MA backtest history loaded. This tool will not display fabricated performance numbers.</p>
+<p class="ma-note" id="maDataStatus">Loading site price history…</p>
 <p class="ma-note">The engine needs weekly/daily prices, point-in-time universe constituents, RS ranks and Nifty 500 index history. Results are calculated only from a compatible dataset.</p>
 </div></div>
 <div class="ma-actions"><button class="primary" id="maRun" type="button">Run MA crossover backtest</button><button class="pillbtn" id="maSave" type="button">Save settings</button><button class="pillbtn" id="maExport" type="button">Export results CSV</button></div>
@@ -2552,8 +2552,94 @@ sel.onchange=showBacktestMode;showBacktestMode();
 const dates=(y0=2016,y1=new Date().getFullYear())=>{const arr=[];for(let y=y0;y<=y1;y++)for(let m=1;m<=12;m++)arr.push({v:`${y}-${String(m).padStart(2,'0')}`,l:new Date(y,m-1,1).toLocaleString('en-IN',{month:'short',year:'numeric'})});return arr};const all=dates();['maFromDate','maToDate'].forEach((id,idx)=>{const el=document.getElementById(id);el.innerHTML=(idx===0?'<option value="earliest">Earliest</option>':'<option value="latest">Latest</option>')+all.map(x=>`<option value="${x.v}">${x.l}</option>`).join('')});
 let history=null,last=null;document.getElementById('maHistoryFile').addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.dates)||!j.stocks||typeof j.stocks!=='object')throw Error('Expected dates[] and stocks{} fields.');if(!j.dates.length)throw Error('No dates found.');history=j;document.getElementById('maDataStatus').textContent=`Loaded ${Object.keys(j.stocks).length} stocks and ${j.dates.length} dates (${j.dates[0]} to ${j.dates.at(-1)}).`;document.getElementById('maMessage').textContent='File structure loaded. Confirm that it includes weekly/daily MA data, point-in-time constituents and RS ranks; then run.';}catch(err){history=null;document.getElementById('maDataStatus').textContent='Could not load history: '+err.message;document.getElementById('maMessage').textContent='History file could not be loaded.'}});
 document.getElementById('maSave').onclick=()=>{try{localStorage.setItem('maCrossoverSettings',JSON.stringify(read()));document.getElementById('maMessage').textContent='MA crossover settings saved in this browser.'}catch{document.getElementById('maMessage').textContent='Could not save settings in this browser.'}};
-document.getElementById('maRun').onclick=()=>{if(!history){document.getElementById('maMessage').textContent='Cannot run yet: load a verified historical JSON dataset first. No performance figures have been fabricated.';return}document.getElementById('maMessage').textContent='The file structure was loaded, but this dataset has not been verified for the required weekly/daily MA crossover, historical universe membership, RS ranking and benchmark fields. No results are shown until those fields are supported.';document.getElementById('maSummary').innerHTML='<div class="ma-kpi"><small>Status</small><b>Data validation needed</b><span class="ma-note">No calculated results</span></div>';};
-document.getElementById('maExport').onclick=()=>{document.getElementById('maMessage').textContent=last?'Export support will be available after a compatible backtest completes.':'Run a valid backtest before exporting results.'};
+
+/* MA crossover engine: weekly bars built from daily closes */
+function maEngine(H,o){
+const D=H.dates,n=D.length,keys=Object.keys(H.stocks);
+const wk=[];for(let i=0;i<n;i++){const d=new Date(D[i]+'T00:00:00Z'),nx=i<n-1?new Date(D[i+1]+'T00:00:00Z'):null;const wkId=t=>{const x=new Date(t);x.setUTCDate(x.getUTCDate()+3-((x.getUTCDay()+6)%7));return x.getUTCFullYear()*100+Math.round((x-new Date(Date.UTC(x.getUTCFullYear(),0,4)))/6048e5)};if(i===n-1||wkId(d)!==wkId(nx))wk.push(i)}
+const W=wk.length,wd=wk.map(i=>D[i]);
+const jump=(a,b)=>o.ignoreSplits&&(b/a<.55||b/a>1.8);
+const S=keys.map(k=>{const c=H.stocks[k].c,w=wk.map(i=>c[i]);
+ const f=new Array(W).fill(null),s=new Array(W).fill(null);
+ // adjust series: remove split jumps by chaining
+ const adj=new Array(W).fill(null);let last=null;
+ for(let i=0;i<W;i++){const v=w[i];if(v==null||!(v>0)){adj[i]=null;last=null;continue}if(last==null){adj[i]=v}else{const r=jump(last.raw,v)?1:v/last.raw;adj[i]=last.adj*r}last={raw:v,adj:adj[i]}}
+ const avg=(p)=>{const out=new Array(W).fill(null);if(o.type==='EMA'){const a=2/(p+1);let e=null,cnt=0;for(let i=0;i<W;i++){if(adj[i]==null){e=null;cnt=0;continue}e=e==null?adj[i]:a*adj[i]+(1-a)*e;cnt++;if(cnt>=p)out[i]=e}}else{let sum=0,cnt=0;for(let i=0;i<W;i++){if(adj[i]==null){sum=0;cnt=0;for(let j=0;j<W;j++);}}
+  for(let i=p-1;i<W;i++){let ok=true,sm=0;for(let j=i-p+1;j<=i;j++){if(adj[j]==null){ok=false;break}sm+=adj[j]}if(ok)out[i]=sm/p}}return out};
+ return{k,sec:H.stocks[k].sec,c:H.stocks[k].c,adj,f:avg(o.fast),s:avg(o.slow)}});
+// RS per week: weighted return over daily sessions
+const RS=S.map(()=>new Array(W).fill(null));
+const inU=S.map(()=>new Array(W).fill(true));
+if(o.mc&&o.top){for(let w=0;w<W;w++){const v=[];S.forEach((s,x)=>{const m=o.mc[s.k];let last=null;for(let j=W-1;j>=0;j--)if(s.adj[j]!=null){last=s.adj[j];break}if(m==null||s.adj[w]==null||last==null){inU[x][w]=false;return}v.push([x,m*s.adj[w]/last])});v.sort((p,q)=>q[1]-p[1]);const set=new Set(v.slice(0,o.top).map(t=>t[0]));S.forEach((s,x)=>{inU[x][w]=set.has(x)})}}
+for(let w=0;w<W;w++){const i=wk[w],sc=[];S.forEach((s,x)=>{const c=s.c;if(c[i]==null||!inU[x][w])return;let tot=0,wt=0;[[63,.4],[126,.2],[189,.2],[252,.2]].forEach(([p,q])=>{if(i-p>=0&&c[i-p]!=null&&c[i-p]>0){const r=c[i]/c[i-p]-1;tot+=q*r;wt+=q}});if(wt<.99)return;sc.push([x,tot])});
+ sc.sort((a,b)=>a[1]-b[1]);const m=sc.length;sc.forEach(([x],r)=>{RS[x][w]=Math.max(1,Math.min(99,Math.round(1+98*r/Math.max(1,m-1))))})}
+// market filter
+const idx=H.bench&&H.bench.n500;const sma=(a,p,i)=>{if(!a||i<p-1)return null;let s=0;for(let j=i-p+1;j<=i;j++){if(a[j]==null)return null;s+=a[j]}return s/p};
+const mOk=w=>{const i=wk[w];if(o.mktOn&&idx){const m=sma(idx,o.mktMA,i);if(m!=null&&!(idx[i]>m))return false}
+ if(o.brOn){let up=0,t=0;for(const s of S){const c=s.c;if(c[i]==null)continue;const m=sma(c,200,i);if(m==null)continue;t++;if(c[i]>m)up++}if(t&&up/t*100<o.brPct)return false}return true};
+const first=Math.max(o.slow+2,Math.ceil(252/5)+1);
+const cost=o.costs?.002:0;
+let cash=o.capital,pos=[],trades=[],eq=[],eqW=[],cool={};
+const slot=()=>o.capital/o.hold;
+for(let w=first;w<W;w++){
+ // mark positions
+ for(const p of pos){const s=S[p.x],a=s.adj[w];if(a!=null){p.px=a;p.hi=Math.max(p.hi,a)}}
+ // exits
+ const keep=[];const mk=mOk(w);
+ const sellAll=!mk&&o.offSell;
+ for(const p of pos){const s=S[p.x],a=s.adj[w];let why=null;
+  if(a==null)why='no data';
+  else if(sellAll)why='market filter';
+  else if(o.crossExit&&s.f[w]!=null&&s.s[w]!=null&&s.f[w]<s.s[w])why='crossed back';
+  else if(o.stop>0&&a<=p.buy*(1-o.stop/100))why='stop-loss';
+  else if(o.trail>0&&a<=p.hi*(1-o.trail/100))why='trailing stop';
+  else if(o.maxHold>0&&w-p.w>=o.maxHold)why='max hold';
+  else if(o.rsExit>0&&RS[p.x][w]!=null&&RS[p.x][w]<p.rs/o.rsExit)why='RS fell';
+  if(why){const v=(p.px)*p.sh*(1-cost);cash+=v;trades.push({k:s.k,bd:wd[p.w],bp:p.buyRaw,sd:wd[w],sp:s.c[wk[w]]??null,ret:(p.px*(1-cost)/(p.buy*(1+cost))-1)*100,why,pnl:v-p.cost});cool[s.k]=w}else keep.push(p)}
+ pos=keep;
+ // entries
+ if(mk&&pos.length<o.hold){const held=new Set(pos.map(p=>p.x)),cand=[];
+  for(let x=0;x<S.length;x++){if(held.has(x))continue;const s=S[x],f=s.f[w],sl=s.s[w],pf=s.f[w-1],ps=s.s[w-1];if(f==null||sl==null||pf==null||ps==null||s.adj[w]==null)continue;if(!(f>sl))continue;let cr=false;for(let j=0;j<o.within&&w-j-1>=0;j++){const a=s.f[w-j],b=s.s[w-j],c=s.f[w-j-1],d=s.s[w-j-1];if(a!=null&&b!=null&&c!=null&&d!=null&&a>b&&c<=d){cr=true;break}}if(!cr)continue;const r=RS[x][w];if(r==null||r<o.rs)continue;if(cool[s.k]!=null&&w-cool[s.k]<o.wait)continue;cand.push([x,r])}
+  cand.sort((a,b)=>b[1]-a[1]);
+  const eqNow=cash+pos.reduce((t,p)=>t+p.px*p.sh,0);
+  for(const [x,r] of cand){if(pos.length>=o.hold)break;const s=S[x],a=s.adj[w],amt=Math.min(cash,Math.min(slot(),eqNow/o.hold));if(amt<slot()*.5)break;const sh=amt/(a*(1+cost));cash-=amt;pos.push({x,w,buy:a,buyRaw:s.c[wk[w]],px:a,hi:a,sh,rs:r,cost:amt})}}
+ const val=cash+pos.reduce((t,p)=>t+p.px*p.sh,0);eq.push(val);eqW.push(w)}
+const yrs=(Date.parse(wd[W-1])-Date.parse(wd[first]))/(365.25*864e5);
+let pk=0,dd=0;eq.forEach(v=>{pk=Math.max(pk,v);dd=Math.max(dd,(pk-v)/pk)});
+const fin=eq[eq.length-1],cagr=(Math.pow(fin/o.capital,1/yrs)-1)*100;
+const bm=idx?(()=>{const a=idx[wk[first]],b=idx[wk[W-1]];let p=a,d2=0;for(let w=first;w<W;w++){const v=idx[wk[w]];if(v==null)continue;p=Math.max(p,v);d2=Math.max(d2,(p-v)/p)}return{cagr:(Math.pow(b/a,1/yrs)-1)*100,dd:d2*100,series:eqW.map(w=>o.capital*idx[wk[w]]/a)}})():null;
+const yearly={};eqW.forEach((w,i)=>{const y=wd[w].slice(0,4);(yearly[y]??={a:i?eq[i-1]:o.capital,b:0,ia:i?idx&&idx[wk[eqW[i-1]]]:idx&&idx[wk[first]],ib:0});yearly[y].b=eq[i];yearly[y].ib=idx&&idx[wk[w]]});
+const wins=trades.filter(t=>t.ret>0),loss=trades.filter(t=>t.ret<=0);
+const avg=a=>a.length?a.reduce((x,y)=>x+y.ret,0)/a.length:0;
+const holdings=pos.map(p=>({k:S[p.x].k,bd:wd[p.w],buy:p.buyRaw,now:S[p.x].c[wk[W-1]],ret:(p.px/p.buy-1)*100,rs:RS[p.x][W-1]})).sort((a,b)=>b.ret-a.ret);
+// next buys: current crosses
+const nextBuys=[];for(let x=0;x<S.length;x++){const s=S[x],w=W-1;if(held(x)||s.f[w]==null||s.s[w]==null||s.f[w-1]==null)continue;if(!(s.f[w]>s.s[w]))continue;let cr=false;for(let j=0;j<o.within;j++){const a=s.f[w-j],b=s.s[w-j],c=s.f[w-j-1],d=s.s[w-j-1];if(a!=null&&b!=null&&c!=null&&d!=null&&a>b&&c<=d){cr=true;break}}if(cr&&RS[x][w]>=o.rs)nextBuys.push({k:s.k,rs:RS[x][w]})}
+function held(x){return pos.some(p=>p.x===x)}
+nextBuys.sort((a,b)=>b.rs-a.rs);
+return{wd,first,eq,eqW,fin,cagr,dd:dd*100,yrs,trades,wins:wins.length,avgWin:avg(wins),avgLoss:avg(loss),holdings,nextBuys:nextBuys.slice(0,15),bm,yearly,capital:o.capital}}
+let maDaily=null,maMc=null;fetch('data/summary.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.length){maMc={};j.forEach(r=>{if(r.mcap!=null)maMc[r.symbol]={m:r.mcap,t:r.turnover}})}}).catch(()=>{});const maEl=id=>document.getElementById(id);
+fetch('data/history.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.dates&&j.stocks){maDaily=j;history=j;maEl('maDataStatus').textContent='Using site history: '+Object.keys(j.stocks).length+' stocks, daily closes '+j.dates[0]+' to '+j.dates[j.dates.length-1]+'. Weekly bars are built from them.';maEl('maMessage').textContent='Ready. Set your rules and press Run.'}}).catch(()=>{});
+const maInr=v=>'₹'+Math.round(v).toLocaleString('en-IN'),maP=v=>(v>=0?'+':'−')+Math.abs(v).toFixed(1)+'%';
+maEl('maRun').onclick=()=>{
+ const H=(history&&history.dates&&history.stocks&&Array.isArray(history.bench&&history.bench.n500))?history:maDaily;
+ if(!H){maEl('maMessage').textContent='Price history is not loaded yet. Wait a moment, or load a history file.';return}
+ if(H.dates.length<600){maEl('maMessage').textContent='This history file is not daily; the weekly engine needs daily closes (data/history.json).';return}
+ const g=id=>maEl(id),v=id=>+g(id).value;
+ const o={type:g('maType').value,fast:v('maFast'),slow:v('maSlow'),within:v('maCrossWithin'),rs:v('maRS'),hold:Math.max(1,v('maHold')),wait:v('maRebuyWait'),crossExit:g('maCrossExit').checked,stop:v('maStop'),trail:v('maTrail'),rsExit:v('maRSExit'),maxHold:v('maMaxHold'),mktOn:g('maMarketOn').checked,mktMA:parseInt(g('maMarketMA').value),brOn:g('maBreadthOn').checked,brPct:v('maBreadthPct'),offSell:/sell/i.test(g('maFilterOff').value),capital:Math.max(1,v('maCapital')),ignoreSplits:g('maIgnoreSplits').checked,costs:g('maCosts').checked};
+ if(!(o.fast>=1&&o.slow>o.fast)){maEl('maMessage').textContent='Slow average must be longer than the fast average.';return}
+ maEl('maMessage').textContent='Running…';
+ const top=(maEl('maUniverse').value.match(/top (\d+)/)||[])[1];if(top&&maMc){o.top=+top;o.mc={};for(const k in maMc)o.mc[k]=maMc[k].m}
+ setTimeout(()=>{let r;try{r=maEngine(H,o)}catch(e){maEl('maMessage').textContent='Backtest failed: '+e.message;return}
+ last=r;const K=(l,x,sub)=>`<div class="ma-kpi"><small>${l}</small><b>${x}</b><span class="ma-note">${sub||''}</span></div>`;
+ const tr=r.trades,wr=tr.length?r.wins/tr.length*100:0,net=r.fin-r.capital;
+ maEl('maSummary').innerHTML=K('Return per year',maP(r.cagr),r.bm?'Nifty 500: '+maP(r.bm.cagr):'')+K('Max drawdown','−'+r.dd.toFixed(1)+'%',r.bm?'Nifty 500: −'+r.bm.dd.toFixed(1)+'%':'')+K('Final value',maInr(r.fin),'Net '+(net>=0?'+':'−')+maInr(Math.abs(net)))+K('Trades',tr.length+' closed','Win rate '+wr.toFixed(0)+'%')+K('Avg win / loss',maP(r.avgWin)+' / '+maP(r.avgLoss),'per trade')+K('Period',r.wd[r.first]+' → '+r.wd[r.wd.length-1],r.yrs.toFixed(1)+' years');
+ maEl('maMessage').textContent='Done. Weekly closes; signal at the week-end close, trade at the next session close; '+(o.costs?'0.2% cost per side':'no costs')+'. Universe: the top-N by estimated market cap each week (the current market cap scaled by past price), from our history; delisted stocks are missing. Min traded value and sector filters are not applied.';
+ const ys=Object.keys(r.yearly).sort();maEl('maYearly').innerHTML='<table><thead><tr><th>Year</th><th>Strategy</th><th>Nifty 500</th></tr></thead><tbody>'+ys.map(y=>{const q=r.yearly[y],a=(q.b/q.a-1)*100,b=q.ia&&q.ib?(q.ib/q.ia-1)*100:null;return `<tr><td>${y}</td><td style="color:${a>=0?'#247b55':'#b84a49'}">${maP(a)}</td><td>${b==null?'–':maP(b)}</td></tr>`}).join('')+'</tbody></table>';
+ const Wd=720,Hh=260,L=48,R=10,T=10,B=22,ser=[['Strategy','#247b55',r.eq.map(x=>x/r.capital*100)]];if(r.bm)ser.push(['Nifty 500','#9a9d92',r.bm.series.map(x=>x/r.capital*100)]);const all=ser.flatMap(s=>s[2]),lo=Math.min(...all),hi=Math.max(...all),m=r.eq.length,X=i=>L+(Wd-L-R)*i/(m-1),Y=x=>T+(Hh-T-B)*(1-(x-lo)/(hi-lo||1));
+ maEl('maChart').innerHTML=`<svg viewBox="0 0 ${Wd} ${Hh}" style="width:100%;height:auto">${[lo,(lo+hi)/2,hi].map(x=>`<line x1="${L}" x2="${Wd-R}" y1="${Y(x)}" y2="${Y(x)}" stroke="#e8e2d4"/><text x="${L-6}" y="${Y(x)+4}" font-size="11" text-anchor="end" fill="#7c8178">${Math.round(x)}%</text>`).join('')}${ser.map(s=>`<path d="${s[2].map((x,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(x).toFixed(1)).join('')}" fill="none" stroke="${s[1]}" stroke-width="${s[0]=='Strategy'?2.2:1.5}"/>`).join('')}</svg><div class="ma-note">${ser.map(s=>`<span style="color:${s[1]}">■</span> ${s[0]}`).join(' &nbsp; ')} (start = 100%)</div>`;
+ maEl('maHoldings').innerHTML=(r.holdings.length?'<b>Holding now</b><table><thead><tr><th>Stock</th><th>Bought</th><th>Buy ₹</th><th>Now ₹</th><th>Return</th><th>RS</th></tr></thead><tbody>'+r.holdings.map(h=>`<tr><td>${h.k}</td><td>${h.bd}</td><td>${h.buy==null?'–':h.buy.toFixed(1)}</td><td>${h.now==null?'–':h.now.toFixed(1)}</td><td style="color:${h.ret>=0?'#247b55':'#b84a49'}">${maP(h.ret)}</td><td>${h.rs??'–'}</td></tr>`).join('')+'</tbody></table>':'Nothing held now.')+'<p><b>Fresh crossovers now (next buys, by RS)</b><br>'+(r.nextBuys.length?r.nextBuys.map(x=>x.k+' (RS '+x.rs+')').join(', '):'none')+'</p>';
+ maEl('maTrades').innerHTML=tr.length?'<table><thead><tr><th>Stock</th><th>Bought</th><th>Sold</th><th>Return</th><th>Why sold</th></tr></thead><tbody>'+tr.slice().reverse().slice(0,300).map(t=>`<tr><td>${t.k}</td><td>${t.bd}</td><td>${t.sd}</td><td style="color:${t.ret>=0?'#247b55':'#b84a49'}">${maP(t.ret)}</td><td>${t.why}</td></tr>`).join('')+'</tbody></table>'+(tr.length>300?'<p class="ma-note">Showing the latest 300 of '+tr.length+'. Export has all.</p>':''):'No trades.'},30)};
+maEl('maExport').onclick=()=>{if(!last){maEl('maMessage').textContent='Run a backtest first.';return}const rows=[['stock','bought','sold','return_pct','why']].concat(last.trades.map(t=>[t.k,t.bd,t.sd,t.ret.toFixed(2),t.why]));const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'}));a.download='ma-crossover-trades.csv';a.click()};
 const brFile=document.getElementById('brFile'),brMsg=document.getElementById('brMessage');brFile.addEventListener('change',async e=>{const f=e.target.files?.[0];if(!f)return;try{const j=JSON.parse(await f.text());if(!Array.isArray(j.dates))throw Error('Expected dates[] in JSON.');brMsg.textContent=`Loaded ${j.dates.length} dates. Verify matching breadth and index series before calculating results.`}catch(err){brMsg.textContent='Could not load history: '+err.message}});document.getElementById('brSave').onclick=()=>{const ids=['brUniverse','brMA','brAvg','brDir1','brPct1','brDir2','brPct2','brIndex','brEntry','brGap','brFromMonth','brFromYear','brToMonth','brToYear'];const o={};ids.forEach(id=>{const el=document.getElementById(id);if(el)o[id]=el.value});try{localStorage.setItem('marketBreadthSettings',JSON.stringify(o));brMsg.textContent='Settings saved in this browser.'}catch{brMsg.textContent='Could not save settings.'}};
 })();
 /* ---- market breadth threshold-crossing backtest ---- */
