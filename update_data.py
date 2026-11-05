@@ -269,6 +269,27 @@ def sma(a, n): return float(np.mean(a[-n:])) if len(a) >= n else np.nan
 def depth_in(h, l):            # deepest pullback % inside a window (running peak -> later low)
     rm = np.maximum.accumulate(h); return float(np.max((rm - l) / rm)) * 100
 
+def darvas_state(h, l, c, per=252, near=5, hold=3, span=200):
+    """Newest live Darvas box: ('b', sessions since breakout, top, bottom) or ('i', sessions since top, top, bottom)."""
+    n = len(h); rmax = pd.Series(h).rolling(per, min_periods=1).max().values
+    k = max(3, n - 1 - 2 * span); last = None
+    while k < n - hold:
+        if h[k] < rmax[k] * (1 - near / 100) or any(h[j] > h[k] for j in range(k + 1, k + hold + 1)):
+            k += 1; continue
+        lo, at, jj = 1e18, -1, None
+        for j in range(k + 1, n):
+            if l[j] < lo: lo, at = l[j], j
+            if at > 0 and j - at >= hold: jj = j; break
+        if jj is None: break
+        top, bot = float(h[k]), float(lo); q = None; kind = None
+        for x in range(jj + 1, n):
+            if c[x] < bot: q, kind = x, "x"; break
+            if c[x] > top: q, kind = x, "b"; break
+        if q is None: last = ("i", n - 1 - k, top, bot); break
+        last = ("b", n - 1 - q, top, bot) if kind == "b" else None
+        k = q + 1
+    return last
+
 def darvas(h, l, per=252, near=5):
     """Port of the chart's Darvas-box indicator: list of (top_index, complete_index, top, bottom)."""
     n = len(h); out = []; k = 3
@@ -402,24 +423,17 @@ def flag_cup_my(h, l, c):
         if len(above) and price <= 1.15 * C and price >= C:
             bi_ = n - 60 + int(above[0])
             f["my"] = 1; f["cy"] = round((bi_ - ci) / 252, 1); f["pc"] = round((price / C - 1) * 100, 1)
-    # Darvas boxes
-    boxes = darvas(h, l)
-    if boxes:
-        k, j, top, bot = boxes[-1]
-        if n - 1 - k <= 150:
-            after = c[j + 1:]; st = None
-            for q, x in enumerate(after):
-                if x < bot: st = "x"; break          # close below the bottom cancels the box
-                if x > top: st = ("b", n - 1 - (j + 1 + q)); break
-            if st is None: st = ("i", n - 1 - j)
-            if st != "x":
-                f["dvt"] = round(top, 2); f["dvl"] = round(bot, 2)
-                f["dvh"] = round((top - bot) / top * 100, 1)
-                if st[0] == "b":
-                    if st[1] <= 2: f["dvb"] = 1; f["dvd"] = st[1]
-                else:
-                    f["dvn"] = 1; f["dva"] = st[1]
-                    if price >= top * 0.95: f["dvi"] = 1
+    # Darvas boxes (like the reference): every box is followed until a close above its top (breakout) or below its bottom (cancelled);
+    # the newest box that is still alive is the one shown. "In box Nd" counts the sessions since the box top was set.
+    ds = darvas_state(h, l, c)
+    if ds:
+        kind, age, top, bot = ds
+        f["dvt"] = round(top, 2); f["dvl"] = round(bot, 2); f["dvh"] = round((top - bot) / top * 100, 1)
+        if kind == "b":
+            if age <= 3: f["dvb"] = 1; f["dvd"] = age
+        else:
+            f["dvn"] = 1; f["dva"] = age
+            if price >= top * 0.95: f["dvi"] = 1
     return f
 
 # ---------------------------------------------------------------- per-stock features
