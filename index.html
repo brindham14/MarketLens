@@ -1349,7 +1349,7 @@ renderAll();renderSectors();renderRotation();renderChangeGroups();
 (()=>{
 const NS='http://www.w3.org/2000/svg',W=900,PL=8,PR=48,$$=s=>document.querySelector(s);
 const css=document.createElement('style');css.textContent=`.chartbox{height:auto!important}.chartbox svg{height:auto!important}.pop{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;margin:6px 0;display:none}.pop.open{display:block}.pop .row{display:flex;align-items:center;gap:8px;padding:7px 4px;cursor:pointer}.pop .row b{min-width:62px}.pop .row span.meta{flex:1;margin:0}.pop .row .sp{flex:1}.pop button,.pop .tb{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:5px 9px;font-size:11px}.pop button.on{background:#1e3b2e;color:#fff}.pop .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.pop .sw{width:20px;height:20px;border-radius:50%;border:2px solid transparent;padding:0}.pop .sw.on{border-color:#222}#shareBox{position:fixed;inset:0;background:#14231d80;display:none;align-items:center;justify-content:center;padding:14px;z-index:9}#shareBox.open{display:flex}#shareBox .modal{max-height:92vh;overflow:auto}#shareBox img{width:100%;border:1px solid var(--line);border-radius:8px}#shareBox .bar{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}#shareBox .bar button{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 13px;font-weight:650}#shareBox .bar .p{background:#1e3b2e;color:#fff}`;document.head.appendChild(css);
-let yScale=1,yShift=0,tf='D',rl='1Y',span=252,off=0,cst='Candles',tool='',col='#2f6fb0',sel=-1,tmp=null,lastSym='',L={};
+let yMan=null,tf='D',rl='1Y',span=252,off=0,cst='Candles',tool='',col='#2f6fb0',sel=-1,tmp=null,lastSym='',L={};
 let targetLineStyle='dashed';try{targetLineStyle=localStorage.getItem('mlTargetLineStyle')||'dashed'}catch(e){};
 const cacheD={},memo={},drw=(()=>{try{const j=JSON.parse(localStorage.getItem("marketlensDrawings")||"{}");return j&&typeof j==="object"?j:{}}catch(e){return {}}})();window.__drw=drw;let __drwLast=JSON.stringify(drw);setInterval(()=>{try{const s=JSON.stringify(drw);if(s!==__drwLast){__drwLast=s;localStorage.setItem("marketlensDrawings",s)}}catch(e){}},1500);let nifty=null;let autoResistance=true,show52High=true;
 const PAL=['#c78a14','#3a6fb0','#b5382f','#1f8a57','#8a5bb8','#2d8fd6','#e07b39','#d0457d','#6b5b2a','#1b2a24'],OV=['Fibonacci','EMA','SMA','BB','Keltner','Donchian','PSAR','Pivots','Supertrend','Bases','Darvas','Stage','RVol','FlagPole','CupHandle','VCP','RangeExpansion'],PN=['RSI','MACD','Stoch','ATR','ADX'];
@@ -1604,7 +1604,8 @@ const svg=document.createElementNS(NS,'svg');svg.style.cssText='touch-action:non
 const dt=D=>x=>{let lo=0,hi=D.d.length-1;while(lo<hi){const m=(lo+hi+1)>>1;D.d[m]<=x?lo=m:hi=m-1}return lo};
 function drawChart(){
 const s=current(),D0=getD(),D=tf=='W'?weekly(D0):D0,n=D.c.length,key=s.symbol+'|'+tf+'|'+n+'|';
-if(s.symbol!==lastSym){lastSym=s.symbol;yScale=1;yShift=0;off=0;tmp=null;sel=-1}
+if(window.__lastTf!==tf){window.__lastTf=tf;yMan=null}
+if(s.symbol!==lastSym){lastSym=s.symbol;yMan=null;off=0;tmp=null;sel=-1}
 span=Math.max(20,Math.min(Math.round(span),n));off=Math.max(0,Math.min(Math.round(off),n-span));
 const end=n-off,start=end-span,a=start,b=end-1,bw=(W-PL-PR)/span,X=i=>PL+(i-start+.5)*bw;
 // Build trade plans for the latest visible pattern of each enabled pattern indicator.
@@ -1626,7 +1627,7 @@ for(const e of ind.filter(q=>q.on&&['FlagPole','CupHandle','Bases','Darvas','VCP
  const ti=({FlagPole:7,CupHandle:10,Bases:4,Darvas:3,VCP:7,RangeExpansion:6})[e.t],t1=Math.max(.1,Number(e.p?.[ti]??10))/100,t2=Math.max(t1*100,Number(e.p?.[ti+1]??15))/100,t3=Math.max(t2*100,Number(e.p?.[ti+2]??20))/100;
  const tp=[];/* target lines are drawn by the per-indicator Targets setting */tradePlans.push({start:o.start,end:o.end,entry,stop,targets:tp.map(x=>entry*(1+x/100)),targetPct:tp,kind:o.kind,lineStyles:e.lineStyles||{entry:'solid',stop:'dashed',target:targetLineStyle}});
 }
-let hi=-1e99,lo=1e99;for(let i=a;i<=b;i++){hi=Math.max(hi,D.h[i]);lo=Math.min(lo,D.l[i])}for(const q of tradePlans){hi=Math.max(hi,...q.targets,q.entry);lo=Math.min(lo,q.stop)}const pad=(hi-lo)*.06||1;hi+=pad;lo-=pad;if(yScale!==1||yShift!==0){const rg=hi-lo,c=(hi+lo)/2+yShift*rg,hh=rg/2*yScale;hi=c+hh;lo=c-hh}
+let hi=-1e99,lo=1e99;for(let i=a;i<=b;i++){hi=Math.max(hi,D.h[i]);lo=Math.min(lo,D.l[i])}for(const q of tradePlans){hi=Math.max(hi,...q.targets,q.entry);lo=Math.min(lo,q.stop)}const pad=(hi-lo)*.06||1;hi+=pad;lo-=pad;if(yMan){hi=yMan.hi;lo=yMan.lo}
 const y0=10,PH=270,Y=v=>+(y0+(hi-v)/(hi-lo)*PH).toFixed(1),fmtP=v=>v>=1000?Math.round(v):v.toFixed(2);
 const ext=ind.filter(e=>e.on&&PN.includes(e.t));let H=y0+PH+12;const vy=H,ry=H+60;H+=118;const eps=ext.map(e=>{const y=H;H+=76;return{e,y}});H+=20;
 let g='<defs><clipPath id="cp"><rect x="0" y="'+y0+'" width="'+(W-PR)+'" height="'+PH+'"/></clipPath></defs><rect width="'+W+'" height="'+H+'" fill="#fffdf9"/>';
@@ -1816,26 +1817,26 @@ function zoomAt(x,k){const fx=Math.max(0,Math.min(1,(x-PL)/(W-PL-PR))),idx=L.sta
 svg.addEventListener('pointerdown',e=>{svg.setPointerCapture(e.pointerId);ptrs.set(e.pointerId,[e.clientX,e.clientY]);
 if(ptrs.size==2){const[p,q]=[...ptrs.values()],r=svg.getBoundingClientRect(),mx=((p[0]+q[0])/2-r.left)*W/r.width,fx=Math.max(0,Math.min(1,(mx-PL)/(W-PL-PR)));pinch={d:Math.hypot(p[0]-q[0],p[1]-q[1]),sp:span,off,fx,idx:L.start+fx*span};gs=null;return}
 const[x,y]=pt(e);tmp=null;
-if(x>W-PR-2&&(!tool||tool==='select')){gs={k:'yz',y:e.clientY,ys:yScale};return}
+if(x>W-PR-2&&(!tool||tool==='select')){gs={k:'yz',y:e.clientY,h0:yMan?yMan.hi:L.hi,l0:yMan?yMan.lo:L.lo};return}
 if(tool==='f'){const q=snapP(x,y);if(!window.__mlFibAnchor){window.__mlFibAnchor={d:q.d,p:q.p};gs={k:'fib',q};return}else{const first=window.__mlFibAnchor;cur().push({t:'f',d1:first.d,p1:first.p,d2:q.d,p2:q.p,c:col,extensions:true});window.__mlFibAnchor=null;sel=cur().length-1;tool='select';gs=null;drawPop();drawChart();return}}
 if(tool&&tool!='select'){const q=snapP(x,y);if(tool=='h'){cur().push({t:'h',p:q.p,c:col});sel=cur().length-1;drawChart();return}if(tool=='t'){const v=prompt('Text');if(v){cur().push({t:'t',d:q.d,p:q.p,x:v,c:col});sel=cur().length-1}drawChart();return}gs={k:'draw',q}}
-else gs={k:'pan',x:e.clientX,off,mv:0,px:x,py:y,cy:e.clientY,sh:yShift}});
+else gs={k:'pan',x:e.clientX,off,mv:0,px:x,py:y,cy:e.clientY,m0:yMan?{hi:yMan.hi,lo:yMan.lo}:null}});
 svg.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);
 if(ptrs.size==2&&pinch){const[p,q]=[...ptrs.values()],d=Math.max(1,Math.hypot(p[0]-q[0],p[1]-q[1]));span=Math.max(20,Math.min(L.n,Math.round(pinch.sp*pinch.d/d)));off=L.n-(pinch.idx-pinch.fx*span+span);drawChart();return}
-if(!gs)return;if(gs.k=='yz'){const dy=e.clientY-gs.y;yScale=Math.max(.15,Math.min(8,gs.ys*Math.exp(-dy/160)));drawChart();return}
-if(gs.k=='pan'){const dx=(e.clientX-gs.x)*(W/svg.getBoundingClientRect().width)/L.bw;if(Math.abs(e.clientX-gs.x)>4)gs.mv=1;if(gs.mv){off=gs.off+dx;if(yScale!==1||yShift!==0){yShift=gs.sh+(e.clientY-gs.cy)*(W/svg.getBoundingClientRect().width)/270*yScale}drawChart()}}
+if(!gs)return;if(gs.k=='yz'){const dy=e.clientY-gs.y,f=Math.max(.15,Math.min(8,Math.exp(-dy/160))),c=(gs.h0+gs.l0)/2,hf=(gs.h0-gs.l0)/2*f;yMan={hi:c+hf,lo:c-hf};drawChart();return}
+if(gs.k=='pan'){const dx=(e.clientX-gs.x)*(W/svg.getBoundingClientRect().width)/L.bw;if(Math.abs(e.clientX-gs.x)>4)gs.mv=1;if(gs.mv){off=gs.off+dx;if(gs.m0){const d=(e.clientY-gs.cy)*(W/svg.getBoundingClientRect().width)/270*(gs.m0.hi-gs.m0.lo);yMan={hi:gs.m0.hi+d,lo:gs.m0.lo+d}}drawChart()}}
 else{const[x,y]=pt(e),q=snapP(x,y);tmp={t:tool=='m'?'m':tool,d1:gs.q.d,p1:gs.q.p,d2:q.d,p2:q.p,c:col};drawChart()}});
 const up=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!gs||ptrs.size)return;
 if(gs.k=='draw'&&tmp&&tool!='m'){cur().push(tmp);sel=cur().length-1;tmp=null;drawChart()}
 else if(gs.k=='yz'){}
 else if(gs.k=='pan'&&!gs.mv){sel=tool=='select'?hit(gs.px,gs.py):-1;drawChart()}gs=null};
 svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
-svg.addEventListener('wheel',e=>{e.preventDefault();if(pt(e)[0]>W-PR-2){yScale=Math.max(.15,Math.min(8,yScale*(e.deltaY>0?1.12:.89)));drawChart();return}zoomAt(pt(e)[0],e.deltaY>0?1.15:.87)},{passive:false});
-svg.addEventListener('dblclick',()=>{off=0;yScale=1;yShift=0;drawChart()});
+svg.addEventListener('wheel',e=>{e.preventDefault();if(pt(e)[0]>W-PR-2){const b0=yMan||{hi:L.hi,lo:L.lo},f=e.deltaY>0?1.12:.89,c=(b0.hi+b0.lo)/2,hf=(b0.hi-b0.lo)/2*f;yMan={hi:c+hf,lo:c-hf};drawChart();return}zoomAt(pt(e)[0],e.deltaY>0?1.15:.87)},{passive:false});
+svg.addEventListener('dblclick',()=>{off=0;yMan=null;drawChart()});
 $('zoomInBtn').onclick=()=>zoomAt(W-PR,.8);$('zoomOutBtn').onclick=()=>zoomAt(W-PR,1.25);
 $('autoResistanceBtn').onclick=()=>{autoResistance=!autoResistance;$('autoResistanceBtn').classList.toggle('active',autoResistance);$('autoResistanceBtn').textContent=autoResistance?'━ Resistance ✓':'━ Resistance';drawChart()};
 $('show52HighBtn').onclick=()=>{show52High=!show52High;$('show52HighBtn').classList.toggle('active',show52High);$('show52HighBtn').textContent=show52High?'┄ 52W High ✓':'┄ 52W High';drawChart()};
-$('zoomResetBtn').onclick=$('zoomResetMenuBtn').onclick=()=>{off=0;yScale=1;yShift=0;span=Math.min(L.n,tf=='W'?52:252);rl='1Y';drawChart()};
+$('zoomResetBtn').onclick=$('zoomResetMenuBtn').onclick=()=>{off=0;yMan=null;span=Math.min(L.n,tf=='W'?52:252);rl='1Y';drawChart()};
 document.querySelectorAll('[data-range]').forEach(b=>b.addEventListener('click',()=>{const r=b.dataset.range;if(r=='1D'||r=='1W'){const w=r=='1W';if((tf=='W')!=w){tf=w?'W':'D';span=Math.max(20,Math.round(w?span/5:span*5))}}else{span={'3M':63,'6M':126,'1Y':252,'2Y':504,MAX:99999}[r];if(tf=='W')span=Math.round(span/5);off=0;rl=r}drawChart()}));
 let selectedIntraday='';document.querySelectorAll('[data-intraday]').forEach(b=>b.addEventListener('click',()=>{selectedIntraday=b.dataset.intraday;document.querySelectorAll('[data-intraday]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('[data-range]').forEach(x=>x.classList.remove('active'));setHistoryStatus(selectedIntraday+' selected. Intraday candles are not connected in this build; the chart remains on its available daily/weekly history until an intraday OHLCV feed is configured.');}));document.querySelectorAll('[data-range]').forEach(b=>b.addEventListener('click',()=>{selectedIntraday='';document.querySelectorAll('[data-intraday]').forEach(x=>x.classList.remove('active'));}));
 document.querySelectorAll('[data-chartstyle]').forEach(b=>b.addEventListener('click',()=>{cst=b.dataset.chartstyle;drawChart()}));
