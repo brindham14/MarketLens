@@ -1823,7 +1823,7 @@ else gs={k:'pan',x:e.clientX,off,mv:0,px:x,py:y,cy:e.clientY,sh:yShift}});
 svg.addEventListener('pointermove',e=>{if(!ptrs.has(e.pointerId))return;ptrs.set(e.pointerId,[e.clientX,e.clientY]);
 if(ptrs.size==2&&pinch){const[p,q]=[...ptrs.values()],d=Math.max(1,Math.hypot(p[0]-q[0],p[1]-q[1]));span=Math.max(20,Math.min(L.n,Math.round(pinch.sp*pinch.d/d)));off=L.n-(pinch.idx-pinch.fx*span+span);drawChart();return}
 if(!gs)return;if(gs.k=='yz'){const dy=e.clientY-gs.y;yScale=Math.max(.15,Math.min(8,gs.ys*Math.exp(-dy/160)));drawChart();return}
-if(gs.k=='pan'){const dx=(e.clientX-gs.x)*(W/svg.getBoundingClientRect().width)/L.bw;if(Math.abs(e.clientX-gs.x)>4)gs.mv=1;if(gs.mv){off=gs.off+dx;if(yScale!==1||yShift!==0||Math.abs(e.clientY-gs.cy)>25){yShift=gs.sh+(e.clientY-gs.cy)*(W/svg.getBoundingClientRect().width)/270*yScale}drawChart()}}
+if(gs.k=='pan'){const dx=(e.clientX-gs.x)*(W/svg.getBoundingClientRect().width)/L.bw;if(Math.abs(e.clientX-gs.x)>4)gs.mv=1;if(gs.mv){off=gs.off+dx;if(yScale!==1||yShift!==0){yShift=gs.sh+(e.clientY-gs.cy)*(W/svg.getBoundingClientRect().width)/270*yScale}drawChart()}}
 else{const[x,y]=pt(e),q=snapP(x,y);tmp={t:tool=='m'?'m':tool,d1:gs.q.d,p1:gs.q.p,d2:q.d,p2:q.p,c:col};drawChart()}});
 const up=e=>{ptrs.delete(e.pointerId);if(ptrs.size<2)pinch=null;if(!gs||ptrs.size)return;
 if(gs.k=='draw'&&tmp&&tool!='m'){cur().push(tmp);sel=cur().length-1;tmp=null;drawChart()}
