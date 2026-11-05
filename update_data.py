@@ -921,6 +921,28 @@ json.dump({"dates": [d.strftime("%Y-%m-%d") for d in rc.index],
            "stocks": {s: [None if pd.isna(v) else round(float(v), 2) for v in rc[s]] for s in rc.columns if s in by}},
           open(f"{OUT}/recent.json", "w"), separators=(",", ":"), allow_nan=False)
 print("done:", len(rows), "stocks,", len(themes), "themes, as of", asof)
+# which stocks sit in each Popular Scan today and in the previous run's day (for "New" tags and "Dropped since ..." lines)
+def _scan_sets(rs_):
+    def ok(x): return x.get("turnover") is None or x.get("turnover", 0) >= 10
+    rules = {
+        "darvas": lambda x: x.get("dvb") == 1 and x.get("rs", 0) >= 70,
+        "inside": lambda x: x.get("dvi") == 1 and x.get("rs", 0) >= 80 and (x.get("dvh") is None or x.get("dvh") <= 15),
+        "near": lambda x: x.get("pv") is not None and x["pv"] >= x["price"] and (x["pv"] - x["price"]) / x["pv"] * 100 <= 5 and x.get("rng10") is not None and x["rng10"] <= 15 and bool(x.get("a50")) and x.get("tr", 0) >= 6 and x.get("rs", 0) >= 80,
+        "vcp": lambda x: x.get("vcp") == 1 and x.get("rs", 0) >= 70,
+        "cup": lambda x: x.get("cup") == 1 and x.get("rs", 0) >= 60,
+        "pocket": lambda x: x.get("pp") == 1 and x.get("rs", 0) >= 70,
+        "flags": lambda x: x.get("fl") == 1 and x.get("rs", 0) >= 60}
+    srt = sorted(rs_, key=lambda x: (-x.get("rs", 0), -(x.get("mom") or 0)))
+    return {k: [x["symbol"] for x in srt if ok(x) and fn(x)] for k, fn in rules.items()}
+try:
+    _sp = f"{OUT}/scans.json"; _cs = _scan_sets(rows)
+    try: _old = json.load(open(_sp))
+    except Exception: _old = None
+    if _old and _old.get("asOf") != asof: _prevd, _prevs = _old.get("asOf"), _old.get("cur")
+    elif _old: _prevd, _prevs = _old.get("prevAsOf"), _old.get("prev")
+    else: _prevd, _prevs = None, None
+    json.dump({"asOf": asof, "prevAsOf": _prevd, "cur": _cs, "prev": _prevs}, open(_sp, "w"), separators=(",", ":"))
+except Exception as _e: print("scans.json skipped:", _e)
 # freshness / health file shown on the website
 _trend = None
 try:   # like the reference: Uptrend = benchmark above its 50 and 200-day averages, Downtrend = below both, otherwise Mixed
