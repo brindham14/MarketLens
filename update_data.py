@@ -908,8 +908,14 @@ json.dump({"dates": [d.strftime("%Y-%m-%d") for d in rc.index],
           open(f"{OUT}/recent.json", "w"), separators=(",", ":"), allow_nan=False)
 print("done:", len(rows), "stocks,", len(themes), "themes, as of", asof)
 # freshness / health file shown on the website
+_trend = None
+try:   # like the reference: Uptrend = benchmark above its 50 and 200-day averages, Downtrend = below both, otherwise Mixed
+    _bc = idx_close.dropna(); _px = float(_bc.iloc[-1]); _m50 = float(_bc.iloc[-50:].mean()); _m200 = float(_bc.iloc[-200:].mean())
+    _trend = "Uptrend" if (_px > _m50 and _px > _m200) else ("Downtrend" if (_px < _m50 and _px < _m200) else "Mixed")
+except Exception: pass
 _last = max(df.index[-1] for df in frames.values())
 json.dump({"asOf": asof, "lastCandle": _last.strftime("%Y-%m-%d"), "generated": dt.datetime.utcnow().isoformat() + "Z",
            "stocksDownloaded": len(frames), "stocksRequested": len(syms), "stocksScored": len(rows),
-           "benchmarkOk": bench is not None, "rsUniverse": len(uni)},
+           "benchmarkOk": bench is not None, "rsUniverse": len(uni),
+           "trend": _trend, "liquid": sum(1 for r in rows if r.get("turnover", 0) >= 10), "scanned": pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M")},
           open(f"{OUT}/meta.json", "w"), separators=(",", ":"))
