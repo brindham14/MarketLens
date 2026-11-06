@@ -544,11 +544,6 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
 <button data-more-page="watchlist">★ Watchlist <span id="moreWatchCount">0</span></button><button data-more-page="alerts">🔔 Alerts <span id="moreAlertCount">0</span></button><button data-more-page="journal">📒 Trade journal</button><button data-more-page="notepad">📝 My notepad</button><button data-more-page="fiidii">🏦 FII / DII activity</button><button data-more-page="mutualfunds">📊 Mutual funds</button><button data-more-page="marketnote">🖨 Market note (PDF)</button></div></div></nav>
 </header>
 <main class="wrap">
-  <section class="marketbar">
-    <div class="markethead"><div style="font-weight:750">Market posture <span class="muted" style="font-weight:400;margin-left:8px">As of last loaded data</span></div><div class="legend"><span><i class="dot" style="background:#2c8058"></i>Advancing <b id="advN">253</b> <span id="advP">37%</span></span><span><i class="dot" style="background:#c18c23"></i>Topping <b id="topN">122</b> <span>18%</span></span><span><i class="dot" style="background:#b84a49"></i>Declining <b id="decN">221</b> <span>32%</span></span><span><i class="dot" style="background:#5279a7"></i>Basing <b id="baseN">86</b> <span>13%</span></span></div><span class="muted" id="universe">776 stocks</span></div>
-    <div class="meter" id="postureMeter"><span style="width:0%;background:#39865e"></span><span style="width:0%;background:#c18c23"></span><span style="width:0%;background:#b84a49"></span><span style="width:100%;background:#5279a7"></span></div>
-  </section>
-  <div class="quick"><strong>QUICK VIEW</strong><button class="chip" data-quick="Momentum leaders">Momentum leaders</button><button class="chip" data-quick="Sustained strength">Sustained strength</button><button class="chip" data-quick="Weakening">Weakening</button><button class="chip" data-quick="Downtrends">Downtrends</button><span class="muted">| SCAN</span><button class="chip" data-quick="Breakout">Breakout</button><button class="chip" data-quick="Pullback">Pullback</button><button class="chip" data-quick="Near highs">Near highs</button><button class="chip" data-quick="Extended">Extended</button><button class="chip" data-quick="Slipping">Slipping</button><button class="chip" data-quick="Holding">Holding</button></div>
   <div class="layout">
     <aside class="panel side">
       <div class="panelhead"><span>STOCK UNIVERSE</span><button class="smallbtn" id="resetBtn">Reset</button></div>
@@ -598,22 +593,6 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
     </aside>
   </div>
 
-  <section class="workspace-panel-footer" id="workspacePanelFooter" aria-label="Workspace panels">
-    <div class="workspace-panel-actions"><button class="add-panel-btn" id="addPanelBtn" type="button">＋ Add panel</button></div>
-    <div class="add-panel-picker hidden" id="addPanelPicker" role="dialog" aria-label="Choose a panel">
-      <div class="add-panel-picker-head"><strong>Add a workspace panel</strong><button type="button" id="closePanelPicker" aria-label="Close">×</button></div>
-      <div class="add-panel-options">
-        <button type="button" data-add-panel="Stock list"><b>Stock list</b><span>Filtered list of stocks</span></button>
-        <button type="button" data-add-panel="Stock chart"><b>Stock chart</b><span>Chart for the selected stock</span></button>
-        <button type="button" data-add-panel="Technical parameters"><b>Technical parameters</b><span>RS, stage, trend and setups</span></button>
-        <button type="button" data-add-panel="Watchlist"><b>Watchlist</b><span>Your saved symbols</span></button>
-        <button type="button" data-add-panel="Market breadth"><b>Market breadth</b><span>Advancing, declining and basing stocks</span></button>
-        <button type="button" data-add-panel="My notes"><b>My notes</b><span>Notes for your workspace</span></button>
-      </div>
-    </div>
-    <div class="workspace-added-panels" id="workspaceAddedPanels"></div>
-    <p class="workspace-panel-hint">Drag the ⠿ handles to rearrange. Use ↑ / ↓ to move a panel, or × to remove it. Layout is saved in this browser.</p>
-  </section>
 
   <section id="popularPage" class="hidden" style="margin-top:14px">
     <h2 class="sectiontitle" style="margin-bottom:3px">Popular Scans</h2>
@@ -652,7 +631,7 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
         <button class="smallbtn" id="manageTags">Manage tags</button>
       </div>
       <div style="overflow-x:auto">
-        <table class="stocktable" style="width:100%;min-width:570px"><thead><tr><th style="text-align:left">Stock</th><th>Returns 1M / 3M / 6M</th><th>Momentum</th><th>RS</th></tr></thead><tbody id="leaderRows"></tbody></table>
+        <table class="stocktable" style="width:100%;min-width:570px"><thead><tr><th style="text-align:left">Stock</th><th>Returns 1W / 1M / 3M / 6M</th><th>Momentum</th><th>RS</th></tr></thead><tbody id="leaderRows"></tbody></table>
       </div>
       <div class="meta" style="margin-top:8px">Sorted by momentum score (1M, 3M, 6M, 12M return percentiles, 25% each). Click a symbol for its chart.</div>
       <div id="swingTagPopup" class="swing-tag-popup" hidden></div>
@@ -814,6 +793,27 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
     <div id="moreMarketnote" class="more-screen hidden"><div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><h2 class="sectiontitle">India Market Note</h2><button class="primary" id="printMarketNote">Print / Save as PDF</button></div><div class="panel market-note-card" id="marketNoteContent"><div class="note-brand">↗ <span>MarketLens RS<br><small>SCANNER</small></span><span style="margin-left:auto;text-align:right">India Market Note<br><small id="noteDate"></small></span></div><h3>Summary</h3><p id="noteSummary"></p><h3>Indices &amp; market posture</h3><table class="stocktable" style="width:100%"><thead><tr><th>Metric</th><th>Value</th><th>Interpretation</th></tr></thead><tbody id="noteIndexRows"></tbody></table><h3>Market breadth</h3><div id="noteBreadth"></div><h3>Sector leadership</h3><div id="noteLeadership"></div><hr><p class="meta">For education and general information only. Not investment advice. Market data may be delayed or incomplete. Verify all values before acting.</p></div></div>
   </section>
   <footer class="foot">Educational research interface. This page is not investment advice and does not execute trades. Prices and technical metrics shown before a live provider is connected are sample/illustrative values, not current market quotes. Live data coverage, delay, redistribution rights and API limits depend on your provider and plan.</footer>
+  <section class="workspace-panel-footer" id="workspacePanelFooter" aria-label="Workspace panels">
+  <section class="marketbar">
+    <div class="markethead"><div style="font-weight:750">Market posture <span class="muted" style="font-weight:400;margin-left:8px">As of last loaded data</span></div><div class="legend"><span><i class="dot" style="background:#2c8058"></i>Advancing <b id="advN">253</b> <span id="advP">37%</span></span><span><i class="dot" style="background:#c18c23"></i>Topping <b id="topN">122</b> <span>18%</span></span><span><i class="dot" style="background:#b84a49"></i>Declining <b id="decN">221</b> <span>32%</span></span><span><i class="dot" style="background:#5279a7"></i>Basing <b id="baseN">86</b> <span>13%</span></span></div><span class="muted" id="universe">776 stocks</span></div>
+    <div class="meter" id="postureMeter"><span style="width:0%;background:#39865e"></span><span style="width:0%;background:#c18c23"></span><span style="width:0%;background:#b84a49"></span><span style="width:100%;background:#5279a7"></span></div>
+  </section>
+  <div class="quick"><strong>QUICK VIEW</strong><button class="chip" data-quick="Momentum leaders">Momentum leaders</button><button class="chip" data-quick="Sustained strength">Sustained strength</button><button class="chip" data-quick="Weakening">Weakening</button><button class="chip" data-quick="Downtrends">Downtrends</button><span class="muted">| SCAN</span><button class="chip" data-quick="Breakout">Breakout</button><button class="chip" data-quick="Pullback">Pullback</button><button class="chip" data-quick="Near highs">Near highs</button><button class="chip" data-quick="Extended">Extended</button><button class="chip" data-quick="Slipping">Slipping</button><button class="chip" data-quick="Holding">Holding</button></div>
+    <div class="workspace-panel-actions"><button class="add-panel-btn" id="addPanelBtn" type="button">＋ Add panel</button></div>
+    <div class="add-panel-picker hidden" id="addPanelPicker" role="dialog" aria-label="Choose a panel">
+      <div class="add-panel-picker-head"><strong>Add a workspace panel</strong><button type="button" id="closePanelPicker" aria-label="Close">×</button></div>
+      <div class="add-panel-options">
+        <button type="button" data-add-panel="Stock list"><b>Stock list</b><span>Filtered list of stocks</span></button>
+        <button type="button" data-add-panel="Stock chart"><b>Stock chart</b><span>Chart for the selected stock</span></button>
+        <button type="button" data-add-panel="Technical parameters"><b>Technical parameters</b><span>RS, stage, trend and setups</span></button>
+        <button type="button" data-add-panel="Watchlist"><b>Watchlist</b><span>Your saved symbols</span></button>
+        <button type="button" data-add-panel="Market breadth"><b>Market breadth</b><span>Advancing, declining and basing stocks</span></button>
+        <button type="button" data-add-panel="My notes"><b>My notes</b><span>Notes for your workspace</span></button>
+      </div>
+    </div>
+    <div class="workspace-added-panels" id="workspaceAddedPanels"></div>
+    <p class="workspace-panel-hint">Drag the ⠿ handles to rearrange. Use ↑ / ↓ to move a panel, or × to remove it. Layout is saved in this browser.</p>
+  </section>
 </main>
 <div class="settings" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle"><div class="modal"><h2 id="settingsTitle">Market data connection</h2><p>Connect a provider to load live quotes and daily candles. This single-file HTML sends requests from your browser; for a public website, put provider credentials behind a backend proxy instead.</p><div class="field"><label for="provider">PROVIDER</label><select id="provider"><option value="twelvedata">Twelve Data (REST)</option><option value="custom">Custom REST endpoint</option></select></div><div class="field"><label for="apiKey">API KEY</label><input id="apiKey" type="password" autocomplete="off" placeholder="Paste provider API key"></div><div class="field"><label for="customEndpoint">CUSTOM QUOTE ENDPOINT (optional)</label><input id="customEndpoint" placeholder="https://your-backend.example/api/quote?symbol={symbol}"></div><div class="notice">API keys entered here are stored only in this page's memory and are not saved. Browser-only keys can be inspected by the browser owner. For public deployment, use a server-side proxy and a properly licensed NSE/BSE feed. <a href="https://www.nseindia.com/static/market-data/real-time-data-subscription" target="_blank" rel="noopener">NSE market-data licensing</a>.</div><div class="actions"><button class="pillbtn" id="cancelSettings">Cancel</button><button class="primary" id="connectBtn">Connect &amp; load</button></div><p id="connectionMsg" class="meta"></p></div></div>
 </div><!-- /appShell -->
@@ -1086,7 +1086,7 @@ function renderSwing(){
  const all=[...available,...fillers].filter((s,i,a)=>a.findIndex(x=>x.symbol===s.symbol)===i);
  const filteredAll=all.filter(s=>`${s.symbol} ${s.name} ${s.sector}`.toLowerCase().includes((swingSearchTerm||"").toLowerCase()));
  $("swingRows").innerHTML=filteredAll.map((s,i)=>`<tr data-swing="${s.symbol}"><td>${i+1}</td><td style="text-align:left"><span class="sym">${s.symbol}</span>${window.__mlRealData?(s.rn?`<span class="swing-rank-tag" title="RS has been 90+ for ${s.rn} session(s)">R${s.rn}d</span>`:''):(s.ret3>=25?'<span class="swing-rank-tag">R3d</span>':s.ret3>=10?'<span class="swing-rank-tag">R7d</span>':'')} <button data-star="${s.symbol}" aria-label="Toggle ${s.symbol} watchlist" style="border:0;background:transparent;color:#7a8278;padding:0 2px">${watchlist.has(s.symbol)?"★":"☆"}</button><div class="meta">${s.name}</div></td><td class="hide-mobile"><span style="background:var(--surf2,var(--bg));border-radius:5px;padding:3px 7px">${s.mom!=null?Math.round(s.mom):(window.__mlRealData?"—":Math.min(100,Math.round(s.rs+(s.change>0?1:0))))}</span></td><td class="hide-mobile"><span style="background:#267650;color:white;border-radius:5px;padding:3px 7px">${s.rs}</span></td><td><button class="smallbtn" title="Quick stock details" aria-label="Quick details for ${s.symbol}" data-info="${s.symbol}">ⓘ</button></td></tr>`).join("");
- $("swingCount").textContent=window.__mlRealData?`${filteredAll.length} stocks: liquid (≥ ₹10 cr/day), RS 90 or above, in the strongest themes, ranked by momentum score (average of 1M, 3M, 6M and 12M return percentiles). Screen result, not investment advice.${(()=>{const a=window.__mlThemes&&window.__mlThemes.asOf;if(!a)return"";const d=new Date(a+"T00:00:00"),age=Math.floor((Date.now()-d)/864e5);return` Data as of ${a}${age>4?" — STALE: the daily update has not run recently":""}.`})()}`:`${filteredAll.length} sample stocks shown. Real themes load from data/themes.json after the daily update.`;
+ $("swingCount").textContent=window.__mlRealData?`${filteredAll.length} stocks: liquid (≥ ₹10 cr/day), RS above 90, in a theme currently in the Leading quadrant, ranked by momentum score (average of 1M, 3M, 6M and 12M return percentiles). Screen result, not investment advice.${(()=>{const a=window.__mlThemes&&window.__mlThemes.asOf;if(!a)return"";const d=new Date(a+"T00:00:00"),age=Math.floor((Date.now()-d)/864e5);return` Data as of ${a}${age>4?" — STALE: the daily update has not run recently":""}.`})()}`:`${filteredAll.length} sample stocks shown. Real themes load from data/themes.json after the daily update.`;
  renderNseUniverse();
  $("swingRows").querySelectorAll("[data-swing]").forEach(tr=>tr.onclick=e=>{if(e.target.closest("button"))return;selected=tr.dataset.swing;document.querySelector('[data-tab="workspace"]').click();renderAll()});
  $("swingRows").querySelectorAll("[data-info]").forEach(b=>b.onclick=e=>{e.stopPropagation();showSwingInfo(b.dataset.info,b)});
@@ -1115,7 +1115,7 @@ function renderSwingLeaders(theme){
  if(!list.length&&!Object.keys(THEME_MEMBERS).length)list=stocks.filter(s=>s.rs>=min).slice(0,8);
  if(!list.length&&window.__mlRealData)$("leaderRows").innerHTML=`<tr><td colspan="4" class="meta" style="text-align:left;padding:10px">No liquid stocks (≥ ₹10 cr/day) in this theme have RS ${min} or higher right now.</td></tr>`;
  if(window.__mlRealData){$("leadersTitle").textContent=theme;list.sort((a,b)=>(b.mom??0)-(a.mom??0))}else list.sort((a,b)=>(b.ret3+b.ret6*.5+b.ret1*.25)-(a.ret3+a.ret6*.5+a.ret1*.25));
- $("leaderRows").innerHTML=list.slice(0,12).map(s=>`<tr><td style="text-align:left"><span class="sym" data-chart="${s.symbol}" style="cursor:pointer">${s.symbol}</span> <button data-star2="${s.symbol}" style="border:0;background:transparent;color:#788078">${watchlist.has(s.symbol)?"★":"☆"}</button><div class="meta">${s.name}</div><div class="swing-tag-inline">${(swingStockTags[s.symbol]||[]).map(t=>swingTagPill(t)).join("")}<button type="button" class="swing-tag-open" data-stock-tags="${s.symbol}">+ tag</button></div></td><td class="chg ${s.ret3>=0?"up":"down"}">${s.r1!=null?pct(s.r1):(window.__mlRealData?"—":"+"+Math.round(s.ret3/3)+"%")} / ${s.ret3!=null?pct(s.ret3):"—"} / ${s.ret6!=null?pct(s.ret6):"—"}</td><td><span style="background:var(--surf2,var(--bg));padding:5px 9px;border-radius:5px">${s.mom!=null?Math.round(s.mom):(window.__mlRealData?"—":Math.min(100,Math.round(s.rs+1)))}</span></td><td><span style="background:#287b54;color:white;padding:5px 9px;border-radius:5px">${s.rs}</span></td></tr>`).join("");
+ $("leaderRows").innerHTML=list.slice(0,12).map(s=>`<tr><td style="text-align:left"><span class="sym" data-chart="${s.symbol}" style="cursor:pointer">${s.symbol}</span> <button data-star2="${s.symbol}" style="border:0;background:transparent;color:#788078">${watchlist.has(s.symbol)?"★":"☆"}</button><div class="meta">${s.name}</div><div class="swing-tag-inline">${window.__mlRealData&&typeof tagHTML==="function"?tagHTML(s):""}${(swingStockTags[s.symbol]||[]).map(t=>swingTagPill(t)).join("")}<button type="button" class="swing-tag-open" data-stock-tags="${s.symbol}">+ tag</button></div></td><td class="chg ${s.ret3>=0?"up":"down"}">${window.__mlRealData?(s.ret1w!=null?pct(s.ret1w)+" / ":"— / "):""}${s.r1!=null?pct(s.r1):(window.__mlRealData?"—":"+"+Math.round(s.ret3/3)+"%")} / ${s.ret3!=null?pct(s.ret3):"—"} / ${s.ret6!=null?pct(s.ret6):"—"}</td><td><span style="background:var(--surf2,var(--bg));padding:5px 9px;border-radius:5px">${s.mom!=null?Math.round(s.mom):(window.__mlRealData?"—":Math.min(100,Math.round(s.rs+1)))}</span></td><td><span style="background:#287b54;color:white;padding:5px 9px;border-radius:5px">${s.rs}</span></td></tr>`).join("");
  $("leaderRows").querySelectorAll("[data-chart]").forEach(el=>el.onclick=()=>{selected=el.dataset.chart;document.querySelector('[data-tab="workspace"]').click();renderAll()});
  $("leaderRows").querySelectorAll("[data-star2]").forEach(b=>b.onclick=()=>{let sym=b.dataset.star2;if(watchlist.has(sym))watchlist.delete(sym);else watchlist.add(sym);b.textContent=watchlist.has(sym)?"★":"☆"});
 }
@@ -2201,7 +2201,7 @@ if(sc.special==='portfolio'){
  g('scPortfolioAnalyze').onclick=async()=>{let txt=paste.value;if(file.files[0])txt=await file.files[0].text();if(!txt.trim()){results.innerHTML='<p class="meta">Choose a CSV or paste at least one holding first.</p>';return}analyze(txt)};
 }
 }
-function tagHTML(s){const tags=[];if(s.cup===1)tags.push(['Cup &amp; handle','#eee3f2','#80518d']);if(s.fl===1)tags.push(['Flag','#f6ebce','#a77b22']);if(s.fromHigh!=null&&s.fromHigh>=-5)tags.push(['Near highs','#dce8f6','#5279a7']);if(s.cup===1&&s.pv&&s.price<=s.pv&&(s.pv-s.price)/s.pv*100<=3)tags.push(['Near breakout','#dce8f6','#5279a7']);if(s.vcp===1)tags.push(['VCP','#eee3f2','#80518d']);if(s.pp===1)tags.push(['Pocket pivot','#dce8f6','#5279a7']);if(s.b50===1)tags.push(['Breakout','#dceee3','#347a54']);if(s.a50)tags.push(['Above 50 DMA','#dceee3','#347a54']);if(!s.a50)tags.push(['Below 21 EMA','#f5e0df','#a64f4c']);if(s.rsH)tags.push(['RS new high','#e2e9f5','#5279a7']);if(s.my)tags.push(['Multi-year high','#f6ebce','#a77b22']);if(s.tw>=3)tags.push(['Tight base','#e8e2f1','#795a91']);if(!tags.length)tags.push([s.stage==2?'Advancing':'Watch','#e8e8df','#73796e']);return tags.slice(0,3).map(([t,b,c])=>`<span style="display:inline-block;margin:1px 2px 2px 0;padding:2px 6px;border-radius:9px;border:1px solid ${c}55;background:${b};color:${c};font-size:10px;white-space:nowrap">${t}</span>`).join('')}
+window.tagHTML=tagHTML;function tagHTML(s){const tags=[];if(s.cup===1)tags.push(['Cup &amp; handle','#eee3f2','#80518d']);if(s.fl===1)tags.push(['Flag','#f6ebce','#a77b22']);if(s.fromHigh!=null&&s.fromHigh>=-5)tags.push(['Near highs','#dce8f6','#5279a7']);if(s.cup===1&&s.pv&&s.price<=s.pv&&(s.pv-s.price)/s.pv*100<=3)tags.push(['Near breakout','#dce8f6','#5279a7']);if(s.vcp===1)tags.push(['VCP','#eee3f2','#80518d']);if(s.pp===1)tags.push(['Pocket pivot','#dce8f6','#5279a7']);if(s.b50===1)tags.push(['Breakout','#dceee3','#347a54']);if(s.a50)tags.push(['Above 50 DMA','#dceee3','#347a54']);if(!s.a50)tags.push(['Below 21 EMA','#f5e0df','#a64f4c']);if(s.rsH)tags.push(['RS new high','#e2e9f5','#5279a7']);if(s.my)tags.push(['Multi-year high','#f6ebce','#a77b22']);if(s.tw>=3)tags.push(['Tight base','#e8e2f1','#795a91']);if(!tags.length)tags.push([s.stage==2?'Advancing':'Watch','#e8e8df','#73796e']);return tags.slice(0,3).map(([t,b,c])=>`<span style="display:inline-block;margin:1px 2px 2px 0;padding:2px 6px;border-radius:9px;border:1px solid ${c}55;background:${b};color:${c};font-size:10px;white-space:nowrap">${t}</span>`).join('')}
 function renderMomentum(){
   const panel=g('momPanel');panel.style.display='block';
   ['scBanner','scSpecial','scBuilder','scStage','scParams','scFilt','scCount','scChanges','scCards','scTWrap','scMore'].forEach(id=>{const el=g(id);if(el)el.style.display='none'});
@@ -3275,6 +3275,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
   mlRotPlot(u);
   mlRenderMoney();
   const ty=$("strongestType"),hasI=(S.industries||[]).length>0,want=hasI?3:2;if(ty.options.length!==want){const v=ty.value;ty.innerHTML="<option>Sector</option>"+(hasI?"<option>Industry</option>":"")+"<option>Theme</option>";if([...ty.options].some(o=>o.value===v))ty.value=v}
+  if(!window.__strInit){window.__strInit=1;if(hasI)ty.value="Industry";document.querySelectorAll("[data-strong-quad]").forEach(cb=>cb.checked=cb.dataset.strongQuad==="All")}
   const cardsAll=ty.value==="Theme"?S.themes:ty.value==="Industry"?S.industries:S.sectors,cnt={Leading:0,Improving:0,Weakening:0,Lagging:0};cardsAll.forEach(c=>cnt[c.quad]++);
   document.querySelectorAll("[data-strong-quad]").forEach(cb=>{const k=cb.dataset.strongQuad;if(k!=="All"){const lb=cb.parentElement;lb.lastChild.nodeValue=` ${k} (${cnt[k]})`}});
   const sq=[...document.querySelectorAll("[data-strong-quad]:checked")].map(x=>x.dataset.strongQuad),all=sq.includes("All")||sq.length===0;
@@ -3294,8 +3295,8 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
    if(T&&Array.isArray(T.themes)&&T.themes.length){
     window.__mlThemes=T;THEME_MEMBERS={};T.themes.forEach(t=>THEME_MEMBERS[t.name]=t.members||[]);
     swingThemes.splice(0,swingThemes.length,...T.themes.slice(0,5));
-    const top=new Set(T.themes.slice(0,5).flatMap(t=>t.members));
-    const l=rows.filter(x=>x.rs>=90&&(x.turnover||0)>=10&&top.has(x.symbol)).sort((a,b)=>(b.mom||0)-(a.mom||0)).map(x=>x.symbol);
+    const _ld=new Set(((window.__mlSectors&&window.__mlSectors.themes)||[]).filter(t=>t.quad==='Leading').map(t=>t.name)),top=new Set(T.themes.filter(t=>_ld.size?_ld.has(t.name):false).flatMap(t=>t.members));
+    const l=rows.filter(x=>x.rs>90&&(x.turnover||0)>=10&&top.has(x.symbol)).sort((a,b)=>(b.mom||0)-(a.mom||0)).map(x=>x.symbol);
     swingSymbols.splice(0,swingSymbols.length,...l);
    }
    if(typeof renderSwing==='function')renderSwing();
