@@ -270,24 +270,33 @@ def depth_in(h, l):            # deepest pullback % inside a window (running pea
     rm = np.maximum.accumulate(h); return float(np.max((rm - l) / rm)) * 100
 
 def darvas_state(h, l, c, per=252, near=5, hold=3, span=200):
-    """Newest live Darvas box: ('b', sessions since breakout, top, bottom) or ('i', sessions since top, top, bottom)."""
-    n = len(h); rmax = pd.Series(h).rolling(per, min_periods=1).max().values
+    """Newest Darvas box, like the reference: ('b', sessions since breakout, top, bottom|None), ('i', sessions since top, top, bottom)
+    for a complete box, ('t', sessions since top, top, None) when the top is set but the bottom is still forming, or None.
+    A box top is a high within 5% of the 52-week high that no later high exceeds for 3 sessions. The bottom is the lowest low after it
+    that holds 3 sessions. Any higher high before the bottom is set voids the box (a close above it is a breakout); afterwards a close
+    above the top is a breakout and a close below the bottom cancels it. The bar that ends a box can itself start the next box."""
+    n = len(h)
+    if n < 252: return None                         # needs a full 52-week history
+    rmax = pd.Series(h).rolling(per, min_periods=1).max().values
     k = max(3, n - 1 - 2 * span); last = None
     while k < n - hold:
         if h[k] < rmax[k] * (1 - near / 100) or any(h[j] > h[k] for j in range(k + 1, k + hold + 1)):
             k += 1; continue
-        lo, at, jj = 1e18, -1, None
+        top = float(h[k]); lo, at, jj, q, kind = 1e18, -1, None, None, None
         for j in range(k + 1, n):
+            if h[j] > top: q, kind = j, ("b" if c[j] > top else "v"); break
             if l[j] < lo: lo, at = l[j], j
             if at > 0 and j - at >= hold: jj = j; break
-        if jj is None: break
-        top, bot = float(h[k]), float(lo); q = None; kind = None
+        if kind == "b": last = ("b", n - 1 - q, top, None); k = q; continue
+        if kind == "v": k = q; continue
+        if jj is None: last = ("t", n - 1 - k, top, None); break
+        bot = float(lo)
         for x in range(jj + 1, n):
             if c[x] < bot: q, kind = x, "x"; break
             if c[x] > top: q, kind = x, "b"; break
         if q is None: last = ("i", n - 1 - k, top, bot); break
         last = ("b", n - 1 - q, top, bot) if kind == "b" else None
-        k = q + 1
+        k = q
     return last
 
 def darvas(h, l, per=252, near=5):
@@ -320,10 +329,11 @@ def pivot_highs(h, c, N=5, within=10, cancel=25, per=252, span=320):
         if not canc: out.append((k, float(hk), brk))
     return out
 
-def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.10, minHandle=4, maxHandle=25, maxHD=.12):
-    """Cup with handle: 12-40% cup of 7+ weeks whose right side recovered to within 10% of the left high,
-    then a handle of 3-25 sessions no deeper than 12% that stays in the upper half of the cup.
-    The handle starts at its own high (the pivot) and runs to the latest bar."""
+def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.10, minHandle=4, maxHandle=26, maxHD=.12, minLeft=10):
+    """Cup with handle (matches the reference): a 12-40% deep cup lasting 7+ weeks whose right side recovered to within 10% of the left
+    high, then a 3-25 session handle (counted after the pivot) no deeper than 12% that stays in the upper half of the cup.
+    The pivot is the handle high, which is also the highest point of the right side. The left high is searched among bars at least
+    7 weeks before the handle; of the valid handles the one with the highest pivot is kept."""
     n = len(h); end = n - 1; best = None
     for hlen in range(minHandle, maxHandle + 1):
         hs = end - hlen + 1
@@ -332,16 +342,18 @@ def cup_handle(h, l, minDepth=.12, maxDepth=.40, minCup=35, maxCup=260, rimTol=.
         if h[hs] < hh or hh <= 0: continue
         hl = float(l[hs:].min()); hd = (hh - hl) / hh
         if hd > maxHD: continue
-        lo = max(0, hs - maxCup); seg = h[lo:hs]
-        if len(seg) < minCup: continue
-        la = lo + int(np.argmax(seg)); LH = float(h[la]); cupLen = hs - la
-        if cupLen < minCup or LH <= 0: continue
-        bot = float(l[la:hs].min()); depth = (LH - bot) / LH
+        lo = max(0, hs - maxCup); seg = h[lo:hs - minCup + 1]
+        if len(seg) < 1: continue
+        la = lo + int(np.argmax(seg)); LH = float(h[la])
+        if LH <= 0: continue
+        bi = la + int(np.argmin(l[la:hs])); bot = float(l[bi]); depth = (LH - bot) / LH
         if depth < minDepth or depth > maxDepth: continue
         if hh < LH * (1 - rimTol): continue
         if hl < bot + (LH - bot) * .5: continue
-        if best is None or cupLen > best["cupLen"]:
-            best = dict(depth=depth * 100, hD=hd * 100, cupLen=cupLen, rightHigh=hh)
+        if bi - la < minLeft: continue
+        if hh < float(h[bi:hs].max()): continue
+        if best is None or hh > best["rightHigh"]:
+            best = dict(depth=depth * 100, hD=hd * 100, cupLen=hs - la, rightHigh=hh, hlen=hlen)
     return best
 
 def pattern_fields(o, h, l, c, v):
@@ -403,19 +415,22 @@ def weekly_tight(close_series):
 
 def flag_cup_my(h, l, c):
     f = {}; n = len(c); price = c[-1]
-    # Flag: >=25% run-up into a recent high, then a tight (<=12%) pullback
+    # Flag (reference rule): a run-up of 25%+ (pole, measured from the lowest low of the 40 sessions before) into a new 52-week high made 4-20 sessions ago,
+    # then a pullback of 12% or less; the high must not have been exceeded since.
+    f["fl"] = 0
     if n > 80:
-        pk = n - 25 + int(np.argmax(h[-25:])); since = n - 1 - pk
-        base_low = float(np.min(l[max(0, pk - 40):pk + 1]))
-        pole = (h[pk] / base_low - 1) * 100; fd = (h[pk] - np.min(l[pk:])) / h[pk] * 100
-        f["pole"], f["fD"] = round(float(pole), 1), round(float(fd), 1)
-        f["fl"] = int(pole >= 25 and fd <= 12 and 3 <= since <= 25 and price >= 0.85 * h[pk])
-    # Cup with handle (port of the chart's indicator): 12-40% cup of 7+ weeks, shallow handle in its upper half, still below the right rim
-    if n > 200 and price > sma(c, 50):
+        hi52 = float(np.max(h[-252:])); bestf = None
+        for age in range(4, 21):
+            pk = n - 1 - age
+            if pk < 40 or h[pk] < h[pk:].max() or h[pk] < hi52 * 0.995: continue
+            pole = (h[pk] / float(np.min(l[max(0, pk - 40):pk + 1])) - 1) * 100; fd = (h[pk] - float(np.min(l[pk:]))) / h[pk] * 100
+            if pole >= 25 and fd <= 12 and (bestf is None or pole > bestf[0]): bestf = (pole, fd)
+        if bestf: f["fl"] = 1; f["pole"], f["fD"] = round(float(bestf[0]), 1), round(float(bestf[1]), 1)
+    # Cup with handle (port of the chart's indicator, calibrated to the reference); the pivot is the handle high (cpv)
+    if n > 200:
         cu = cup_handle(h[-400:], l[-400:])
-        if cu and -5 <= (price / cu["rightHigh"] - 1) * 100 <= 0:
-            f["cup"] = 1; f["cupD"] = round(cu["depth"], 1); f["hD"] = round(cu["hD"], 1); f["pv"] = round(cu["rightHigh"], 2)
-            f["pivotHeldSessions"] = max(5, int(cu["cupLen"] // 10)); f["breakoutToday"] = 0
+        if cu:
+            f["cup"] = 1; f["cupD"] = round(cu["depth"], 1); f["hD"] = round(cu["hD"], 1); f["cpv"] = round(cu["rightHigh"], 2)
     # Multi-year breakout: closes above the highest high of the last ~3 years (older than 60 sessions)
     if n > 400:
         look = min(n - 1, 756); seg = h[-look:-60]; ci = n - look + int(np.argmax(seg)); C = float(h[ci])
@@ -428,12 +443,15 @@ def flag_cup_my(h, l, c):
     ds = darvas_state(h, l, c)
     if ds:
         kind, age, top, bot = ds
-        f["dvt"] = round(top, 2); f["dvl"] = round(bot, 2); f["dvh"] = round((top - bot) / top * 100, 1)
+        f["dvt"] = round(top, 2)
+        if bot is not None: f["dvl"] = round(bot, 2); f["dvh"] = round((top - bot) / top * 100, 1)
         if kind == "b":
-            if age <= 3: f["dvb"] = 1; f["dvd"] = age
-        else:
+            if age <= 4: f["dvb"] = 1; f["dvd"] = age
+        elif kind == "i":
             f["dvn"] = 1; f["dva"] = age
             if price >= top * 0.95: f["dvi"] = 1
+        else:
+            f["dvp"] = 1; f["dva"] = age
     return f
 
 # ---------------------------------------------------------------- per-stock features
