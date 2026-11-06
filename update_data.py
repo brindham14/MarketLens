@@ -684,7 +684,7 @@ if os.path.exists("industries.csv"):      # NSE industry of each stock (copied f
         for r_ in pd.read_csv("industries.csv", comment="#").fillna("").to_dict("records"):
             if str(r_["symbol"]).strip() and str(r_["industry"]).strip(): ind_groups.setdefault(str(r_["industry"]).strip(), []).append(str(r_["symbol"]).strip().upper())
     except Exception as e: print("industries.csv skipped:", e)
-ind_rot = rank_all([group_metrics(k, v, kmin=3) for k, v in ind_groups.items()], "I") if ind_groups else []
+ind_rot = rank_all([group_metrics(k, v, kmin=3, tm_only=True) for k, v in ind_groups.items()], "I") if ind_groups else []
 print("rotation:", len(sector_rot), "sectors,", len(theme_rot), "themes,", len(ind_rot), "industries")
 
 # "Where money is moving": rank of every sector/theme 1 day, 1 week, 3 weeks and 6 weeks ago, rebuilt from the price history
@@ -706,7 +706,7 @@ try:
     for lab, k in MOVE_K.items():
         MOVE_SINCE[lab] = C.index[-1 - k].strftime("%Y-%m-%d")
         for items, grp in ((sector_rot, sec_groups), (theme_rot, groups), (ind_rot, ind_groups)):
-            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5, tm_only=grp is sec_groups)
+            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5, tm_only=(grp is sec_groups or grp is ind_groups))
             for i in items: i.setdefault("pr", {})[lab] = rk.get(i["name"])
     for items in (sector_rot, theme_rot, ind_rot):
         for i in items:

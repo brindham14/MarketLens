@@ -3189,6 +3189,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  window.mlRenderChanges=function(){
   const Cg=window.__mlChanges;if(!Cg)return;
   document.querySelectorAll(".changed-head,#changedPanel").forEach(e=>e.style.display="");
+  if(!window.__chgInit){window.__chgInit=1;const _p=$("changedPanel");if(_p){_p.classList.add("hidden");const _t=$("changeToggle");if(_t)_t.textContent="▸"}}
   const sel=$("changeCategory");
   if(!sel.dataset.real){sel.dataset.real="1";sel.innerHTML=["All changes","Quadrant changes","New 52-week highs","Joined RS 90+","Dropped below RS 90","Entered Stage 2","Broke into Stage 4","Trend checks","Volume breakouts","Pocket pivots","New setups"].map(x=>`<option>${x}</option>`).join("");sel.onchange=mlRenderChanges;const lq=$("liquidOnly");if(lq&&lq.parentElement)lq.parentElement.style.display="none"}
   const cat=sel.value,map={"Quadrant changes":"sectors that changed","Trend checks":"trend checks"};
@@ -3221,7 +3222,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  window.mlRenderMoney=function(){
   const S=window.__mlSectors,M=window.__mlMoney;let box=$("moneyPanel");
   if(!S||!S.since||!Object.keys(S.since).length){if(box)box.style.display="none";return}
-  if(!box){box=document.createElement("div");box.id="moneyPanel";box.className="panel";box.style.cssText="margin:14px 0;padding:12px";const anchor=document.querySelector(".strongest-controls");anchor.parentNode.insertBefore(box,anchor)}
+  if(!box){box=document.createElement("div");box.id="moneyPanel";box.className="panel";box.style.cssText="margin:14px 0;padding:12px";const anchor=$("changedPanel")||document.querySelector(".strongest-controls");anchor.parentNode.insertBefore(box,anchor)}
   box.style.display="";
   const list=(M.t==="Sectors"?S.sectors:M.t==="Industries"?(S.industries||[]):S.themes).filter(i=>i.pr&&i.pr[M.w]).map(i=>({n:i.name,a:i.pr[M.w],b:i.rank,d:i.pr[M.w]-i.rank}));
   const up=list.filter(x=>x.d>0).sort((a,b)=>b.d-a.d||a.b-b.b).slice(0,6),dn=list.filter(x=>x.d<0).sort((a,b)=>a.d-b.d||a.b-b.b).slice(0,6);
