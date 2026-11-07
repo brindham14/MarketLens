@@ -500,6 +500,17 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
 
 
 
+<style>
+/* Swing Trade: stacked like the reference - watchlist, theme cards, then the leaders table */
+#swingPage{display:flex!important;flex-direction:column}
+#swingPage>*{order:9}
+#swingPage .swing-reference-layout{display:contents}
+#swingPage .swing-reference-layout>.swing-watch-panel{order:1;width:100%;max-width:none;margin:0 0 12px!important}
+#swingPage>#themeCards{order:2}
+#swingPage .swing-reference-layout>.panel:last-child{order:3;margin:0 0 12px!important}
+#swingPage .swing-watch-panel .stocktable th:nth-child(3),#swingPage .swing-watch-panel .stocktable td:nth-child(3),#swingPage .swing-watch-panel .stocktable th:nth-child(4),#swingPage .swing-watch-panel .stocktable td:nth-child(4){display:none}
+@media(max-width:700px){#swingPage>.sectorgrid#themeCards{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+</style>
 </head>
 <body>
 <section id="landingPage" class="landing hidden">
