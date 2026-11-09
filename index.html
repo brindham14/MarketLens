@@ -3458,6 +3458,12 @@ async function show(sym){const box=$('oddsModal')||Object.assign(document.body.a
  }catch(e){box.firstChild.innerHTML='Could not calculate odds: '+(e&&e.message||e)+' <button id="oddsX2">Close</button>';$('oddsX2').onclick=()=>box.style.display='none'}}
 function addBtn(){if($('oddsBtn')||!$('drawBtn'))return;const b=document.createElement('button');b.id='oddsBtn';b.className=$('drawBtn').className;b.textContent='Odds';b.title='Historical odds for this stock';b.onclick=()=>{let s;try{s=selected}catch(e){}if(s)show(s)};$('drawBtn').before(b)}
 addBtn();new MutationObserver(addBtn).observe(document.body,{childList:true,subtree:true});
+let chipSym='';
+async function chip(){let s;try{s=selected}catch(e){}const co=$('company');if(!s||!co||s===chipSym&&$('oddsChip'))return;chipSym=s;
+ try{await load();const S=await series(s),F=feats(S.c),n=S.c.length-1,set=F[n][1]===1?AGG.set:AGG.all,p=up(set[20]);if(isNaN(p)||s!==chipSym)return;
+  let c=$('oddsChip');if(!c){c=document.createElement('button');c.id='oddsChip';c.style.cssText='margin-left:8px;border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:2px 9px;font-size:11px;font-weight:700;cursor:pointer;vertical-align:middle;color:var(--green,#2e7d4f)';c.title='Historical odds';co.after(c)}
+  c.textContent=(p>=50?'↑ ':'↓ ')+Math.round(p)+'% 20D';c.onclick=()=>show(s)}catch(e){}}
+setInterval(chip,900);
 })();
 </script>
 <script>
@@ -3506,6 +3512,31 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 41</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 42</div>
+<script>
+/* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
+(function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
+try{mode=localStorage.getItem('mlLeadersMode')||'list'}catch(e){}
+function ensure(){const mb=$('manageTags');if(!mb||$('ldrToggle'))return;
+ const g=document.createElement('div');g.id='ldrToggle';g.style.cssText='display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-right:8px';
+ g.innerHTML='<button data-m="list" style="border:0;padding:6px 11px;background:transparent;color:inherit;font-size:11px;font-weight:700">☰ List</button><button data-m="charts" style="border:0;padding:6px 11px;background:transparent;color:inherit;font-size:11px;font-weight:700">▦ Charts</button>';
+ mb.before(g);g.onclick=e=>{const b=e.target.closest('button');if(!b)return;mode=b.dataset.m;try{localStorage.setItem('mlLeadersMode',mode)}catch(x){}lastSig='';apply()};
+ const tb=$('leaderRows').closest('div');const gr=document.createElement('div');gr.id='ldrCharts';gr.style.cssText='display:none;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px';tb.after(gr)}
+function spark(c,up){const n=c.length,mn=Math.min(...c),mx=Math.max(...c),W=200,Hh=70,p=(v,i)=>(i/(n-1)*W).toFixed(1)+','+(Hh-4-(v-mn)/(mx-mn||1)*(Hh-8)).toFixed(1);
+ const col=up?'#2f8a5b':'#b84a49';return `<svg viewBox="0 0 ${W} ${Hh}" style="width:100%;height:70px;display:block"><polyline fill="none" stroke="${col}" stroke-width="1.6" points="${c.map(p).join(' ')}"/></svg>`}
+async function apply(){ensure();const g=$('ldrCharts'),t=$('leaderRows')&&$('leaderRows').closest('div');if(!g||!t)return;
+ const bs=document.querySelectorAll('#ldrToggle button');bs.forEach(b=>{const on=b.dataset.m===mode;b.style.background=on?'#1e3b2e':'transparent';b.style.color=on?'#fff':'inherit'});
+ if(mode==='list'){t.style.display='';g.style.display='none';return}
+ t.style.display='none';g.style.display='grid';
+ const rows=[...$('leaderRows').querySelectorAll('tr')];const syms=rows.map(r=>{const e=r.querySelector('[data-chart]');return e?e.dataset.chart:(r.querySelector('.sym')||r.cells[0]||{}).textContent}).filter(Boolean).map(x=>x.trim().split(/\s/)[0]);
+ const sig=syms.join(',');if(sig===lastSig)return;lastSig=sig;
+ try{if(!H){H=await (await fetch('data/history.json')).json()}}catch(e){H={stocks:{}}}
+ g.innerHTML=rows.map((r,i)=>{const sy=syms[i],c=H.stocks&&H.stocks[sy]&&H.stocks[sy].c;const cs=c?c.slice(-126).map(Number):null;
+  const rs=(r.cells[r.cells.length-1]||{}).textContent||'',ret=(r.cells[1]||{}).textContent||'';
+  return `<div data-ldrsym="${sy}" style="border:1px solid var(--line);border-radius:10px;padding:8px 10px;cursor:pointer"><div style="display:flex;justify-content:space-between;font-weight:800;font-size:12px"><span>${sy}</span><span style="color:var(--muted)">RS ${rs.trim()}</span></div>${cs&&cs.length>5?spark(cs,cs[cs.length-1]>=cs[0]):'<div class="meta" style="height:70px">No chart data</div>'}<div class="meta">${ret.trim()}</div></div>`}).join('')||'<div class="meta">No leaders to show.</div>';
+ g.onclick=e=>{const d=e.target.closest('[data-ldrsym]');if(!d)return;try{selected=d.dataset.ldrsym;document.querySelector('[data-tab="workspace"]').click();renderAll()}catch(x){}}}
+setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementById('swingPage').classList.contains('hidden'))apply()},700);
+})();
+</script>
 </body>
 </html>
