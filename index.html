@@ -502,7 +502,7 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
 
 <style>
 /* Swing Trade: stacked like the reference - watchlist, theme cards, then the leaders table */
-#swingPage{display:flex!important;flex-direction:column}
+#swingPage:not(.hidden){display:flex!important;flex-direction:column}
 #swingPage>*{order:9}
 #swingPage .swing-reference-layout{display:contents}
 #swingPage .swing-reference-layout>.swing-watch-panel{order:1;width:100%;max-width:none;margin:0 0 12px!important}
@@ -618,7 +618,7 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
     <div class="popular-add-grid" id="popularAddGrid" aria-label="Add more popular scans"></div>
     <div class="foot">Screen results are for education and research only, not investment advice. Patterns such as Darvas boxes, VCP, cup-with-handle and pocket pivots require verified daily OHLCV history to calculate reliably.</div>
   </section>
-  <section id="swingPage" class="hidden" style="display:block">
+  <section id="swingPage" class="hidden">
     <div class="panel swing-watch-panel">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
         <div><h2 class="sectiontitle" style="margin-bottom:3px">Today's Swing Watchlist</h2><div class="meta">Stocks from the leading themes with RS above 90, ranked by momentum · updated after each daily scan</div><div class="meta" style="margin-top:5px"><span style="border:1px solid var(--line);border-radius:12px;padding:3px 7px">Screen result, not investment advice</span></div></div>
@@ -3499,6 +3499,12 @@ function render(){const p=panel();if(!p||typeof watchlist==='undefined'||typeof 
  p.querySelectorAll('[data-wl-open]').forEach(b=>b.onclick=()=>{try{selected=b.dataset.wlOpen;const t=document.querySelector('[data-tab="workspace"]');if(t)t.click();if(typeof renderAll==='function')renderAll();window.scrollTo(0,0)}catch(e){}})}
 setInterval(render,1200);setTimeout(render,800);
 })();
+</script>
+<script>
+(function(){const f=document.getElementById('workspacePanelFooter'),L=document.querySelector('.layout');if(!f||!L)return;
+function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
+new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
+document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
 </body>
 </html>
