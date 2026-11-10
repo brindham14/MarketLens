@@ -676,8 +676,55 @@ def rank_all(items, key):
 sec_groups = {}
 for r in rows:
     if r.get("sector"): sec_groups.setdefault(r["sector"], []).append(r["symbol"])
-sector_rot = rank_all([group_metrics(k, v, tm_only=True, kmin=3) for k, v in sec_groups.items()], "S")
-theme_rot = rank_all([group_metrics(k, v) for k, v in groups.items()], "T")
+# NSE sector and thematic indices (Nifty Bank, Nifty IPO, Nifty Capital Markets ...): the reference lists these next to the hand-made sectors/themes.
+# Each index is read from NSE's constituent file; any file that cannot be fetched is skipped (see the "idx loaded" line in the log).
+import re as _re
+from concurrent.futures import ThreadPoolExecutor as _TPE
+_IDX_SEC = ["Telecommunications", "Pharma", "Media", "Midsmall Healthcare", "Healthcare", "Midsmall IT & Telecom", "Capital Goods", "Metal",
+            "Commercial & Transport", "Midsmall Financial Services", "Retail", "Consumer Services", "Private Bank", "Chemicals", "PSU Bank", "Bank",
+            "Consumer Durables", "IT", "Auto", "FMCG", "Realty", "Oil & Gas", "Financial Services", "Services Sector", "Cement & Construction"]
+_IDX_THM = ["IPO", "India Defence", "Capital Markets", "Sugar & Ethanol", "AI Catalysts", "India Internet", "Small Finance Banks & NBFC", "India Manufacturing",
+            "Energy", "India Digital", "India Infrastructure & Logistics", "MNC", "Mobility", "EV & New Age Automotives", "India New Age Consumer",
+            "Transportation & Logistics", "Non-Cyclical Consumer", "India Tourism", "Housing", "Infrastructure", "PSE", "India Consumption", "Commodities"]
+_IDX_FILE = {"Financial Services": ["financelist", "financialserviceslist"], "Private Bank": ["pvtbanklist", "privatebanklist"], "Oil & Gas": ["oilgaslist"],
+             "Telecommunications": ["telecomlist", "telecommunicationlist"], "Services Sector": ["servicelist", "serviceslist", "servicessectorlist"]}
+def _idx_load(item):
+    kind, nm = item
+    base = _re.sub(r"[^a-z0-9]", "", nm.lower())
+    slugs = [base, base.replace("india", ""), _re.sub(r"[^a-z0-9]", "", nm.lower().replace("&", "and"))]
+    cands = []
+    for sl in dict.fromkeys(slugs):
+        for tail in ("list", "_list"):
+            cands.append(f"ind_nifty{sl}{tail}"); cands.append(f"ind_nifty_{sl}{tail}")
+    for extra in _IDX_FILE.get(nm, []): cands.insert(0, "ind_nifty" + extra)
+    for fn in dict.fromkeys(cands):
+        try:
+            c = pd.read_csv(io.BytesIO(urllib.request.urlopen(urllib.request.Request(f"https://nsearchives.nseindia.com/content/indices/{fn}.csv", headers=H), timeout=15).read()))
+            c.columns = [str(x).strip() for x in c.columns]
+            col = next((x for x in c.columns if x.lower() == "symbol"), None)
+            if col is None: continue
+            syms = [str(x).strip().upper() for x in c[col].dropna() if str(x).strip()]
+            if len(syms) >= 5: return kind, "Nifty " + nm, syms
+        except Exception:
+            continue
+    return None
+idx_sec, idx_thm = {}, {}
+try:
+    with _TPE(8) as _ex:
+        for res in _ex.map(_idx_load, [("S", n) for n in _IDX_SEC] + [("T", n) for n in _IDX_THM]):
+            if res: (idx_sec if res[0] == "S" else idx_thm)[res[1]] = res[2]
+except Exception as e:
+    print("NSE index step skipped:", e)
+print("idx loaded:", len(idx_sec), "of", len(_IDX_SEC), "sector indices,", len(idx_thm), "of", len(_IDX_THM), "thematic indices")
+print("idx sector files:", sorted(idx_sec)); print("idx thematic files:", sorted(idx_thm))
+sec_all = {**sec_groups, **{k: v for k, v in idx_sec.items() if k not in sec_groups}}
+thm_all = {**groups, **{k: v for k, v in idx_thm.items() if k not in groups}}
+sector_rot = rank_all([group_metrics(k, v, tm_only=True, kmin=3) for k, v in sec_all.items()], "S")
+theme_rot = rank_all([group_metrics(k, v) for k, v in thm_all.items()], "T")
+for _i in sector_rot:
+    if _i["name"] in idx_sec: _i["idx"] = 1
+for _i in theme_rot:
+    if _i["name"] in idx_thm: _i["idx"] = 1
 ind_groups = {}
 if os.path.exists("industries.csv"):      # NSE industry of each stock (copied from the reference), used for the Industry level of Sector Rotation
     try:
@@ -705,8 +752,8 @@ MOVE_SINCE = {}
 try:
     for lab, k in MOVE_K.items():
         MOVE_SINCE[lab] = C.index[-1 - k].strftime("%Y-%m-%d")
-        for items, grp in ((sector_rot, sec_groups), (theme_rot, groups), (ind_rot, ind_groups)):
-            rk = _rank_then(grp, k, 3 if grp is ind_groups else 5, tm_only=(grp is sec_groups or grp is ind_groups))
+        for items, grp in ((sector_rot, sec_all), (theme_rot, thm_all), (ind_rot, ind_groups)):
+            rk = _rank_then(grp, k, 3 if (grp is ind_groups or grp is sec_all) else 5, tm_only=(grp is sec_all or grp is ind_groups))
             for i in items: i.setdefault("pr", {})[lab] = rk.get(i["name"])
     for items in (sector_rot, theme_rot, ind_rot):
         for i in items:
