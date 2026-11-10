@@ -717,6 +717,21 @@ except Exception as e:
     print("NSE index step skipped:", e)
 print("idx loaded:", len(idx_sec), "of", len(_IDX_SEC), "sector indices,", len(idx_thm), "of", len(_IDX_THM), "thematic indices")
 print("idx sector files:", sorted(idx_sec)); print("idx thematic files:", sorted(idx_thm))
+# groups copied from the reference site's Workspace (index_groups.csv: symbol,group,kind). An index that NSE's own file already supplied is left as NSE gave it.
+if os.path.exists("index_groups.csv"):
+    try:
+        _ig = pd.read_csv("index_groups.csv", comment="#").fillna("")
+        for _g, _d in _ig.groupby("group", sort=False):
+            _nm = str(_g).strip(); _nm = _nm if _nm.lower().startswith("nifty") else "Nifty " + _nm
+            _kind = str(_d["kind"].iloc[0]).strip().upper()
+            if _nm in idx_sec or _nm in idx_thm: continue
+            (idx_sec if _kind == "S" else idx_thm)[_nm] = [str(x).strip().upper() for x in _d["symbol"] if str(x).strip()]
+        print("index_groups.csv applied:", _ig["group"].nunique(), "groups")
+    except Exception as e:
+        print("index_groups.csv skipped:", e)
+if "Nifty Services Sector" in idx_sec:        # the reference lists Services Sector among the themes
+    idx_thm["Nifty Services Sector"] = idx_sec.pop("Nifty Services Sector")
+print("idx totals now:", len(idx_sec), "sector groups,", len(idx_thm), "thematic groups")
 sec_all = {**sec_groups, **{k: v for k, v in idx_sec.items() if k not in sec_groups}}
 thm_all = {**groups, **{k: v for k, v in idx_thm.items() if k not in groups}}
 sector_rot = rank_all([group_metrics(k, v, tm_only=True, kmin=3) for k, v in sec_all.items()], "S")

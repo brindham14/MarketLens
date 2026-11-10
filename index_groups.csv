@@ -1,0 +1,266 @@
+# symbol,group,kind  (S = sector index, T = thematic index). Copied from the reference site's Workspace; NSE's own file wins if both exist.
+symbol,group,kind
+AONESTEELS,Nifty IPO,T
+AASTHA,Nifty IPO,T
+ACEVECTOR,Nifty IPO,T
+ADROITIND,Nifty IPO,T
+RAMBHAJO,Nifty IPO,T
+ALPINETEX,Nifty IPO,T
+AEROPLANE,Nifty IPO,T
+ANNU,Nifty IPO,T
+ARMEE,Nifty IPO,T
+ARDEE,Nifty IPO,T
+ARCIL,Nifty IPO,T
+AUGMONT,Nifty IPO,T
+BLEL,Nifty IPO,T
+GROWW,Nifty IPO,T
+BONFIG,Nifty IPO,T
+CMRGREEN,Nifty IPO,T
+CORONA,Nifty IPO,T
+CSM,Nifty IPO,T
+CMLL,Nifty IPO,T
+DEEPA,Nifty IPO,T
+DHOOTTRANS,Nifty IPO,T
+ESDS,Nifty IPO,T
+ELEVATE,Nifty IPO,T
+FUSIONCX,Nifty IPO,T
+GAJA,Nifty IPO,T
+GERMAN,Nifty IPO,T
+GLASSWALL,Nifty IPO,T
+HDFIRE,Nifty IPO,T
+HEROMOTORS,Nifty IPO,T
+HEXAGON,Nifty IPO,T
+HORIZONIND,Nifty IPO,T
+HTEL,Nifty IPO,T
+INDOMIM,Nifty IPO,T
+JSIPL,Nifty IPO,T
+JPL,Nifty IPO,T
+JNPR,Nifty IPO,T
+KANOHAR,Nifty IPO,T
+KARAMTARA,Nifty IPO,T
+KNACK,Nifty IPO,T
+KUSUMGAR,Nifty IPO,T
+LCCPROJECT,Nifty IPO,T
+LEAPIND,Nifty IPO,T
+LALITHAA,Nifty IPO,T
+LASERPOWER,Nifty IPO,T
+LENSKART,Nifty IPO,T
+LCL,Nifty IPO,T
+LUMINO,Nifty IPO,T
+MVELECTRO,Nifty IPO,T
+MANIPALHOS,Nifty IPO,T
+MPIMANIPAL,Nifty IPO,T
+MEESHO,Nifty IPO,T
+MILKYMIST,Nifty IPO,T
+MOLBIO,Nifty IPO,T
+MONEYVIEW,Nifty IPO,T
+NITYAS,Nifty IPO,T
+KISSHT,Nifty IPO,T
+ORIENTCABL,Nifty IPO,T
+PARASHLTH,Nifty IPO,T
+PRANAV,Nifty IPO,T
+PRASOLCHEM,Nifty IPO,T
+PERNIASPOP,Nifty IPO,T
+RENTOMOJO,Nifty IPO,T
+RUNWALENTR,Nifty IPO,T
+SBIFUNDS,Nifty IPO,T
+SRIT,Nifty IPO,T
+SSRETAIL,Nifty IPO,T
+SMT,Nifty IPO,T
+SHANKESH,Nifty IPO,T
+SHIPROCKET,Nifty IPO,T
+SKYWAYS,Nifty IPO,T
+SONA,Nifty IPO,T
+STEAMHOUSE,Nifty IPO,T
+SUDEEPPHRM,Nifty IPO,T
+SUNSHINE,Nifty IPO,T
+SWASTIKAIN,Nifty IPO,T
+SYMBIOTEC,Nifty IPO,T
+TECHNOCRAF,Nifty IPO,T
+TEMPSENS,Nifty IPO,T
+TONBO,Nifty IPO,T
+TURTLEMINT,Nifty IPO,T
+VARMORA,Nifty IPO,T
+VEEGALAND,Nifty IPO,T
+VNL,Nifty IPO,T
+WAKEFIT,Nifty IPO,T
+CORDELIA,Nifty IPO,T
+XTRANET,Nifty IPO,T
+ZETWERK,Nifty IPO,T
+ORKLAINDIA,Nifty IPO,T
+BHARATCOAL,Nifty IPO,T
+INNOVISION,Nifty IPO,T
+MIDWESTLTD,Nifty IPO,T
+OMPOWER,Nifty IPO,T
+KSHINTL,Nifty IPO,T
+SHADOWFAX,Nifty IPO,T
+SEDEMAC,Nifty IPO,T
+PNGSREVA,Nifty IPO,T
+GKSL,Nifty IPO,T
+RSL,Nifty IPO,T
+PINELABS,Nifty IPO,T
+UTLSOLAR,Nifty IPO,T
+AEQUS,Nifty IPO,T
+OMNI,Nifty IPO,T
+AMAGI,Nifty IPO,T
+PARKHOSPS,Nifty IPO,T
+PWL,Nifty IPO,T
+NEPHROPLUS,Nifty IPO,T
+CLEANMAX,Nifty IPO,T
+EMMVEE,Nifty IPO,T
+SAIPARENT,Nifty IPO,T
+AYE,Nifty IPO,T
+ICICIAMC,Nifty IPO,T
+VIDYAWIRES,Nifty IPO,T
+EXCELSOFT,Nifty IPO,T
+GSPCROP,Nifty IPO,T
+POWERICA,Nifty IPO,T
+STUDDS,Nifty IPO,T
+CAPILLARY,Nifty IPO,T
+GAUDIUMIVF,Nifty IPO,T
+CANHLIFE,Nifty IPO,T
+FRACTAL,Nifty IPO,T
+CMPDI,Nifty IPO,T
+TENNIND,Nifty IPO,T
+MCX,Nifty Capital Markets,T
+ANANDRATHI,Nifty Capital Markets,T
+MOTILALOFS,Nifty Capital Markets,T
+BSE,Nifty Capital Markets,T
+NUVAMA,Nifty Capital Markets,T
+ANGELONE,Nifty Capital Markets,T
+GROWW,Nifty Capital Markets,T
+CDSL,Nifty Capital Markets,T
+HDFCAMC,Nifty Capital Markets,T
+NAM-INDIA,Nifty Capital Markets,T
+360ONE,Nifty Capital Markets,T
+KFINTECH,Nifty Capital Markets,T
+CAMS,Nifty Capital Markets,T
+IEX,Nifty Capital Markets,T
+UTIAMC,Nifty Capital Markets,T
+ABSLAMC,Nifty Capital Markets,T
+ICICIAMC,Nifty Capital Markets,T
+STLTECH,Nifty Telecommunications,S
+BHARTIARTL,Nifty Telecommunications,S
+BHARTIHEXA,Nifty Telecommunications,S
+INDUSTOWER,Nifty Telecommunications,S
+TTML,Nifty Telecommunications,S
+TATACOMM,Nifty Telecommunications,S
+TEJASNET,Nifty Telecommunications,S
+ITI,Nifty Telecommunications,S
+ROUTE,Nifty Telecommunications,S
+RAILTEL,Nifty Telecommunications,S
+IDEA,Nifty Telecommunications,S
+HFCL,Nifty Telecommunications,S
+CREATIVEYE,Nifty Waves,T
+BALAJITELE,Nifty Waves,T
+GRADIENTE,Nifty Waves,T
+MMWL,Nifty Waves,T
+SAREGAMA,Nifty Waves,T
+PVRINOX,Nifty Waves,T
+NAZARA,Nifty Waves,T
+QUINT,Nifty Waves,T
+TIPSMUSIC,Nifty Waves,T
+SUNTV,Nifty Waves,T
+PFOCUS,Nifty Waves,T
+TIPSFILMS,Nifty Waves,T
+DEN,Nifty Waves,T
+ZEEMEDIA,Nifty Waves,T
+UFO,Nifty Waves,T
+TVTODAY,Nifty Waves,T
+DGCONTENT,Nifty Waves,T
+HATHWAY,Nifty Waves,T
+NDTV,Nifty Waves,T
+PNC,Nifty Waves,T
+NETWORK18,Nifty Waves,T
+GTPL,Nifty Waves,T
+ZEEL,Nifty Waves,T
+DISHTV,Nifty Waves,T
+TVVISION,Nifty Waves,T
+AQYLON,Nifty Waves,T
+RAJTV,Nifty Waves,T
+CYBERMEDIA,Nifty Waves,T
+CRESTO,Nifty Waves,T
+CINELINE,Nifty Waves,T
+MUKTAARTS,Nifty Waves,T
+SHEMAROO,Nifty Waves,T
+SIGNPOST,Nifty Waves,T
+RADAAN,Nifty Waves,T
+ONMOBILE,Nifty Waves,T
+RADIOCITY,Nifty Waves,T
+BAGFILMS,Nifty Waves,T
+RKSWAMY,Nifty Waves,T
+BTML,Nifty Waves,T
+SAMBHAAV,Nifty Waves,T
+DNAMEDIA,Nifty Waves,T
+ENIL,Nifty Waves,T
+NEXTMEDIA,Nifty Waves,T
+PTCIL,Nifty Capital Goods,S
+JYOTICNC,Nifty Capital Goods,S
+APLAPOLLO,Nifty Capital Goods,S
+BEML,Nifty Capital Goods,S
+HAL,Nifty Capital Goods,S
+HBLENGINE,Nifty Capital Goods,S
+ASTRAMICRO,Nifty Capital Goods,S
+ASHOKLEY,Nifty Capital Goods,S
+TMCV,Nifty Capital Goods,S
+BEL,Nifty Capital Goods,S
+PREMIERENE,Nifty Capital Goods,S
+WAAREEENER,Nifty Capital Goods,S
+GRSE,Nifty Capital Goods,S
+BDL,Nifty Capital Goods,S
+COCHINSHIP,Nifty Capital Goods,S
+SUZLON,Nifty Capital Goods,S
+INOXWIND,Nifty Capital Goods,S
+WELCORP,Nifty Capital Goods,S
+FINCABLES,Nifty Capital Goods,S
+BHEL,Nifty Capital Goods,S
+MTARTECH,Nifty Capital Goods,S
+APARINDS,Nifty Capital Goods,S
+TDPOWERSYS,Nifty Capital Goods,S
+DATAPATTNS,Nifty Capital Goods,S
+VOLTAMP,Nifty Capital Goods,S
+POWERINDIA,Nifty Capital Goods,S
+GRINDWELL,Nifty Capital Goods,S
+CARBORUNIV,Nifty Capital Goods,S
+ABB,Nifty Capital Goods,S
+GVT&D,Nifty Capital Goods,S
+KIRLOSENG,Nifty Capital Goods,S
+ELGIEQUIP,Nifty Capital Goods,S
+USHAMART,Nifty Capital Goods,S
+SIEMENS,Nifty Capital Goods,S
+CGPOWER,Nifty Capital Goods,S
+POLYCAB,Nifty Capital Goods,S
+TIMKEN,Nifty Capital Goods,S
+SUPREMEIND,Nifty Capital Goods,S
+ENRIN,Nifty Capital Goods,S
+TRITURBINE,Nifty Capital Goods,S
+ASTRAL,Nifty Capital Goods,S
+HONAUT,Nifty Capital Goods,S
+CUMMINSIND,Nifty Capital Goods,S
+KEI,Nifty Capital Goods,S
+TITAGARH,Nifty Capital Goods,S
+KAYNES,Nifty Capital Goods,S
+AIAENG,Nifty Capital Goods,S
+THERMAX,Nifty Capital Goods,S
+ESCORTS,Nifty Capital Goods,S
+MAZDOCK,Nifty Capital Goods,S
+NAVINFLUOR,Nifty Chemicals,S
+FLUOROCHEM,Nifty Chemicals,S
+PIDILITIND,Nifty Chemicals,S
+LINDEINDIA,Nifty Chemicals,S
+COROMANDEL,Nifty Chemicals,S
+CHAMBLFERT,Nifty Chemicals,S
+UPL,Nifty Chemicals,S
+TATACHEM,Nifty Chemicals,S
+SOLARINDS,Nifty Chemicals,S
+AARTIIND,Nifty Chemicals,S
+HSCL,Nifty Chemicals,S
+SRF,Nifty Chemicals,S
+DEEPAKFERT,Nifty Chemicals,S
+PCBL,Nifty Chemicals,S
+DEEPAKNTR,Nifty Chemicals,S
+JUBLINGREA,Nifty Chemicals,S
+ATUL,Nifty Chemicals,S
+SUMICHEM,Nifty Chemicals,S
+SWANCORP,Nifty Chemicals,S
+PIIND,Nifty Chemicals,S
