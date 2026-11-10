@@ -1,0 +1,861 @@
+# symbol,group,kind  (S = sector index, T = thematic index). Copied from the reference site's Workspace; NSE's own file wins if both exist.
+symbol,group,kind
+AONESTEELS,Nifty IPO,T
+AASTHA,Nifty IPO,T
+ACEVECTOR,Nifty IPO,T
+ADROITIND,Nifty IPO,T
+RAMBHAJO,Nifty IPO,T
+ALPINETEX,Nifty IPO,T
+AEROPLANE,Nifty IPO,T
+ANNU,Nifty IPO,T
+ARMEE,Nifty IPO,T
+ARDEE,Nifty IPO,T
+ARCIL,Nifty IPO,T
+AUGMONT,Nifty IPO,T
+BLEL,Nifty IPO,T
+GROWW,Nifty IPO,T
+BONFIG,Nifty IPO,T
+CMRGREEN,Nifty IPO,T
+CORONA,Nifty IPO,T
+CSM,Nifty IPO,T
+CMLL,Nifty IPO,T
+DEEPA,Nifty IPO,T
+DHOOTTRANS,Nifty IPO,T
+ESDS,Nifty IPO,T
+ELEVATE,Nifty IPO,T
+FUSIONCX,Nifty IPO,T
+GAJA,Nifty IPO,T
+GERMAN,Nifty IPO,T
+GLASSWALL,Nifty IPO,T
+HDFIRE,Nifty IPO,T
+HEROMOTORS,Nifty IPO,T
+HEXAGON,Nifty IPO,T
+HORIZONIND,Nifty IPO,T
+HTEL,Nifty IPO,T
+INDOMIM,Nifty IPO,T
+JSIPL,Nifty IPO,T
+JPL,Nifty IPO,T
+JNPR,Nifty IPO,T
+KANOHAR,Nifty IPO,T
+KARAMTARA,Nifty IPO,T
+KNACK,Nifty IPO,T
+KUSUMGAR,Nifty IPO,T
+LCCPROJECT,Nifty IPO,T
+LEAPIND,Nifty IPO,T
+LALITHAA,Nifty IPO,T
+LASERPOWER,Nifty IPO,T
+LENSKART,Nifty IPO,T
+LCL,Nifty IPO,T
+LUMINO,Nifty IPO,T
+MVELECTRO,Nifty IPO,T
+MANIPALHOS,Nifty IPO,T
+MPIMANIPAL,Nifty IPO,T
+MEESHO,Nifty IPO,T
+MILKYMIST,Nifty IPO,T
+MOLBIO,Nifty IPO,T
+MONEYVIEW,Nifty IPO,T
+NITYAS,Nifty IPO,T
+KISSHT,Nifty IPO,T
+ORIENTCABL,Nifty IPO,T
+PARASHLTH,Nifty IPO,T
+PRANAV,Nifty IPO,T
+PRASOLCHEM,Nifty IPO,T
+PERNIASPOP,Nifty IPO,T
+RENTOMOJO,Nifty IPO,T
+RUNWALENTR,Nifty IPO,T
+SBIFUNDS,Nifty IPO,T
+SRIT,Nifty IPO,T
+SSRETAIL,Nifty IPO,T
+SMT,Nifty IPO,T
+SHANKESH,Nifty IPO,T
+SHIPROCKET,Nifty IPO,T
+SKYWAYS,Nifty IPO,T
+SONA,Nifty IPO,T
+STEAMHOUSE,Nifty IPO,T
+SUDEEPPHRM,Nifty IPO,T
+SUNSHINE,Nifty IPO,T
+SWASTIKAIN,Nifty IPO,T
+SYMBIOTEC,Nifty IPO,T
+TECHNOCRAF,Nifty IPO,T
+TEMPSENS,Nifty IPO,T
+TONBO,Nifty IPO,T
+TURTLEMINT,Nifty IPO,T
+VARMORA,Nifty IPO,T
+VEEGALAND,Nifty IPO,T
+VNL,Nifty IPO,T
+WAKEFIT,Nifty IPO,T
+CORDELIA,Nifty IPO,T
+XTRANET,Nifty IPO,T
+ZETWERK,Nifty IPO,T
+ORKLAINDIA,Nifty IPO,T
+BHARATCOAL,Nifty IPO,T
+INNOVISION,Nifty IPO,T
+MIDWESTLTD,Nifty IPO,T
+OMPOWER,Nifty IPO,T
+KSHINTL,Nifty IPO,T
+SHADOWFAX,Nifty IPO,T
+SEDEMAC,Nifty IPO,T
+PNGSREVA,Nifty IPO,T
+GKSL,Nifty IPO,T
+RSL,Nifty IPO,T
+PINELABS,Nifty IPO,T
+UTLSOLAR,Nifty IPO,T
+AEQUS,Nifty IPO,T
+OMNI,Nifty IPO,T
+AMAGI,Nifty IPO,T
+PARKHOSPS,Nifty IPO,T
+PWL,Nifty IPO,T
+NEPHROPLUS,Nifty IPO,T
+CLEANMAX,Nifty IPO,T
+EMMVEE,Nifty IPO,T
+SAIPARENT,Nifty IPO,T
+AYE,Nifty IPO,T
+ICICIAMC,Nifty IPO,T
+VIDYAWIRES,Nifty IPO,T
+EXCELSOFT,Nifty IPO,T
+GSPCROP,Nifty IPO,T
+POWERICA,Nifty IPO,T
+STUDDS,Nifty IPO,T
+CAPILLARY,Nifty IPO,T
+GAUDIUMIVF,Nifty IPO,T
+CANHLIFE,Nifty IPO,T
+FRACTAL,Nifty IPO,T
+CMPDI,Nifty IPO,T
+TENNIND,Nifty IPO,T
+MCX,Nifty Capital Markets,T
+ANANDRATHI,Nifty Capital Markets,T
+MOTILALOFS,Nifty Capital Markets,T
+BSE,Nifty Capital Markets,T
+NUVAMA,Nifty Capital Markets,T
+ANGELONE,Nifty Capital Markets,T
+GROWW,Nifty Capital Markets,T
+CDSL,Nifty Capital Markets,T
+HDFCAMC,Nifty Capital Markets,T
+NAM-INDIA,Nifty Capital Markets,T
+360ONE,Nifty Capital Markets,T
+KFINTECH,Nifty Capital Markets,T
+CAMS,Nifty Capital Markets,T
+IEX,Nifty Capital Markets,T
+UTIAMC,Nifty Capital Markets,T
+ABSLAMC,Nifty Capital Markets,T
+ICICIAMC,Nifty Capital Markets,T
+STLTECH,Nifty Telecommunications,S
+BHARTIARTL,Nifty Telecommunications,S
+BHARTIHEXA,Nifty Telecommunications,S
+INDUSTOWER,Nifty Telecommunications,S
+TTML,Nifty Telecommunications,S
+TATACOMM,Nifty Telecommunications,S
+TEJASNET,Nifty Telecommunications,S
+ITI,Nifty Telecommunications,S
+ROUTE,Nifty Telecommunications,S
+RAILTEL,Nifty Telecommunications,S
+IDEA,Nifty Telecommunications,S
+HFCL,Nifty Telecommunications,S
+CREATIVEYE,Nifty Waves,T
+BALAJITELE,Nifty Waves,T
+GRADIENTE,Nifty Waves,T
+MMWL,Nifty Waves,T
+SAREGAMA,Nifty Waves,T
+PVRINOX,Nifty Waves,T
+NAZARA,Nifty Waves,T
+QUINT,Nifty Waves,T
+TIPSMUSIC,Nifty Waves,T
+SUNTV,Nifty Waves,T
+PFOCUS,Nifty Waves,T
+TIPSFILMS,Nifty Waves,T
+DEN,Nifty Waves,T
+ZEEMEDIA,Nifty Waves,T
+UFO,Nifty Waves,T
+TVTODAY,Nifty Waves,T
+DGCONTENT,Nifty Waves,T
+HATHWAY,Nifty Waves,T
+NDTV,Nifty Waves,T
+PNC,Nifty Waves,T
+NETWORK18,Nifty Waves,T
+GTPL,Nifty Waves,T
+ZEEL,Nifty Waves,T
+DISHTV,Nifty Waves,T
+TVVISION,Nifty Waves,T
+AQYLON,Nifty Waves,T
+RAJTV,Nifty Waves,T
+CYBERMEDIA,Nifty Waves,T
+CRESTO,Nifty Waves,T
+CINELINE,Nifty Waves,T
+MUKTAARTS,Nifty Waves,T
+SHEMAROO,Nifty Waves,T
+SIGNPOST,Nifty Waves,T
+RADAAN,Nifty Waves,T
+ONMOBILE,Nifty Waves,T
+RADIOCITY,Nifty Waves,T
+BAGFILMS,Nifty Waves,T
+RKSWAMY,Nifty Waves,T
+BTML,Nifty Waves,T
+SAMBHAAV,Nifty Waves,T
+DNAMEDIA,Nifty Waves,T
+ENIL,Nifty Waves,T
+NEXTMEDIA,Nifty Waves,T
+PTCIL,Nifty Capital Goods,S
+JYOTICNC,Nifty Capital Goods,S
+APLAPOLLO,Nifty Capital Goods,S
+BEML,Nifty Capital Goods,S
+HAL,Nifty Capital Goods,S
+HBLENGINE,Nifty Capital Goods,S
+ASTRAMICRO,Nifty Capital Goods,S
+ASHOKLEY,Nifty Capital Goods,S
+TMCV,Nifty Capital Goods,S
+BEL,Nifty Capital Goods,S
+PREMIERENE,Nifty Capital Goods,S
+WAAREEENER,Nifty Capital Goods,S
+GRSE,Nifty Capital Goods,S
+BDL,Nifty Capital Goods,S
+COCHINSHIP,Nifty Capital Goods,S
+SUZLON,Nifty Capital Goods,S
+INOXWIND,Nifty Capital Goods,S
+WELCORP,Nifty Capital Goods,S
+FINCABLES,Nifty Capital Goods,S
+BHEL,Nifty Capital Goods,S
+MTARTECH,Nifty Capital Goods,S
+APARINDS,Nifty Capital Goods,S
+TDPOWERSYS,Nifty Capital Goods,S
+DATAPATTNS,Nifty Capital Goods,S
+VOLTAMP,Nifty Capital Goods,S
+POWERINDIA,Nifty Capital Goods,S
+GRINDWELL,Nifty Capital Goods,S
+CARBORUNIV,Nifty Capital Goods,S
+ABB,Nifty Capital Goods,S
+GVT&D,Nifty Capital Goods,S
+KIRLOSENG,Nifty Capital Goods,S
+ELGIEQUIP,Nifty Capital Goods,S
+USHAMART,Nifty Capital Goods,S
+SIEMENS,Nifty Capital Goods,S
+CGPOWER,Nifty Capital Goods,S
+POLYCAB,Nifty Capital Goods,S
+TIMKEN,Nifty Capital Goods,S
+SUPREMEIND,Nifty Capital Goods,S
+ENRIN,Nifty Capital Goods,S
+TRITURBINE,Nifty Capital Goods,S
+ASTRAL,Nifty Capital Goods,S
+HONAUT,Nifty Capital Goods,S
+CUMMINSIND,Nifty Capital Goods,S
+KEI,Nifty Capital Goods,S
+TITAGARH,Nifty Capital Goods,S
+KAYNES,Nifty Capital Goods,S
+AIAENG,Nifty Capital Goods,S
+THERMAX,Nifty Capital Goods,S
+ESCORTS,Nifty Capital Goods,S
+MAZDOCK,Nifty Capital Goods,S
+NAVINFLUOR,Nifty Chemicals,S
+FLUOROCHEM,Nifty Chemicals,S
+PIDILITIND,Nifty Chemicals,S
+LINDEINDIA,Nifty Chemicals,S
+COROMANDEL,Nifty Chemicals,S
+CHAMBLFERT,Nifty Chemicals,S
+UPL,Nifty Chemicals,S
+TATACHEM,Nifty Chemicals,S
+SOLARINDS,Nifty Chemicals,S
+AARTIIND,Nifty Chemicals,S
+HSCL,Nifty Chemicals,S
+SRF,Nifty Chemicals,S
+DEEPAKFERT,Nifty Chemicals,S
+PCBL,Nifty Chemicals,S
+DEEPAKNTR,Nifty Chemicals,S
+JUBLINGREA,Nifty Chemicals,S
+ATUL,Nifty Chemicals,S
+SUMICHEM,Nifty Chemicals,S
+SWANCORP,Nifty Chemicals,S
+PIIND,Nifty Chemicals,S
+ENTERO,Nifty Retail,S
+LENSKART,Nifty Retail,S
+NYKAA,Nifty Retail,S
+MEESHO,Nifty Retail,S
+ETERNAL,Nifty Retail,S
+URBANCO,Nifty Retail,S
+TRENT,Nifty Retail,S
+JUSTDIAL,Nifty Retail,S
+NAUKRI,Nifty Retail,S
+DMART,Nifty Retail,S
+V2RETAIL,Nifty Retail,S
+MEDPLUS,Nifty Retail,S
+INDIAMART,Nifty Retail,S
+ABLBL,Nifty Retail,S
+FIRSTCRY,Nifty Retail,S
+EMIL,Nifty Retail,S
+CARTRADE,Nifty Retail,S
+VMART,Nifty Retail,S
+MANYAVAR,Nifty Retail,S
+AVL,Nifty Retail,S
+VMM,Nifty Retail,S
+ARVINDFASN,Nifty Retail,S
+SWIGGY,Nifty Retail,S
+ABFRL,Nifty Retail,S
+ACMESOLAR,Nifty Power,S
+ADANIGREEN,Nifty Power,S
+NHPC,Nifty Power,S
+VEDPOWER,Nifty Power,S
+ADANIENSOL,Nifty Power,S
+ADANIPOWER,Nifty Power,S
+JSWENERGY,Nifty Power,S
+NTPC,Nifty Power,S
+TATAPOWER,Nifty Power,S
+POWERGRID,Nifty Power,S
+NLCINDIA,Nifty Power,S
+KPIGREEN,Nifty Power,S
+SJVN,Nifty Power,S
+RTNPOWER,Nifty Power,S
+RPOWER,Nifty Power,S
+CLEANMAX,Nifty Power,S
+GMRP&UI,Nifty Power,S
+TORNTPOWER,Nifty Power,S
+NAVA,Nifty Power,S
+NTPCGREEN,Nifty Power,S
+JPPOWER,Nifty Power,S
+CESC,Nifty Power,S
+PTC,Nifty Power,S
+CGCL,Nifty NBFC,S
+IIFL,Nifty NBFC,S
+FEDFINA,Nifty NBFC,S
+NORTHARC,Nifty NBFC,S
+MUTHOOTFIN,Nifty NBFC,S
+AIIL,Nifty NBFC,S
+BAJFINANCE,Nifty NBFC,S
+PIRAMALFIN,Nifty NBFC,S
+POONAWALLA,Nifty NBFC,S
+CHOLAFIN,Nifty NBFC,S
+TATACAP,Nifty NBFC,S
+MANAPPURAM,Nifty NBFC,S
+LTF,Nifty NBFC,S
+SBFC,Nifty NBFC,S
+SUNDARMFIN,Nifty NBFC,S
+SBICARD,Nifty NBFC,S
+PAISALO,Nifty NBFC,S
+SHRIRAMFIN,Nifty NBFC,S
+FIVESTAR,Nifty NBFC,S
+HDBFS,Nifty NBFC,S
+M&MFIN,Nifty NBFC,S
+COFORGE,Nifty Midsmall IT & Telecom,S
+CYIENT,Nifty Midsmall IT & Telecom,S
+LTTS,Nifty Midsmall IT & Telecom,S
+PERSISTENT,Nifty Midsmall IT & Telecom,S
+BHARTIHEXA,Nifty Midsmall IT & Telecom,S
+ZENSARTECH,Nifty Midsmall IT & Telecom,S
+INDUSTOWER,Nifty Midsmall IT & Telecom,S
+TATAELXSI,Nifty Midsmall IT & Telecom,S
+TATACOMM,Nifty Midsmall IT & Telecom,S
+AFFLE,Nifty Midsmall IT & Telecom,S
+MPHASIS,Nifty Midsmall IT & Telecom,S
+KPITTECH,Nifty Midsmall IT & Telecom,S
+SAGILITY,Nifty Midsmall IT & Telecom,S
+HFCL,Nifty Midsmall IT & Telecom,S
+OFSS,Nifty Midsmall IT & Telecom,S
+IKS,Nifty Midsmall IT & Telecom,S
+NETWEB,Nifty Midsmall IT & Telecom,S
+TATATECH,Nifty Midsmall IT & Telecom,S
+HEXT,Nifty Midsmall IT & Telecom,S
+INTELLECT,Nifty Midsmall IT & Telecom,S
+LICI,Nifty Insurance,S
+ICICIGI,Nifty Insurance,S
+HDFCLIFE,Nifty Insurance,S
+STARHEALTH,Nifty Insurance,S
+SBILIFE,Nifty Insurance,S
+GICRE,Nifty Insurance,S
+NIACL,Nifty Insurance,S
+NIVABUPA,Nifty Insurance,S
+CANHLIFE,Nifty Insurance,S
+MFSL,Nifty Insurance,S
+ICICILIFE,Nifty Insurance,S
+LICHSGFIN,Nifty Housing Finance,S
+CANFINHOME,Nifty Housing Finance,S
+INDIASHLTR,Nifty Housing Finance,S
+PNBHOUSING,Nifty Housing Finance,S
+HOMEFIRST,Nifty Housing Finance,S
+BAJAJHFL,Nifty Housing Finance,S
+AADHARHFC,Nifty Housing Finance,S
+SAMMAANCAP,Nifty Housing Finance,S
+AAVAS,Nifty Housing Finance,S
+APTUS,Nifty Housing Finance,S
+YATHARTH,Nifty Hospitals,S
+NH,Nifty Hospitals,S
+MEDANTA,Nifty Hospitals,S
+APOLLOHOSP,Nifty Hospitals,S
+ASTERDM,Nifty Hospitals,S
+KIMS,Nifty Hospitals,S
+RAINBOW,Nifty Hospitals,S
+MAXHEALTH,Nifty Hospitals,S
+PARKHOSPS,Nifty Hospitals,S
+HCG,Nifty Hospitals,S
+FORTIS,Nifty Hospitals,S
+MCX,Nifty Financial Services ex-Bank,S
+PAYTM,Nifty Financial Services ex-Bank,S
+BSE,Nifty Financial Services ex-Bank,S
+ANGELONE,Nifty Financial Services ex-Bank,S
+LICHSGFIN,Nifty Financial Services ex-Bank,S
+CDSL,Nifty Financial Services ex-Bank,S
+HDFCAMC,Nifty Financial Services ex-Bank,S
+LICI,Nifty Financial Services ex-Bank,S
+ICICIGI,Nifty Financial Services ex-Bank,S
+MUTHOOTFIN,Nifty Financial Services ex-Bank,S
+HDFCLIFE,Nifty Financial Services ex-Bank,S
+ABCAPITAL,Nifty Financial Services ex-Bank,S
+BAJFINANCE,Nifty Financial Services ex-Bank,S
+CHOLAFIN,Nifty Financial Services ex-Bank,S
+360ONE,Nifty Financial Services ex-Bank,S
+BAJAJHLDNG,Nifty Financial Services ex-Bank,S
+LTF,Nifty Financial Services ex-Bank,S
+BAJAJFINSV,Nifty Financial Services ex-Bank,S
+CAMS,Nifty Financial Services ex-Bank,S
+SBILIFE,Nifty Financial Services ex-Bank,S
+JIOFIN,Nifty Financial Services ex-Bank,S
+RECLTD,Nifty Financial Services ex-Bank,S
+SBICARD,Nifty Financial Services ex-Bank,S
+IRFC,Nifty Financial Services ex-Bank,S
+POLICYBZR,Nifty Financial Services ex-Bank,S
+PNBHOUSING,Nifty Financial Services ex-Bank,S
+SHRIRAMFIN,Nifty Financial Services ex-Bank,S
+PFC,Nifty Financial Services ex-Bank,S
+MFSL,Nifty Financial Services ex-Bank,S
+ICICILIFE,Nifty Financial Services ex-Bank,S
+ENTERO,Nifty Consumer Services,S
+THELEELA,Nifty Consumer Services,S
+LENSKART,Nifty Consumer Services,S
+NYKAA,Nifty Consumer Services,S
+MEESHO,Nifty Consumer Services,S
+INDHOTEL,Nifty Consumer Services,S
+ETERNAL,Nifty Consumer Services,S
+WESTLIFE,Nifty Consumer Services,S
+URBANCO,Nifty Consumer Services,S
+TRENT,Nifty Consumer Services,S
+ITCHOTELS,Nifty Consumer Services,S
+EIHOTEL,Nifty Consumer Services,S
+LEMONTREE,Nifty Consumer Services,S
+JUSTDIAL,Nifty Consumer Services,S
+NAUKRI,Nifty Consumer Services,S
+SAMHI,Nifty Consumer Services,S
+THOMASCOOK,Nifty Consumer Services,S
+DMART,Nifty Consumer Services,S
+IXIGO,Nifty Consumer Services,S
+BLS,Nifty Consumer Services,S
+IRCTC,Nifty Consumer Services,S
+V2RETAIL,Nifty Consumer Services,S
+MEDPLUS,Nifty Consumer Services,S
+INDIAMART,Nifty Consumer Services,S
+ABLBL,Nifty Consumer Services,S
+FIRSTCRY,Nifty Consumer Services,S
+RBA,Nifty Consumer Services,S
+EMIL,Nifty Consumer Services,S
+PWL,Nifty Consumer Services,S
+CARTRADE,Nifty Consumer Services,S
+TBOTEK,Nifty Consumer Services,S
+VMART,Nifty Consumer Services,S
+SAPPHIRE,Nifty Consumer Services,S
+DEVYANI,Nifty Consumer Services,S
+CHALET,Nifty Consumer Services,S
+MANYAVAR,Nifty Consumer Services,S
+AVL,Nifty Consumer Services,S
+JUBLFOOD,Nifty Consumer Services,S
+VMM,Nifty Consumer Services,S
+ARVINDFASN,Nifty Consumer Services,S
+SWIGGY,Nifty Consumer Services,S
+ABFRL,Nifty Consumer Services,S
+JSLL,Nifty Consumer Services,S
+CEMPRO,Nifty Construction,S
+ENGINERSIN,Nifty Construction,S
+CEIGALL,Nifty Construction,S
+LT,Nifty Construction,S
+IRB,Nifty Construction,S
+NCC,Nifty Construction,S
+NBCC,Nifty Construction,S
+IRCON,Nifty Construction,S
+ASHOKA,Nifty Construction,S
+RVNL,Nifty Construction,S
+HGINFRA,Nifty Construction,S
+KEC,Nifty Construction,S
+PNCINFRA,Nifty Construction,S
+WELENT,Nifty Construction,S
+KPIL,Nifty Construction,S
+POWERMECH,Nifty Construction,S
+DBL,Nifty Construction,S
+RITES,Nifty Construction,S
+HCC,Nifty Construction,S
+TECHNOE,Nifty Construction,S
+KNRCON,Nifty Construction,S
+SWSOLAR,Nifty Construction,S
+AFCONS,Nifty Construction,S
+SHREEJISPG,Nifty Commercial & Transport,S
+KMEW,Nifty Commercial & Transport,S
+QUESS,Nifty Commercial & Transport,S
+IGIL,Nifty Commercial & Transport,S
+ADANIPORTS,Nifty Commercial & Transport,S
+JSWINFRA,Nifty Commercial & Transport,S
+GPPL,Nifty Commercial & Transport,S
+INDIGO,Nifty Commercial & Transport,S
+FSL,Nifty Commercial & Transport,S
+GMRAIRPORT,Nifty Commercial & Transport,S
+DELHIVERY,Nifty Commercial & Transport,S
+CMSINFO,Nifty Commercial & Transport,S
+SHADOWFAX,Nifty Commercial & Transport,S
+MSTCLTD,Nifty Commercial & Transport,S
+GESHIP,Nifty Commercial & Transport,S
+REDINGTON,Nifty Commercial & Transport,S
+WEWORK,Nifty Commercial & Transport,S
+TVSSCS,Nifty Commercial & Transport,S
+BLACKBUCK,Nifty Commercial & Transport,S
+SCI,Nifty Commercial & Transport,S
+CONCOR,Nifty Commercial & Transport,S
+MMTC,Nifty Commercial & Transport,S
+CMPDI,Nifty Commercial & Transport,S
+ECLERX,Nifty Commercial & Transport,S
+ULTRACEMCO,Nifty Cement,S
+GRASIM,Nifty Cement,S
+NUVOCO,Nifty Cement,S
+JSWCEMENT,Nifty Cement,S
+SHREECEM,Nifty Cement,S
+JKCEMENT,Nifty Cement,S
+RAMCOCEM,Nifty Cement,S
+INDIACEM,Nifty Cement,S
+ACC,Nifty Cement,S
+AMBUJACEM,Nifty Cement,S
+BIRLACORPN,Nifty Cement,S
+DALBHARAT,Nifty Cement,S
+MCX,Nifty Midsmall Financial Services,S
+PAYTM,Nifty Midsmall Financial Services,S
+MOTILALOFS,Nifty Midsmall Financial Services,S
+ANGELONE,Nifty Midsmall Financial Services,S
+INDIANB,Nifty Midsmall Financial Services,S
+LICHSGFIN,Nifty Midsmall Financial Services,S
+CDSL,Nifty Midsmall Financial Services,S
+BANKINDIA,Nifty Midsmall Financial Services,S
+LICI,Nifty Midsmall Financial Services,S
+ICICIGI,Nifty Midsmall Financial Services,S
+FEDERALBNK,Nifty Midsmall Financial Services,S
+ABCAPITAL,Nifty Midsmall Financial Services,S
+NAM-INDIA,Nifty Midsmall Financial Services,S
+MANAPPURAM,Nifty Midsmall Financial Services,S
+360ONE,Nifty Midsmall Financial Services,S
+BANDHANBNK,Nifty Midsmall Financial Services,S
+KFINTECH,Nifty Midsmall Financial Services,S
+LTF,Nifty Midsmall Financial Services,S
+CAMS,Nifty Midsmall Financial Services,S
+IEX,Nifty Midsmall Financial Services,S
+RECLTD,Nifty Midsmall Financial Services,S
+SBICARD,Nifty Midsmall Financial Services,S
+POLICYBZR,Nifty Midsmall Financial Services,S
+PNBHOUSING,Nifty Midsmall Financial Services,S
+IDFCFIRSTB,Nifty Midsmall Financial Services,S
+INDUSINDBK,Nifty Midsmall Financial Services,S
+AUBANK,Nifty Midsmall Financial Services,S
+MFSL,Nifty Midsmall Financial Services,S
+ICICILIFE,Nifty Midsmall Financial Services,S
+YESBANK,Nifty Midsmall Financial Services,S
+DALMIASUG,Nifty Sugar & Ethanol,T
+KRBL,Nifty Sugar & Ethanol,T
+TRIVENI,Nifty Sugar & Ethanol,T
+GODAVARIB,Nifty Sugar & Ethanol,T
+ASALCBR,Nifty Sugar & Ethanol,T
+INDIAGLYCO,Nifty Sugar & Ethanol,T
+BALRAMCHIN,Nifty Sugar & Ethanol,T
+DHAMPURSUG,Nifty Sugar & Ethanol,T
+BAJAJHIND,Nifty Sugar & Ethanol,T
+GAEL,Nifty Sugar & Ethanol,T
+PICCADIL,Nifty Sugar & Ethanol,T
+BCLIND,Nifty Sugar & Ethanol,T
+EIDPARRY,Nifty Sugar & Ethanol,T
+RENUKA,Nifty Sugar & Ethanol,T
+GLOBUSSPR,Nifty Sugar & Ethanol,T
+ATHERENERG,Nifty Rural,T
+ADANIGREEN,Nifty Rural,T
+TVSMOTOR,Nifty Rural,T
+MARICO,Nifty Rural,T
+PNB,Nifty Rural,T
+INDIANB,Nifty Rural,T
+BHARTIARTL,Nifty Rural,T
+LICHSGFIN,Nifty Rural,T
+NHPC,Nifty Rural,T
+ULTRACEMCO,Nifty Rural,T
+BANKINDIA,Nifty Rural,T
+BANKBARODA,Nifty Rural,T
+LICI,Nifty Rural,T
+PATANJALI,Nifty Rural,T
+TATACONSUM,Nifty Rural,T
+BLUESTARCO,Nifty Rural,T
+MUTHOOTFIN,Nifty Rural,T
+HDFCLIFE,Nifty Rural,T
+ADANIPOWER,Nifty Rural,T
+BAJAJ-AUTO,Nifty Rural,T
+BAJFINANCE,Nifty Rural,T
+PIRAMALFIN,Nifty Rural,T
+GRASIM,Nifty Rural,T
+ASHOKLEY,Nifty Rural,T
+POONAWALLA,Nifty Rural,T
+CHOLAFIN,Nifty Rural,T
+EICHERMOT,Nifty Rural,T
+TATACAP,Nifty Rural,T
+SBIN,Nifty Rural,T
+DIXON,Nifty Rural,T
+TATACOMM,Nifty Rural,T
+TMCV,Nifty Rural,T
+HYUNDAI,Nifty Rural,T
+JSWENERGY,Nifty Rural,T
+BANDHANBNK,Nifty Rural,T
+HEROMOTOCO,Nifty Rural,T
+ASIANPAINT,Nifty Rural,T
+M&M,Nifty Rural,T
+LTF,Nifty Rural,T
+SHREECEM,Nifty Rural,T
+NTPC,Nifty Rural,T
+TATAPOWER,Nifty Rural,T
+SBILIFE,Nifty Rural,T
+JKCEMENT,Nifty Rural,T
+MARUTI,Nifty Rural,T
+COROMANDEL,Nifty Rural,T
+SUNDARMFIN,Nifty Rural,T
+HINDUNILVR,Nifty Rural,T
+HAVELLS,Nifty Rural,T
+ITC,Nifty Rural,T
+UPL,Nifty Rural,T
+BRITANNIA,Nifty Rural,T
+CROMPTON,Nifty Rural,T
+SBICARD,Nifty Rural,T
+AMBUJACEM,Nifty Rural,T
+DABUR,Nifty Rural,T
+VOLTAS,Nifty Rural,T
+TMPV,Nifty Rural,T
+IRCTC,Nifty Rural,T
+GODREJCP,Nifty Rural,T
+IDEA,Nifty Rural,T
+PNBHOUSING,Nifty Rural,T
+SHRIRAMFIN,Nifty Rural,T
+SUPREMEIND,Nifty Rural,T
+NESTLEIND,Nifty Rural,T
+BERGEPAINT,Nifty Rural,T
+TORNTPOWER,Nifty Rural,T
+ASTRAL,Nifty Rural,T
+CUMMINSIND,Nifty Rural,T
+MFSL,Nifty Rural,T
+COLPAL,Nifty Rural,T
+ICICILIFE,Nifty Rural,T
+M&MFIN,Nifty Rural,T
+DALBHARAT,Nifty Rural,T
+PIIND,Nifty Rural,T
+INDHOTEL,Nifty Infrastructure,T
+ADANIGREEN,Nifty Infrastructure,T
+ADANIPORTS,Nifty Infrastructure,T
+DLF,Nifty Infrastructure,T
+GAIL,Nifty Infrastructure,T
+INDIGO,Nifty Infrastructure,T
+BHARTIARTL,Nifty Infrastructure,T
+LT,Nifty Infrastructure,T
+ULTRACEMCO,Nifty Infrastructure,T
+IOC,Nifty Infrastructure,T
+INDUSTOWER,Nifty Infrastructure,T
+MOTHERSON,Nifty Infrastructure,T
+ADANIPOWER,Nifty Infrastructure,T
+APOLLOHOSP,Nifty Infrastructure,T
+GRASIM,Nifty Infrastructure,T
+ASHOKLEY,Nifty Infrastructure,T
+BPCL,Nifty Infrastructure,T
+RELIANCE,Nifty Infrastructure,T
+HINDPETRO,Nifty Infrastructure,T
+NTPC,Nifty Infrastructure,T
+ONGC,Nifty Infrastructure,T
+TATAPOWER,Nifty Infrastructure,T
+POWERGRID,Nifty Infrastructure,T
+MAXHEALTH,Nifty Infrastructure,T
+SUZLON,Nifty Infrastructure,T
+GVT&D,Nifty Infrastructure,T
+CGPOWER,Nifty Infrastructure,T
+BHARATFORG,Nifty Infrastructure,T
+CUMMINSIND,Nifty Infrastructure,T
+FORTIS,Nifty Infrastructure,T
+BEML,Nifty India Railways PSU,T
+BPCL,Nifty India Railways PSU,T
+BEL,Nifty India Railways PSU,T
+HINDPETRO,Nifty India Railways PSU,T
+NTPC,Nifty India Railways PSU,T
+ONGC,Nifty India Railways PSU,T
+ITI,Nifty India Railways PSU,T
+IRFC,Nifty India Railways PSU,T
+IRCTC,Nifty India Railways PSU,T
+RAILTEL,Nifty India Railways PSU,T
+IRCON,Nifty India Railways PSU,T
+RVNL,Nifty India Railways PSU,T
+BHEL,Nifty India Railways PSU,T
+MRPL,Nifty India Railways PSU,T
+SAIL,Nifty India Railways PSU,T
+CONCOR,Nifty India Railways PSU,T
+RITES,Nifty India Railways PSU,T
+ATHERENERG,Nifty India New Age Consumption,T
+PVRINOX,Nifty India New Age Consumption,T
+LENSKART,Nifty India New Age Consumption,T
+PAYTM,Nifty India New Age Consumption,T
+MOTILALOFS,Nifty India New Age Consumption,T
+NYKAA,Nifty India New Age Consumption,T
+KALYANKJIL,Nifty India New Age Consumption,T
+MEESHO,Nifty India New Age Consumption,T
+INDHOTEL,Nifty India New Age Consumption,T
+ETERNAL,Nifty India New Age Consumption,T
+NUVAMA,Nifty India New Age Consumption,T
+ANGELONE,Nifty India New Age Consumption,T
+PHOENIXLTD,Nifty India New Age Consumption,T
+GROWW,Nifty India New Age Consumption,T
+DLF,Nifty India New Age Consumption,T
+KPRMILL,Nifty India New Age Consumption,T
+LGEINDIA,Nifty India New Age Consumption,T
+TVSMOTOR,Nifty India New Age Consumption,T
+TITAN,Nifty India New Age Consumption,T
+INDIGO,Nifty India New Age Consumption,T
+BHARTIARTL,Nifty India New Age Consumption,T
+OBEROIRLTY,Nifty India New Age Consumption,T
+BHARTIHEXA,Nifty India New Age Consumption,T
+PRESTIGE,Nifty India New Age Consumption,T
+TRENT,Nifty India New Age Consumption,T
+FORCEMOT,Nifty India New Age Consumption,T
+HDFCAMC,Nifty India New Age Consumption,T
+ITCHOTELS,Nifty India New Age Consumption,T
+BLUESTARCO,Nifty India New Age Consumption,T
+EIHOTEL,Nifty India New Age Consumption,T
+LEMONTREE,Nifty India New Age Consumption,T
+PFOCUS,Nifty India New Age Consumption,T
+LODHA,Nifty India New Age Consumption,T
+BAJAJ-AUTO,Nifty India New Age Consumption,T
+NAM-INDIA,Nifty India New Age Consumption,T
+EICHERMOT,Nifty India New Age Consumption,T
+NAUKRI,Nifty India New Age Consumption,T
+360ONE,Nifty India New Age Consumption,T
+DIXON,Nifty India New Age Consumption,T
+TATACOMM,Nifty India New Age Consumption,T
+HYUNDAI,Nifty India New Age Consumption,T
+HEROMOTOCO,Nifty India New Age Consumption,T
+PGEL,Nifty India New Age Consumption,T
+PAGEIND,Nifty India New Age Consumption,T
+M&M,Nifty India New Age Consumption,T
+GODREJPROP,Nifty India New Age Consumption,T
+MARUTI,Nifty India New Age Consumption,T
+SOBHA,Nifty India New Age Consumption,T
+HAVELLS,Nifty India New Age Consumption,T
+DMART,Nifty India New Age Consumption,T
+CROMPTON,Nifty India New Age Consumption,T
+VOLTAS,Nifty India New Age Consumption,T
+TMPV,Nifty India New Age Consumption,T
+BATAINDIA,Nifty India New Age Consumption,T
+IRCTC,Nifty India New Age Consumption,T
+INDIAMART,Nifty India New Age Consumption,T
+ABREL,Nifty India New Age Consumption,T
+ZEEL,Nifty India New Age Consumption,T
+FIRSTCRY,Nifty India New Age Consumption,T
+POLICYBZR,Nifty India New Age Consumption,T
+IDEA,Nifty India New Age Consumption,T
+WHIRLPOOL,Nifty India New Age Consumption,T
+PINELABS,Nifty India New Age Consumption,T
+PWL,Nifty India New Age Consumption,T
+CARTRADE,Nifty India New Age Consumption,T
+ABSLAMC,Nifty India New Age Consumption,T
+DEVYANI,Nifty India New Age Consumption,T
+ICICIAMC,Nifty India New Age Consumption,T
+BRIGADE,Nifty India New Age Consumption,T
+OLAELEC,Nifty India New Age Consumption,T
+JUBLFOOD,Nifty India New Age Consumption,T
+AMBER,Nifty India New Age Consumption,T
+VMM,Nifty India New Age Consumption,T
+ANANTRAJ,Nifty India New Age Consumption,T
+SWIGGY,Nifty India New Age Consumption,T
+NAZARA,Nifty India Internet,T
+PAYTM,Nifty India Internet,T
+MOTILALOFS,Nifty India Internet,T
+NYKAA,Nifty India Internet,T
+MEESHO,Nifty India Internet,T
+ETERNAL,Nifty India Internet,T
+ANGELONE,Nifty India Internet,T
+GROWW,Nifty India Internet,T
+URBANCO,Nifty India Internet,T
+JUSTDIAL,Nifty India Internet,T
+NAUKRI,Nifty India Internet,T
+THOMASCOOK,Nifty India Internet,T
+IXIGO,Nifty India Internet,T
+IRCTC,Nifty India Internet,T
+INDIAMART,Nifty India Internet,T
+FIRSTCRY,Nifty India Internet,T
+POLICYBZR,Nifty India Internet,T
+IIFLCAPS,Nifty India Internet,T
+PINELABS,Nifty India Internet,T
+PWL,Nifty India Internet,T
+CARTRADE,Nifty India Internet,T
+TBOTEK,Nifty India Internet,T
+SWIGGY,Nifty India Internet,T
+ATHERENERG,Nifty EV & New Age Automotive,T
+SANSERA,Nifty EV & New Age Automotive,T
+SONACOMS,Nifty EV & New Age Automotive,T
+BOSCHLTD,Nifty EV & New Age Automotive,T
+FLUOROCHEM,Nifty EV & New Age Automotive,T
+TVSMOTOR,Nifty EV & New Age Automotive,T
+UNOMINDA,Nifty EV & New Age Automotive,T
+FORCEMOT,Nifty EV & New Age Automotive,T
+TATAELXSI,Nifty EV & New Age Automotive,T
+MOTHERSON,Nifty EV & New Age Automotive,T
+BAJAJ-AUTO,Nifty EV & New Age Automotive,T
+ASHOKLEY,Nifty EV & New Age Automotive,T
+EICHERMOT,Nifty EV & New Age Automotive,T
+TMCV,Nifty EV & New Age Automotive,T
+HYUNDAI,Nifty EV & New Age Automotive,T
+HEROMOTOCO,Nifty EV & New Age Automotive,T
+M&M,Nifty EV & New Age Automotive,T
+RELIANCE,Nifty EV & New Age Automotive,T
+ZFCVINDIA,Nifty EV & New Age Automotive,T
+MSUMI,Nifty EV & New Age Automotive,T
+MARUTI,Nifty EV & New Age Automotive,T
+ARE&M,Nifty EV & New Age Automotive,T
+OLECTRA,Nifty EV & New Age Automotive,T
+TATACHEM,Nifty EV & New Age Automotive,T
+TMPV,Nifty EV & New Age Automotive,T
+KPITTECH,Nifty EV & New Age Automotive,T
+CGPOWER,Nifty EV & New Age Automotive,T
+BHARATFORG,Nifty EV & New Age Automotive,T
+HSCL,Nifty EV & New Age Automotive,T
+EXIDEIND,Nifty EV & New Age Automotive,T
+TATATECH,Nifty EV & New Age Automotive,T
+SCHAEFFLER,Nifty EV & New Age Automotive,T
+OLAELEC,Nifty EV & New Age Automotive,T
+KEI,Nifty EV & New Age Automotive,T
+JBMA,Nifty EV & New Age Automotive,T
+TIINDIA,Nifty EV & New Age Automotive,T
+JWL,Nifty EV & New Age Automotive,T
+NHPC,Nifty CPSE,T
+COALINDIA,Nifty CPSE,T
+BEL,Nifty CPSE,T
+NTPC,Nifty CPSE,T
+ONGC,Nifty CPSE,T
+POWERGRID,Nifty CPSE,T
+NLCINDIA,Nifty CPSE,T
+NBCC,Nifty CPSE,T
+COCHINSHIP,Nifty CPSE,T
+SJVN,Nifty CPSE,T
+OIL,Nifty CPSE,T
+PHOENIXLTD,Nifty Core Housing,T
+DLF,Nifty Core Housing,T
+KAJARIACER,Nifty Core Housing,T
+OBEROIRLTY,Nifty Core Housing,T
+LICHSGFIN,Nifty Core Housing,T
+PRESTIGE,Nifty Core Housing,T
+ULTRACEMCO,Nifty Core Housing,T
+BLUESTARCO,Nifty Core Housing,T
+LODHA,Nifty Core Housing,T
+GRASIM,Nifty Core Housing,T
+DIXON,Nifty Core Housing,T
+ASIANPAINT,Nifty Core Housing,T
+SHREECEM,Nifty Core Housing,T
+GODREJPROP,Nifty Core Housing,T
+JKCEMENT,Nifty Core Housing,T
+HAVELLS,Nifty Core Housing,T
+CROMPTON,Nifty Core Housing,T
+RAMCOCEM,Nifty Core Housing,T
+ACC,Nifty Core Housing,T
+AMBUJACEM,Nifty Core Housing,T
+VOLTAS,Nifty Core Housing,T
+FINCABLES,Nifty Core Housing,T
+WHIRLPOOL,Nifty Core Housing,T
+PNBHOUSING,Nifty Core Housing,T
+POLYCAB,Nifty Core Housing,T
+BERGEPAINT,Nifty Core Housing,T
+BRIGADE,Nifty Core Housing,T
+KEI,Nifty Core Housing,T
+AAVAS,Nifty Core Housing,T
+DALBHARAT,Nifty Core Housing,T

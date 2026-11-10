@@ -3230,7 +3230,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
   $("changeGroups").querySelectorAll("[data-changesym]").forEach(el=>el.onclick=()=>{const sym=el.dataset.changesym;if(sym.includes(":")){const nm=sym.split(":")[0],s2=$("sector");if([...s2.options].some(o=>o.value===nm))s2.value=nm;document.querySelector('[data-tab="workspace"]').click();if(typeof renderRows==="function")renderRows();return}
    if(stocks.some(s=>s.symbol===sym)){selected=sym;document.querySelector('[data-tab="workspace"]').click();renderAll()}});
  };
- window.mlRotItems=function(u){const S=window.__mlSectors,sec=S.sectors.map(i=>({...i,kind:"Sector"})),th=S.themes.map(i=>({...i,kind:"Theme"}));return u==="Sectors"?sec:u==="Themes"?th:[...sec,...th]};
+ window.mlIdxOnly=function(L){const x=(L||[]).filter(i=>i.idx);return x.length?x:(L||[])};window.mlRotItems=function(u){const S=window.__mlSectors,sec=mlIdxOnly(S.sectors).map(i=>({...i,kind:"Sector"})),th=mlIdxOnly(S.themes).map(i=>({...i,kind:"Theme"}));return u==="Sectors"?sec:u==="Themes"?th:[...sec,...th]};
  window.mlRotPlot=function(universe){
   const items=mlRotItems(universe),filter=$("quadrantFilter").value,w=560,h=350,l=42,r=12,t=22,b=25,pw=w-l-r,ph=h-t-b,mx=l+pw/2,my=t+ph/2;
   const xm=Math.max(8,...items.map(i=>Math.abs(i.x3)))*1.1,ym=Math.max(5,...items.map(i=>Math.abs(i.rsd)))*1.1;
@@ -3296,7 +3296,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
  };
  window.mlRenderRealRotation=function(){
   const S=window.__mlSectors,u=document.querySelector(".rotation-tabs button.active")?.dataset.universe||"All",items=mlRotItems(u);
-  const tabs=document.querySelectorAll(".rotation-tabs button");tabs.forEach(b=>{const k=b.dataset.universe;b.textContent=k==="All"?`All (${S.sectors.length+S.themes.length})`:k==="Sectors"?`Sectors (${S.sectors.length})`:`Themes (${S.themes.length})`});
+  const tabs=document.querySelectorAll(".rotation-tabs button");tabs.forEach(b=>{const k=b.dataset.universe;b.textContent=k==="All"?`All (${mlIdxOnly(S.sectors).length+mlIdxOnly(S.themes).length})`:k==="Sectors"?`Sectors (${mlIdxOnly(S.sectors).length})`:`Themes (${mlIdxOnly(S.themes).length})`});
   $("rotationTableTitle").textContent="Sector & theme (median stock)";
   if(window.__mlChanges)mlRenderChanges();else document.querySelectorAll(".changed-head,#changedPanel").forEach(e=>e.style.display="none");   /* no real changes file yet: hide the sample box */
   $("rotationRows").innerHTML=items.slice().sort((a,b)=>b.rs-a.rs).map(r=>`<tr data-rotname="${rEsc(r.name)}"><td style="text-align:left"><span class="dot" style="background:${rCol[r.quad]}"></span>${rEsc(r.name)}${u==="All"?` <span class="meta">· ${r.kind.toLowerCase()}</span>`:""}</td><td><span class="rsbadge ${r.rs<60?"low":r.rs<80?"mid":""}">${Math.round(r.rs)}</span></td><td class="chg ${r.x1>=0?"up":"down"}">${rFmt(r.x1)}</td><td class="chg ${r.x3>=0?"up":"down"}">${rFmt(r.x3)}</td><td class="chg ${r.x6>=0?"up":"down"}">${rFmt(r.x6)}</td><td style="color:${r.rsd>=0?"#347e56":"#b34d4d"}">${r.rsd>=0?"▲":"▼"}</td></tr>`).join("");
@@ -3512,7 +3512,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 43</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 44</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
