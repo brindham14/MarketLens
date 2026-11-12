@@ -405,6 +405,88 @@ def pattern_fields(o, h, l, c, v):
     # Tight weeks: consecutive weekly closes within 1.5%
     return f
 
+def _piv(H, L, C):
+    P = (H + L + C) / 3.0; BC = (H + L) / 2.0; TC = 2 * P - BC
+    if TC < BC: TC, BC = BC, TC
+    return dict(P=P, BC=BC, TC=TC, R1=2 * P - L, S1=2 * P - H, R2=P + (H - L), S2=P - (H - L),
+                R3=H + 2 * (P - L), S3=L - 2 * (H - P), W=abs(TC - BC) / P * 100 if P else 0.0)
+
+def _lv(q):   # S3,S2,S1,BC,P,TC,R1,R2,R3
+    return [round(float(q[k]), 2) for k in ("S3", "S2", "S1", "BC", "P", "TC", "R1", "R2", "R3")]
+
+def _dirn(a, b):   # CPR direction vs the previous period: A ascending, D descending, M mixed, O overlapping
+    up, dn = a["TC"] > b["TC"] and a["BC"] > b["BC"], a["TC"] < b["TC"] and a["BC"] < b["BC"]
+    if up: return "A"
+    if dn: return "D"
+    if (a["TC"] > b["TC"] and a["BC"] < b["BC"]) or (a["TC"] < b["TC"] and a["BC"] > b["BC"]): return "M"
+    return "O"
+
+def _ema(x, n):
+    a = 2.0 / (n + 1); e = float(x[0])
+    for v in x[1:]: e = a * float(v) + (1 - a) * e
+    return e
+
+def cpr_fields(df):
+    """CPR + traditional pivots (daily / weekly / monthly) for the NEXT session, EMA stack, RSI(14), daily DRVOL and the CPR-tab scanners.
+    Daily/weekly/monthly levels always come from the last COMPLETED period. Scanner rules follow the Chartink 'KAYBEE PIVOT' dashboard."""
+    f = {}
+    try:
+        d = df[["Open", "High", "Low", "Close", "Volume"]].dropna(subset=["High", "Low", "Close"]); n = len(d)
+        if n < 30: return f
+        O, H, L, C = (d[k].values.astype(float) for k in ("Open", "High", "Low", "Close"))
+        V = np.nan_to_num(d["Volume"].values.astype(float))
+        c = C[-1]
+        dl = np.diff(C); up = np.where(dl > 0, dl, 0.0); dn = np.where(dl < 0, -dl, 0.0)
+        au, ad = up[:14].mean(), dn[:14].mean()
+        for i in range(14, len(dl)): au = (au * 13 + up[i]) / 14; ad = (ad * 13 + dn[i]) / 14
+        f["rsi"] = round(float(100 - 100 / (1 + au / ad)) if ad > 0 else 100.0, 1)
+        tail = C[-180:]
+        e9, e20, e50 = _ema(tail, 9), _ema(tail, 20), _ema(tail, 50)
+        f["es"] = int(e9 > e20 > e50)                                                   # EMA 9 > 20 > 50
+        av20 = float(np.mean(V[-21:-1])) if n > 21 else 0.0
+        f["drv"] = round(float(V[-1] / av20 * 100), 0) if av20 > 0 else None            # daily DRVOL(20) %
+        t, y = _piv(H[-1], L[-1], C[-1]), _piv(H[-2], L[-2], C[-2])
+        f["cw"] = round(float(t["W"]), 2)
+        hist = [_piv(H[i], L[i], C[i])["W"] for i in range(max(0, n - 60), n)]
+        f["cpn"] = int(f["cw"] <= float(np.percentile(hist, 20)))
+        f["cpu"] = int(t["BC"] > y["TC"]); f["cpd"] = int(t["TC"] < y["BC"])
+        f["cpr"] = [round(float(t[k]), 2) for k in ("S2", "S1", "BC", "P", "TC", "R1", "R2")]
+        f["cprNar"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]) and t["P"] > y["P"])
+        f["dc"] = _lv(t); f["dcw"] = round(float(t["W"]), 2); f["dcd"] = _dirn(t, y)
+        wn_rng = mn_rng = None
+        for tag, rule in (("w", "W-FRI"), ("m", "ME")):
+            g = d.resample(rule).agg({"High": "max", "Low": "min", "Close": "last"}).dropna()
+            if len(g) < 4: continue
+            last = d.index[-1]
+            running = (last.weekday() < 4 and last < g.index[-1]) if rule == "W-FRI" else (last.to_period("M") == g.index[-1].to_period("M") and last.day < 28)
+            if running: g = g.iloc[:-1]
+            if len(g) < 3: continue
+            a, b = _piv(*g.iloc[-1][["High", "Low", "Close"]]), _piv(*g.iloc[-2][["High", "Low", "Close"]])
+            f[tag + "r1"] = round(float(a["R1"]), 2); f[tag + "s1"] = round(float(a["S1"]), 2); f[tag + "p"] = round(float(a["P"]), 2)
+            f[tag + "nar"] = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]) and a["P"] > b["P"])
+            f[tag + "brk"] = int(c > a["R1"])
+            f[tag + "c"] = _lv(a); f[tag + "cw"] = round(float(a["W"]), 2); f[tag + "cd"] = _dirn(a, b)
+            rng = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]))
+            if tag == "w": wn_rng = rng; f["cWN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"])   # weekly narrow range = inside the previous week (R1 lower, S1 higher), like the monthly rule
+            else:
+                f["cMN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"]); mn_rng = rng
+        if wn_rng is not None and mn_rng is not None: f["cAN"] = int(wn_rng and mn_rng)
+        f["cWR"] = int(f.get("cWN") == 1 and f.get("wbrk") == 1)
+        f["cMR"] = int(f.get("cMN") == 1 and f.get("mbrk") == 1)
+        f["cWMR"] = int(f["cWR"] and f["cMR"])
+        # Pattern breakout: bullish candle that closes above the last 3 closes and opens, volume above its 20-day average, close above the 20 SMA
+        if n > 25:
+            sma20 = float(np.mean(C[-20:])); vsma20 = float(np.mean(V[-20:])); vsma5 = float(np.mean(V[-5:]))
+            f["bpat"] = int(O[-1] < C[-1] and all(C[-1] > C[-i] and C[-1] > O[-i] for i in (2, 3, 4)) and V[-1] > vsma20 and sma20 < C[-1])
+            prev20 = float(np.mean(C[-21:-1]))
+            f["b20"] = int(C[-1] > sma20 and C[-2] <= prev20 and V[-1] >= 300000 and V[-1] > vsma5)
+        if n > 210:
+            m200 = [float(np.mean(C[i - 199:i + 1])) for i in range(n - 6, n)]
+            f["a200v"] = int(C[-1] > m200[-1] and any(C[n - 6 + j] <= m200[j] for j in range(5)) and (f["drv"] or 0) >= 150)
+    except Exception as e:
+        pass
+    return f
+
 def weekly_tight(close_series):
     wc = close_series.resample("W-FRI").last().dropna().values
     t = 0
@@ -496,6 +578,7 @@ for s, df in frames.items():
     if BAND.get(s): f["pb"] = BAND[s]
     f.update(pattern_fields(o, h, l, c, v)); f.update(flag_cup_my(h, l, c))
     f["tw"] = weekly_tight(df.Close)
+    f.update(cpr_fields(df))
     # trend-template pieces that do not depend on RS
     lo52, hi52 = float(np.min(l[-252:])), float(np.max(h[-252:])); ma50 = sma(c, 50)
     _ttc = [price > ma150 and price > ma200, ma150 > ma200, ma200 > ma200_prev, ma50 > ma150 and ma50 > ma200,
@@ -1011,7 +1094,10 @@ def _scan_sets(rs_):
         "vcp": lambda x: x.get("vcp") == 1 and x.get("rs", 0) >= 70,
         "cup": lambda x: x.get("cup") == 1 and x.get("rs", 0) >= 60,
         "pocket": lambda x: x.get("pp") == 1 and x.get("rs", 0) >= 70,
-        "flags": lambda x: x.get("fl") == 1 and x.get("rs", 0) >= 60}
+        "flags": lambda x: x.get("fl") == 1 and x.get("rs", 0) >= 60,
+        "cprn": lambda x: x.get("cpn") == 1 and (x.get("e21") or -1) > 0 and 55 <= (x.get("rsi") or 0) <= 75,
+        "wr1": lambda x: x.get("wnar") == 1 and x.get("wbrk") == 1 and (x.get("rsi") or 0) >= 55 and (x.get("e21") or -1) > 0,
+        "mr1": lambda x: x.get("mnar") == 1 and x.get("mbrk") == 1 and (x.get("rsi") or 0) >= 55}
     srt = sorted(rs_, key=lambda x: (-x.get("rs", 0), -(x.get("mom") or 0)))
     return {k: [x["symbol"] for x in srt if ok(x) and fn(x)] for k, fn in rules.items()}
 try:
