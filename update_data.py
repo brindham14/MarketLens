@@ -434,7 +434,7 @@ def _period_complete(last, rule, today=None):
     if rule == "W-FRI":
         end = last + pd.Timedelta(days=4 - last.weekday()) if last.weekday() <= 4 else last - pd.Timedelta(days=last.weekday() - 4)
         return bool(last >= end or today > end)
-    end = last + pd.offsets.MonthEnd(0)
+    end = pd.Timestamp(year=last.year, month=12, day=31) if rule == "YE" else last + pd.offsets.MonthEnd(0)
     lastday = end
     while lastday.weekday() > 4: lastday -= pd.Timedelta(days=1)                      # last weekday of the month
     return bool(last >= lastday or today > end)
@@ -469,12 +469,14 @@ def cpr_fields(df, today=None):
         f["dc"] = _lv(t); f["dcw"] = round(float(t["W"]), 2); f["dcd"] = _dirn(t, y)
         f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                       # daily range smaller than the day before
         wn_rng = mn_rng = None
-        for tag, rule in (("w", "W-FRI"), ("m", "ME")):
+        f["cDN"] = int(t["R1"] < y["R1"] and t["S1"] > y["S1"])                         # daily narrow: R1 lower and S1 higher than the day before (Chartink rule)
+        for tag, rule in (("w", "W-FRI"), ("m", "ME"), ("y", "YE")):
             g = d.resample(rule).agg({"High": "max", "Low": "min", "Close": "last"}).dropna()
             if len(g) < 4: continue
             last = d.index[-1]
             if not _period_complete(last, rule, today): g = g.iloc[:-1]                  # the period still running is never used
             if len(g) < 3: continue
+            if tag == "y" and d.index[0] > pd.Timestamp(year=int(g.index[-2].year), month=1, day=20): continue   # yearly CPR needs the full previous two years of candles
             a, b = _piv(*g.iloc[-1][["High", "Low", "Close"]]), _piv(*g.iloc[-2][["High", "Low", "Close"]])
             f[tag + "r1"] = round(float(a["R1"]), 2); f[tag + "s1"] = round(float(a["S1"]), 2); f[tag + "p"] = round(float(a["P"]), 2)
             f[tag + "nar"] = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]) and a["P"] > b["P"])
@@ -484,12 +486,16 @@ def cpr_fields(df, today=None):
             f[tag + "nr"] = rng                                                          # period range smaller than the previous period (wnr / mnr)
             f[tag + "h"] = round(float(g.iloc[-1]["High"]), 2)                           # previous COMPLETED week / month high (wh / mh) used as targets
             if tag == "w": wn_rng = rng; f["cWN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"])   # weekly narrow range = inside the previous week (R1 lower, S1 higher), like the monthly rule
-            else:
+            elif tag == "m":
                 f["cMN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"]); mn_rng = rng
+            else:
+                f["cYN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"])                  # yearly narrow range = inside the previous year
         if wn_rng is not None and mn_rng is not None: f["cAN"] = int(wn_rng and mn_rng)
         f["cWR"] = int(f.get("cWN") == 1 and f.get("wbrk") == 1)
         f["cMR"] = int(f.get("cMN") == 1 and f.get("mbrk") == 1)
         f["cWMR"] = int(f["cWR"] and f["cMR"])
+        f["cYR"] = int(f.get("cYN") == 1 and f.get("ybrk") == 1)                        # yearly narrow, then close above the yearly R1
+        f["cALL"] = int(all(f.get(k) == 1 for k in ("cDN", "cWN", "cMN", "cYN")))       # narrow on Daily, Weekly, Monthly and Yearly together
         # Pattern breakout: bullish candle that closes above the last 3 closes and opens, volume above its 20-day average, close above the 20 SMA
         if n > 25:
             sma20 = float(np.mean(C[-20:])); vsma20 = float(np.mean(V[-20:])); vsma5 = float(np.mean(V[-5:]))

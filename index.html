@@ -570,7 +570,7 @@ svg[viewBox] path[stroke="#9a9d92"]{stroke:#9a9d92}
         <div class="field"><label for="search">SEARCH SYMBOL / COMPANY</label><input id="search" placeholder="e.g. CUPID, AETHER..."></div>
         <div class="count" id="matchCount">154 stocks match</div>
       </div>
-      <div class="stocklistwrap"><table class="stocktable"><thead><tr><th>Symbol</th><th>Last</th><th>Chg%</th></tr></thead><tbody id="stockRows"></tbody></table></div>
+      <div class="stocklistwrap"><table class="stocktable"><thead><tr><th>Symbol</th><th>Last</th><th id="chgSortTh" style="cursor:pointer" title="Tap to sort by change %">Chg% <span id="chgSortArw" style="opacity:.6"></span></th></tr></thead><tbody id="stockRows"></tbody></table></div>
     </aside>
     <section class="maincol">
       <div class="panel stockhero">
@@ -919,7 +919,7 @@ const Q={"Momentum leaders":s=>s.rs>=90,"Sustained strength":s=>s.rs>=85&&s.ret3
 "Slipping":s=>s.a200===1&&s.a50===0,
 "Holding":s=>s.stage===2&&s.a50===1&&N(s.fromHigh)&&s.fromHigh>=-10&&s.rs>=70};
 if(!SQ&&quickFilter&&Q[quickFilter])arr=arr.filter(Q[quickFilter]);if(SQ){const k=q.trim();arr.sort((x,y)=>((y.symbol.toLowerCase()===k)-(x.symbol.toLowerCase()===k))||((y.symbol.toLowerCase().startsWith(k))-(x.symbol.toLowerCase().startsWith(k)))||((y.rs||0)-(x.rs||0)))}}else{
-if(setup.includes("Strongest RS"))arr=arr.filter(s=>s.rs>=80);if(setup.includes("Trend template"))arr=arr.filter(s=>s.stage===2&&s.rs>=70);if(setup.includes("Fresh Stage 2"))arr=arr.filter(s=>s.stage===2&&s.ret3>10);if(setup.includes("52-week high")||setup.includes("RS line"))arr=arr.filter(s=>s.fromHigh>=-3);if(setup.includes("Watchlist"))arr=arr.filter(s=>watchlist.has(s.symbol));if(setup.includes("Volume breakouts"))arr=arr.filter(s=>s.change>2);if(setup.includes("VCP"))arr=arr.filter(s=>s.fromHigh>-5&&s.rs>85);if(setup.includes("Flag / flagpole"))arr=arr.filter(s=>Array.isArray(s.tags)&&s.tags.some(t=>/flag/i.test(String(t)))||/flag/i.test(String(s.setup||s.pattern||"")));if(quickFilter==="Momentum leaders")arr=arr.filter(s=>s.rs>=90);if(quickFilter==="Downtrends")arr=arr.filter(s=>s.stage!==2);if(quickFilter==="Weakening"||quickFilter==="Slipping")arr=arr.filter(s=>s.change<0);if(quickFilter==="Near highs")arr=arr.filter(s=>s.fromHigh>-5);if(quickFilter==="Breakout")arr=arr.filter(s=>s.change>2);if(quickFilter==="Sustained strength")arr=arr.filter(s=>s.rs>=85&&s.ret3>10);}$("matchCount").textContent=arr.length+" "+assetType.toLowerCase()+" match";$("stockRows").innerHTML=arr.length?arr.map(s=>`<tr data-symbol="${s.symbol}" class="${s.symbol===selected?"selected":""}"><td><span class="dot" style="background:${s.stage===2?"#2b8057":"#999"}"></span><span class="sym">${s.symbol}</span> <button type="button" data-wstar="${s.symbol}" style="border:0;background:transparent;color:#7a8278;padding:0 2px">${watchlist.has(s.symbol)?"★":"☆"}</button>${window.__mlRealData&&s.nr!=null&&s.nr>=0&&s.nr<=14?`<span class="rb" title="Results in ${s.nr} day(s)">R</span>`:""}</td><td>${fmt(s.price)}</td><td class="chg ${s.change>=0?"up":"down"}">${pct(s.change)}${RL&&s.rs!=null?` <span class="muted" title="RS rating" style="font-size:10px">RS ${s.rs}</span>`:""}</td></tr>`).join(""):`<tr><td colspan="3" style="padding:14px;color:var(--muted)">${market==="US"?"US stocks are not connected yet — this scanner currently covers NSE stocks only.":assetType==="ETFs"?"ETF data is not loaded in this workspace yet.":RL?"No stocks match these filters.":"No bundled demo stocks match this universe. Connect or import the full constituent list to populate it."}</td></tr>`;$("stockRows").querySelectorAll("[data-wstar]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const y=b.dataset.wstar;if(watchlist.has(y))watchlist.delete(y);else watchlist.add(y);b.textContent=watchlist.has(y)?"★":"☆"}));$("stockRows").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{selected=tr.dataset.symbol;renderAll()})}
+if(setup.includes("Strongest RS"))arr=arr.filter(s=>s.rs>=80);if(setup.includes("Trend template"))arr=arr.filter(s=>s.stage===2&&s.rs>=70);if(setup.includes("Fresh Stage 2"))arr=arr.filter(s=>s.stage===2&&s.ret3>10);if(setup.includes("52-week high")||setup.includes("RS line"))arr=arr.filter(s=>s.fromHigh>=-3);if(setup.includes("Watchlist"))arr=arr.filter(s=>watchlist.has(s.symbol));if(setup.includes("Volume breakouts"))arr=arr.filter(s=>s.change>2);if(setup.includes("VCP"))arr=arr.filter(s=>s.fromHigh>-5&&s.rs>85);if(setup.includes("Flag / flagpole"))arr=arr.filter(s=>Array.isArray(s.tags)&&s.tags.some(t=>/flag/i.test(String(t)))||/flag/i.test(String(s.setup||s.pattern||"")));if(quickFilter==="Momentum leaders")arr=arr.filter(s=>s.rs>=90);if(quickFilter==="Downtrends")arr=arr.filter(s=>s.stage!==2);if(quickFilter==="Weakening"||quickFilter==="Slipping")arr=arr.filter(s=>s.change<0);if(quickFilter==="Near highs")arr=arr.filter(s=>s.fromHigh>-5);if(quickFilter==="Breakout")arr=arr.filter(s=>s.change>2);if(quickFilter==="Sustained strength")arr=arr.filter(s=>s.rs>=85&&s.ret3>10);}if(window.__mlChgSort){const _d=window.__mlChgSort==="a"?1:-1;arr=arr.slice().sort((x,y)=>_d*((x.change||0)-(y.change||0)))}{const _a=document.getElementById("chgSortArw");if(_a)_a.textContent=window.__mlChgSort==="a"?"▲":window.__mlChgSort==="d"?"▼":""}$("matchCount").textContent=arr.length+" "+assetType.toLowerCase()+" match";$("stockRows").innerHTML=arr.length?arr.map(s=>`<tr data-symbol="${s.symbol}" class="${s.symbol===selected?"selected":""}"><td><span class="dot" style="background:${s.stage===2?"#2b8057":"#999"}"></span><span class="sym">${s.symbol}</span> <button type="button" data-wstar="${s.symbol}" style="border:0;background:transparent;color:#7a8278;padding:0 2px">${watchlist.has(s.symbol)?"★":"☆"}</button>${window.__mlRealData&&s.nr!=null&&s.nr>=0&&s.nr<=14?`<span class="rb" title="Results in ${s.nr} day(s)">R</span>`:""}</td><td>${fmt(s.price)}</td><td class="chg ${s.change>=0?"up":"down"}">${pct(s.change)}${RL&&s.rs!=null?` <span class="muted" title="RS rating" style="font-size:10px">RS ${s.rs}</span>`:""}</td></tr>`).join(""):`<tr><td colspan="3" style="padding:14px;color:var(--muted)">${market==="US"?"US stocks are not connected yet — this scanner currently covers NSE stocks only.":assetType==="ETFs"?"ETF data is not loaded in this workspace yet.":RL?"No stocks match these filters.":"No bundled demo stocks match this universe. Connect or import the full constituent list to populate it."}</td></tr>`;$("stockRows").querySelectorAll("[data-wstar]").forEach(b=>b.addEventListener("click",e=>{e.stopPropagation();const y=b.dataset.wstar;if(watchlist.has(y))watchlist.delete(y);else watchlist.add(y);b.textContent=watchlist.has(y)?"★":"☆"}));$("stockRows").querySelectorAll("tr").forEach(tr=>tr.onclick=()=>{selected=tr.dataset.symbol;renderAll()})}
 function makeSeries(s,n=70){let seed=s.symbol.split("").reduce((a,c)=>a+c.charCodeAt(0),0);let v=s.price/(1+Math.max(-.5,s.ret1/100));let vals=[];for(let i=0;i<n;i++){seed=(seed*9301+49297)%233280;let noise=(seed/233280-.47)*.065;let trend=(i/n)*Math.log(Math.max(.2,s.price/v));v*=Math.exp(noise+trend/n);vals.push(v)}let factor=s.price/vals.at(-1);return vals.map(x=>x*factor)}
 function drawChart(){let s=current(),vals=makeSeries(s,80),w=900,h=390,pad={l:10,r:48,t:12,b:115},min=Math.min(...vals)*.91,max=Math.max(...vals)*1.035;let x=i=>pad.l+i*(w-pad.l-pad.r)/(vals.length-1),y=v=>pad.t+(max-v)*(h-pad.t-pad.b)/(max-min);let path=vals.map((v,i)=>(i?"L":"M")+x(i).toFixed(1)+","+y(v).toFixed(1)).join(" ");let area=path+` L${x(vals.length-1)},${h-pad.b} L${x(0)},${h-pad.b} Z`;let grid="",labels="";for(let j=0;j<5;j++){let yy=pad.t+j*(h-pad.t-pad.b)/4,val=max-j*(max-min)/4;grid+=`<line x1="${pad.l}" y1="${yy}" x2="${w-pad.r}" y2="${yy}" stroke="#eee9dc" stroke-width="1"/>`;labels+=`<text x="${w-4}" y="${yy+4}" text-anchor="end" font-size="10" fill="#92958a">${val.toLocaleString("en-IN",{maximumFractionDigits:0})}</text>`}for(let i=0;i<8;i++){let xx=pad.l+i*(w-pad.l-pad.r)/7;grid+=`<line x1="${xx}" y1="${pad.t}" x2="${xx}" y2="${h-pad.b}" stroke="#f2eee4" stroke-width="1"/>`;labels+=`<text x="${xx}" y="${h-5}" text-anchor="middle" font-size="10" fill="#92958a">${["Nov","Dec","Jan","Feb","Mar","Apr","May","Jun"][i]}</text>`}
 function avgLine(win,color){let d=[];for(let i=0;i<vals.length;i++){let a=vals.slice(Math.max(0,i-win+1),i+1);let av=a.reduce((p,c)=>p+c,0)/a.length;d.push((i?"L":"M")+x(i).toFixed(1)+","+y(av).toFixed(1))}return `<path d="${d.join(" ")}" fill="none" stroke="${color}" stroke-width="2" opacity=".9"/>`}
@@ -2077,7 +2077,7 @@ sec.innerHTML=`<div class="scbar sc-topbar"><select id="scSel" aria-label="Stock
 <div id="scStage"></div>
 <div class="scbar sc-filterbar"><span id="scParams"></span><span id="scFilt" style="display:contents"><label class="sc-rs-filter">RS ≥ <span class="sc-help" title="Relative-strength rating threshold">ⓘ</span><input id="scRsMin" type="number" min="0" max="99" value="50" aria-label="Minimum relative strength"></label><select id="scSector"><option value="">All sectors</option></select><input type="text" id="scSearch" placeholder="Search symbol or company"><label class="sc-liquid"><input type="checkbox" id="scLiq" checked> Liquid only <span class="sc-help" title="Restrict results to liquid stocks">ⓘ</span></label></span><span class="meta" id="scNote" style="display:none">Liquid stocks only, ranked by RS inside each sector.</span></div>
 <div class="scbar" id="vcpResetRow" style="display:none;margin:0 0 8px;gap:8px"><button id="scResetFilters" type="button" class="pillbtn">Reset all</button></div>
-<div class="scbar sc-countbar"><span class="meta" id="scCount"></span><span style="flex:1"></span><button id="scColumnsBtn" type="button" style="display:none">Columns</button><span id="allStocksTools" class="scbar" style="display:none;gap:6px;margin:0"><label class="meta">Sort <select id="allStockSort" aria-label="Sort all stocks"><option value="rs">RS</option><option value="symbol">Symbol</option><option value="tags">Tags</option><option value="base">Base</option><option value="rsd">RS Δ</option><option value="tr">Trend</option><option value="stage">Stage</option><option value="r1">1M</option><option value="ret3">3M</option><option value="ret1">1Y</option><option value="fh">From high</option><option value="v">Rel. volume</option><option value="adr">ADR %</option><option value="close">Close</option></select></label><button id="allStockList" class="active" type="button">☷ List</button><button id="allStockCharts" type="button">▦ Charts</button></span><span class="meta" id="scChanges">Since previous scan: daily history not connected</span><button id="scCsv">Download CSV</button></div>
+<div class="scbar sc-countbar"><span class="meta" id="scCount"></span><span style="flex:1"></span><button id="scColumnsBtn" type="button" style="display:none">Columns</button><span id="allStocksTools" class="scbar" style="display:none;gap:6px;margin:0"><label class="meta">Sort <select id="allStockSort" aria-label="Sort all stocks"><option value="rs">RS</option><option value="chg">Change % (high to low)</option><option value="chga">Change % (low to high)</option><option value="symbol">Symbol</option><option value="tags">Tags</option><option value="base">Base</option><option value="rsd">RS Δ</option><option value="tr">Trend</option><option value="stage">Stage</option><option value="r1">1M</option><option value="ret3">3M</option><option value="ret1">1Y</option><option value="fh">From high</option><option value="v">Rel. volume</option><option value="adr">ADR %</option><option value="close">Close</option></select></label><button id="allStockList" class="active" type="button">☷ List</button><button id="allStockCharts" type="button">▦ Charts</button></span><span class="meta" id="scChanges">Since previous scan: daily history not connected</span><button id="scCsv">Download CSV</button></div>
 <div id="scCards"></div>
 <div class="panel" id="scTWrap" style="overflow:auto"><table class="stocktable" id="scTable"><thead id="scHead"></thead><tbody id="scBody"></tbody></table></div>
 <div class="panel" id="scColumnsPanel" style="display:none;padding:12px;margin-top:8px"><b>Choose visible columns</b><div id="scColumnsChoices" class="scbar" style="gap:12px;margin-top:8px;flex-wrap:wrap"></div><div class="scbar" style="margin-top:8px"><button id="scColumnsDefault" type="button">Restore default columns</button><button id="scColumnsDone" type="button" class="primary">Done</button></div></div>
@@ -2259,7 +2259,7 @@ function renderMomentum(){
   g('momResults').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){const card=e.target.closest('[data-mom-symbol]');if(card){e.preventDefault();card.click()}}};
   g('momCsv').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';const lines=[['Rank','Symbol','Name','Sector','1Y Return','6M Return','3M Return','1M Return','Score','RS','From High'],...last.map((s,i)=>[i+1,s.symbol,s.name,s.sector,s.ret1,s.ret6,s.ret3,s.r1,s._momScore,s.rs,s.fromHigh])];const blob=new Blob([lines.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='marketlens-momentum-ranking.csv';a.click();URL.revokeObjectURL(url)};
 }
-function allStockSortValue(s,k){if(k==='symbol')return String(s.symbol||'').toUpperCase();if(k==='tags')return [s.vcp?'VCP':'',s.pp?'Pocket pivot':'',s.b50?'Breakout':'',s.a50?'Above 50 DMA':'',s.rsH?'RS new high':''].join(' ');if(k==='base')return s.baseScore??s.baseQuality??s.rng10??s.fromHigh;if(k==='adr')return s.adrPct??s.adr??s.adrPercent??s.adrp;if(k==='close')return s.price;if(k==='fh')return s.fromHigh;if(k==='v')return s.v??s.v10;if(k==='rsd')return s.rsd;if(k==='tr')return s.tr;if(k==='stage')return s.stage;if(k==='r1')return s.r1;if(k==='ret3')return s.ret3;if(k==='ret1')return s.ret1;return s.rs}
+function allStockSortValue(s,k){if(k==='chg')return s.change;if(k==='chga')return s.change==null?null:-s.change;if(k==='symbol')return String(s.symbol||'').toUpperCase();if(k==='tags')return [s.vcp?'VCP':'',s.pp?'Pocket pivot':'',s.b50?'Breakout':'',s.a50?'Above 50 DMA':'',s.rsH?'RS new high':''].join(' ');if(k==='base')return s.baseScore??s.baseQuality??s.rng10??s.fromHigh;if(k==='adr')return s.adrPct??s.adr??s.adrPercent??s.adrp;if(k==='close')return s.price;if(k==='fh')return s.fromHigh;if(k==='v')return s.v??s.v10;if(k==='rsd')return s.rsd;if(k==='tr')return s.tr;if(k==='stage')return s.stage;if(k==='r1')return s.r1;if(k==='ret3')return s.ret3;if(k==='ret1')return s.ret1;return s.rs}
 function openStockChart(sym){if(!stocks.some(x=>x.symbol===sym))return;selected=sym;document.querySelector('[data-tab="workspace"]').click();renderAll();window.scrollTo({top:0,behavior:'smooth'});}
 window.openStockChart=openStockChart;
 function allStocksMiniChart(s){
@@ -3512,7 +3512,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 51</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 52</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3555,19 +3555,23 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
 /* CPR tab: CPR / pivot scanners (Chartink "KAYBEE PIVOT" set) + CPR levels lookup with the V1.1 confirmations (EMA 9>20>50, RSI>60, daily DRVOL>=150%).
    Levels are for the NEXT session and always come from the last COMPLETED day / week / month. Screening only, long-only, not advice. */
 (function(){
- const LS='mlCprCfg1',DEF={liquid:1,circ:5,nd:0.3,nw:0.8,nm:1.5,wd:1,ww:2.5,wm:5};
+ const LS='mlCprCfg1',DEF={liquid:1,circ:5,nd:0.3,nw:0.8,nm:1.5,ny:3,wd:1,ww:2.5,wm:5,wy:10,view:'sc',srt:'',rng:120,lv:'w',ema:1};
  let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
  const save=()=>{try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}};
  const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
  const f2=v=>v==null?'–':(+v).toFixed(2),pc=v=>(v>0?'+':'')+(+v).toFixed(2)+'%';
  let meta=null,open={},sel=null,built=false;
  const GROUPS=[
-  ['CPR scanners','Narrow ranges: a tight previous week or month often comes before a trending move.',['wn','wmn','an']],
-  ['CPR breakout scanners','Narrow range, then a close above the R1 of that period.',['wr','wmr','mr']],
+  ['CPR scanners','Narrow ranges: a tight previous week or month often comes before a trending move.',['alln','dn','wn','wmn','an','yn']],
+  ['CPR breakout scanners','Narrow range, then a close above the R1 of that period.',['wr','wmr','mr','yr']],
   ['Price & momentum scanners','',['ma20','a200v','topg']],
   ['Pattern scanners','',['pat','combo']],
   ['Market activity scanners','',['circ']]];
  const D={
+  alln:{t:'Narrow on All Periods (D + W + M + Y)',d:'Narrow on every period at once: today, last week, last month and last year are each inside the one before (R1 lower, S1 higher).',f:s=>s.cALL===1,m:s=>'D '+f2(s.dcw)+'% · W '+f2(s.wcw)+'% · M '+f2(s.mcw)+'% · Y '+f2(s.ycw)+'%'},
+  dn:{t:'Daily Narrow Range',d:'Today\'s CPR range is inside yesterday\'s: R1 lower and S1 higher.',f:s=>s.cDN===1,m:s=>s.dc?'D CPR '+f2(s.dcw)+'%':''},
+  yn:{t:'Yearly Narrow Range',d:'Last completed year stayed inside the year before it: R1 lower and S1 higher. Needs two full years of data.',f:s=>s.cYN===1,m:s=>s.yc?'Y CPR '+f2(s.ycw)+'%':''},
+  yr:{t:'Yearly Narrow R1 Breakout',d:'Yearly narrow range, and price closed above the yearly R1.',f:s=>s.cYR===1,m:s=>s.yr1?pc((s.price/s.yr1-1)*100)+' vs R1':''},
   wn:{t:'Weekly Narrow Range',d:'Last completed week stayed inside the week before it: R1 lower and S1 higher.',f:s=>s.cWN===1,m:s=>s.wc?'W CPR '+f2(s.wcw)+'%':''},
   wmn:{t:'Weekly + Monthly Narrow Range',d:'Both the last completed week and the last completed month are narrower (R1 lower, S1 higher) than the one before.',f:s=>s.cWN===1&&s.cMN===1,m:s=>'W '+f2(s.wcw)+'% · M '+f2(s.mcw)+'%'},
   an:{t:'All Narrow Range',d:'The weekly range and the monthly range are both smaller than the previous week and month.',f:s=>s.cAN===1,m:s=>'W '+f2(s.wcw)+'% · M '+f2(s.mcw)+'%'},
@@ -3583,11 +3587,13 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
  };
  const cnt=s=>(s.b20===1)+(s.cWN===1)+(s.cMN===1)+(s.bpat===1);
  const lq=s=>!cfg.liquid||s.turnover==null||s.turnover>=10;
- function list(id){const d=D[id],srt=d.sort||((a,b)=>b.rs-a.rs||(b.mom||0)-(a.mom||0));return stocks.filter(s=>(d.nl||lq(s))&&d.f(s)&&(!d.nl||id!=='circ'||lq(s)||true)).sort(srt).slice(0,d.top||1e9)}
+ function list(id){const d=D[id];let srt=d.sort||((a,b)=>b.rs-a.rs||(b.mom||0)-(a.mom||0));if(cfg.srt&&id!=='topg')srt=(a,b)=>(cfg.srt==='a'?1:-1)*((a.change||0)-(b.change||0));return stocks.filter(s=>(d.nl||lq(s))&&d.f(s)&&(!d.nl||id!=='circ'||lq(s)||true)).sort(srt).slice(0,d.top||1e9)}
  const css=`#cprPage .cp-h{margin:18px 0 4px;font-size:15px;font-weight:750}#cprPage .cp-sub{font-size:12px;color:var(--muted,#8a9089);margin:0 0 8px}
  #cprPage .cp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
- #cprPage .cp-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:7px 0;border-top:1px solid var(--line);cursor:pointer;font-size:13px}
- #cprPage .cp-row b{font-size:13px}#cprPage .cp-row small{display:block;color:var(--muted,#8a9089);font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+ #cprPage .cp-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;padding:8px 2px;border-top:1px solid var(--line);cursor:pointer;font-size:13px}
+ #cprPage .cp-row b{font-size:13px}#cprPage .cp-row small{display:block;color:var(--muted,#8a9089);font-size:11px;line-height:1.35;white-space:normal;overflow:hidden;text-overflow:ellipsis}#cprPage .cp-row .cp-m{color:#7fa593}
+ #cprPage .cp-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 10px}#cprPage .cp-tabs{display:flex;gap:6px;margin:6px 0 12px;border-bottom:1px solid var(--line)}#cprPage .cp-tabs button{border:0;background:transparent;color:inherit;padding:9px 12px;font:inherit;font-weight:650;border-bottom:2px solid transparent;cursor:pointer;opacity:.7}#cprPage .cp-tabs button.on{opacity:1;border-bottom-color:#2a9d62}
+ #cprPage #cprDetail{scroll-margin-top:70px}#cprPage canvas.cp-cv{width:100%;height:320px;display:block;color:var(--ink,#ccc)}#cprPage .smallbtn.on{background:#2a7a52!important;color:#fff!important;border-color:#2a7a52!important}#cprPage .cp-st td,#cprPage .cp-st th{white-space:nowrap}#cprPage .cp-st td:last-child{white-space:normal;min-width:120px}
  #cprPage .up{color:#2a9d62}#cprPage .dn{color:#d9534f}
  #cprPage .cp-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 13px;margin-top:12px}
  #cprPage table.cp-t{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}#cprPage .cp-t th,#cprPage .cp-t td{padding:5px 4px;text-align:right;border-top:1px solid var(--line)}#cprPage .cp-t th:first-child,#cprPage .cp-t td:first-child{text-align:left}
@@ -3599,32 +3605,85 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
  function nw(w,k){const n=cfg['n'+k],wd=cfg['w'+k];return w<=n?'Narrow':w>=wd?'Wide':'Normal'}
  const DIR={A:'Ascending',D:'Descending',M:'Mixed',O:'Overlapping'};
  function card(id){const d=D[id],L=list(id),show=open[id]?L.slice(0,60):L.slice(0,10);
-  const rows=show.map(s=>`<div class="cp-row" data-cpsym="${E(s.symbol)}"><div><b>${E(s.symbol)}</b><small>${E(s.name||'')}</small></div><span style="font-size:11px;color:var(--muted,#8a9089)">${E(d.m(s))}</span><span style="text-align:right"><span class="${s.change>=0?'up':'dn'}">${pc(s.change)}</span><small style="text-align:right">${f2(s.price)}</small></span></div>`).join('');
+  const rows=show.map(s=>`<div class="cp-row" data-cpsym="${E(s.symbol)}"><div style="min-width:0"><b>${E(s.symbol)}</b> <small style="display:inline">${E(s.name||'')}</small><small class="cp-m">${E(d.m(s))}</small></div><span style="text-align:right"><b class="${s.change>=0?'up':'dn'}">${pc(s.change)}</b><small style="text-align:right">${f2(s.price)}</small></span></div>`).join('');
   return `<article class="popular-scan-card"><div class="ps-head"><h3>${d.t}</h3><span class="ps-count">${L.length}</span></div><div class="ps-desc">${d.d}</div><div class="ps-note">Screen result, not investment advice</div><div>${rows||'<div class="ps-desc" style="padding:10px 0">No stocks match today.</div>'}</div>${L.length>10?`<div class="ps-actions"><button data-cpmore="${id}">${open[id]?'Show less':'See all '+Math.min(L.length,60)+(L.length>60?' of '+L.length:'')} →</button></div>`:''}</article>`}
- function lvTable(name,k,s){const a=s[k+'c'];if(!a)return `<h4 style="margin:10px 0 0">${name}</h4><div class="ps-desc">Not enough history.</div>`;const w=s[k+'cw'],cl=nw(w,k==='d'?'d':k==='w'?'w':'m');
+ function lvTable(name,k,s){const a=s[k+'c'];if(!a)return `<h4 style="margin:10px 0 0">${name} CPR</h4><div class="ps-desc">Not enough history.</div>`;const w=s[k+'cw'],cl=nw(w,k);
   const lab=['S3','S2','S1','BC','P','TC','R1','R2','R3'];
   return `<h4 style="margin:12px 0 0">${name} CPR <span class="pill">${cl} · ${f2(w)}%</span><span class="pill">${DIR[s[k+'cd']]||'–'}</span></h4><div class="cp-wrap"><table class="cp-t"><tr>${lab.map(x=>`<th>${x}</th>`).join('')}</tr><tr>${a.map((v,i)=>`<td class="${(i>=3&&i<=5)?'cp-lv':''}">${f2(v)}</td>`).join('')}</tr></table></div>`}
+ const PNAME={d:'Daily',w:'Weekly',m:'Monthly',y:'Yearly'},PCOL={d:'#2d8fd6',w:'#e0a21a',m:'#a56bd8',y:'#e0507d'},HK={d:'pdh',w:'wh',m:'mh',y:'yh'},INS={d:'cDN',w:'cWN',m:'cMN',y:'cYN'},DS={A:'Asc',D:'Desc',M:'Mixed',O:'Overlap'};
+ const CC={};let dtab='chart';
+ function loadC(sym,cb){if(CC[sym]){cb(CC[sym]);return}fetch('data/candles/'+encodeURIComponent(sym)+'.json').then(r=>r.ok?r.json():null).then(j=>{if(j&&j.d&&j.d.length>5){CC[sym]=j;cb(j)}else cb(null)}).catch(()=>cb(null))}
+ function emaS(a,n){const k=2/(n+1),o=[];let e=a[0];for(let i=0;i<a.length;i++){e=i?a[i]*k+e*(1-k):a[0];o.push(e)}return o}
+ function drawC(s,cv,cd){const dpr=Math.min(2,window.devicePixelRatio||1),W=cv.clientWidth||340,H=320;cv.width=W*dpr;cv.height=H*dpr;const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
+  const fg=getComputedStyle(cv).color||'#ccc',N=cd.d.length,n=Math.min(cfg.rng||120,N),i0=N-n,o=cd.o,h=cd.h,l=cd.l,c=cd.c;
+  let lo=1e18,hi=-1e18;for(let i=i0;i<N;i++){if(l[i]<lo)lo=l[i];if(h[i]>hi)hi=h[i]}
+  const span=hi-lo,items=[],bands=[];
+  for(const p of cfg.lv){const v=s[p+'c'];if(!v)continue;const col=PCOL[p],T=p.toUpperCase();bands.push([v[3],v[5],col]);
+   items.push([T+' S2',v[1],col,1],[T+' S1',v[2],col,1],[T+' BC',v[3],col,2],[T+' P',v[4],col,0],[T+' TC',v[5],col,2],[T+' R1',v[6],col,1],[T+' R2',v[7],col,1]);
+   if(s[HK[p]]!=null)items.push([T+' High',s[HK[p]],col,3])}
+  const keep=items.filter(a=>a[1]!=null&&a[1]>=lo-span*.6&&a[1]<=hi+span*.6);keep.forEach(a=>{if(a[1]<lo)lo=a[1];if(a[1]>hi)hi=a[1]});
+  const pl=6,pr=84,pt=10,pb=20,cw=W-pl-pr,ch=H-pt-pb,Y=v=>pt+(hi-v)/((hi-lo)||1)*ch,X=i=>pl+(i-i0+.5)*cw/n;
+  x.clearRect(0,0,W,H);x.font='10px system-ui,sans-serif';x.textBaseline='middle';
+  for(let g=0;g<=4;g++){const yy=pt+ch*g/4;x.strokeStyle='rgba(128,128,128,.14)';x.beginPath();x.moveTo(pl,yy);x.lineTo(pl+cw,yy);x.stroke()}
+  bands.forEach(b=>{x.fillStyle=b[2];x.globalAlpha=.13;const y1=Y(Math.max(b[0],b[1])),y2=Y(Math.min(b[0],b[1]));x.fillRect(pl,y1,cw,Math.max(1.5,y2-y1));x.globalAlpha=1});
+  const bw=Math.max(1,Math.min(10,cw/n*.7));
+  for(let i=i0;i<N;i++){const up=c[i]>=o[i],col=up?'#2a9d62':'#d9534f',xx=X(i);x.strokeStyle=col;x.fillStyle=col;x.beginPath();x.moveTo(xx,Y(h[i]));x.lineTo(xx,Y(l[i]));x.stroke();const y1=Y(Math.max(o[i],c[i])),y2=Y(Math.min(o[i],c[i]));x.fillRect(xx-bw/2,y1,bw,Math.max(1,y2-y1))}
+  if(cfg.ema)[[9,'#4aa3ff'],[20,'#f0a030'],[50,'#c070e0']].forEach(([k,col])=>{const e=emaS(c,k);x.strokeStyle=col;x.lineWidth=1.2;x.beginPath();for(let i=i0;i<N;i++){i===i0?x.moveTo(X(i),Y(e[i])):x.lineTo(X(i),Y(e[i]))}x.stroke();x.lineWidth=1});
+  keep.sort((a,b)=>b[1]-a[1]);let ly=-99;
+  keep.forEach(a=>{const yy=Y(a[1]);x.strokeStyle=a[2];x.globalAlpha=a[3]===2?.55:.9;x.lineWidth=a[3]===0?1.6:1;x.setLineDash(a[3]===1?[5,3]:a[3]===3?[1,3]:[]);x.beginPath();x.moveTo(pl,yy);x.lineTo(pl+cw,yy);x.stroke();x.setLineDash([]);x.lineWidth=1;x.globalAlpha=1;
+   if(Math.abs(yy-ly)>=10){x.fillStyle=a[2];x.textAlign='left';x.fillText(a[0]+' '+(a[1]>=1000?a[1].toFixed(0):a[1].toFixed(2)),pl+cw+4,yy);ly=yy}});
+  const lp=c[N-1],yl=Y(lp);x.fillStyle=fg;x.globalAlpha=.9;x.fillRect(pl+cw+2,yl-7,pr-4,14);x.globalAlpha=1;x.fillStyle='#000';x.textAlign='left';x.fillText(lp.toFixed(2),pl+cw+5,yl);
+  x.fillStyle=fg;x.globalAlpha=.6;x.textAlign='center';let lm='',lx=-99;const MN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  for(let i=i0;i<N;i++){const m=cd.d[i].slice(0,7);if(m!==lm){lm=m;const xx=X(i);if(xx-lx>38){x.fillText(MN[+m.slice(5)-1]+(m.slice(5)==='01'?' '+m.slice(2,4):''),xx,H-8);lx=xx}}}
+  x.globalAlpha=1}
+ function stRow(s,k){const a=s[k+'c'];if(!a)return `<tr><td>${PNAME[k]}</td><td colspan="3" style="text-align:left">not enough history</td></tr>`;
+  const px=s.price,st=px>a[5]?'Above CPR':px<a[3]?'Below CPR':'Inside CPR',tr=px>a[5]?'Bullish':px<a[3]?'Bearish':'Neutral',cl=nw(s[k+'cw'],k);
+  return `<tr><td><b style="color:${PCOL[k]}">${PNAME[k]}</b></td><td>${st}</td><td><span class="pill ${tr==='Bullish'?'ok':tr==='Bearish'?'no':''}" style="margin:0">${tr}</span></td><td style="text-align:left">${DS[s[k+'cd']]||'–'} · ${cl} (${f2(s[k+'cw'])}%)${s[INS[k]]===1?' · <b>Inside previous</b>':''}</td></tr>`}
  function detail(){const s=sel&&stocks.find(x=>x.symbol===sel);const box=document.getElementById('cprDetail');if(!box)return;
-  if(!s||!s.dc){box.innerHTML='<div class="ps-desc">Tap a stock in any list, or type a symbol above, to see its daily, weekly and monthly CPR levels.</div>';return}
-  const pos=s.price>s.wc[5]?'above weekly CPR':s.price<s.wc[3]?'below weekly CPR':'inside weekly CPR';
-  const ck=[['EMA 9 > 20 > 50',s.es===1,''],['RSI(14) > 60',s.rsi>60,Math.round(s.rsi)],['Daily DRVOL ≥ 150%',(s.drv||0)>=150,s.drv==null?'–':Math.round(s.drv)+'%']];
-  const all=ck.every(c=>c[1]);
-  const tr=meta&&meta.trend?meta.trend:'–';
-  box.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><b style="font-size:16px">${E(s.symbol)}</b><span class="ps-desc">${E(s.name||'')}</span><span>${f2(s.price)}</span><span class="${s.change>=0?'up':'dn'}">${pc(s.change)}</span><span class="ps-desc">· price is ${pos}</span></div>
-  <div style="margin-top:6px">${ck.map(c=>`<span class="pill ${c[1]?'ok':'no'}">${c[1]?'✓':'✗'} ${c[0]}${c[2]!==''?' ('+c[2]+')':''}</span>`).join('')}<span class="pill ${all?'ok':'no'}">${all?'Passes all 3 confirmations':'Not all confirmations met'}</span><span class="pill">Market: ${E(tr)}</span></div>
-  ${lvTable('Daily','d',s)}${lvTable('Weekly','w',s)}${lvTable('Monthly','m',s)}
-  <div class="ps-desc" style="margin-top:8px">Targets: T1 = R1 and T2 = R2 of the CPR period you trade (weekly for swing and momentum, monthly for positional). Levels shown are for the next session. Long-only; bearish conditions mean Avoid New Buy, never a short.</div>`}
+  if(!s||!s.dc){box.innerHTML='<div class="cp-box ps-desc" style="margin-top:0">Tap any stock below (or search a symbol) to open its chart with Daily, Weekly, Monthly and Yearly CPR levels, the checks and the trade plan.</div>';return}
+  const ck=[['EMA 9 > 20 > 50',s.es===1,''],['RSI(14) > 60',s.rsi>60,s.rsi==null?'–':Math.round(s.rsi)],['DRVOL ≥ 150%',(s.drv||0)>=150,s.drv==null?'–':Math.round(s.drv)+'%']];
+  const all=ck.every(c=>c[1]),tr=meta&&meta.trend?meta.trend:'–';
+  const tb=(k,t)=>`<button class="smallbtn ${dtab===k?'on':''}" data-cpdt="${k}">${t}</button>`,lb=k=>`<button class="smallbtn ${cfg.lv.includes(k)?'on':''}" data-cplv="${k}" style="${cfg.lv.includes(k)?'':'border-color:'+PCOL[k]}">${PNAME[k][0]} CPR</button>`,rb=(n,t)=>`<button class="smallbtn ${cfg.rng===n?'on':''}" data-cprng="${n}">${t}</button>`;
+  let body='';
+  if(dtab==='chart')body=`<div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0">${['d','w','m','y'].map(lb).join('')}<span style="flex:1"></span><button class="smallbtn ${cfg.ema?'on':''}" data-cpema="1">EMA 9/20/50</button>${rb(60,'3M')}${rb(120,'6M')}${rb(250,'1Y')}</div><canvas class="cp-cv" id="cprCv"></canvas><div class="ps-desc" id="cprCvMsg" style="display:none;padding:20px 0">Candles for ${E(s.symbol)} are not available.</div><div class="ps-desc" style="margin:4px 0 8px">Levels are for the next session, from the last completed period. Shaded band = CPR (BC to TC). Dotted = previous period high.</div>
+   <div class="cp-wrap"><table class="cp-t cp-st"><tr><th>Timeframe</th><th>Status</th><th>Trend</th><th style="text-align:left">CPR type</th></tr>${['d','w','m','y'].map(k=>stRow(s,k)).join('')}</table></div>`;
+  else if(dtab==='lv')body=`${lvTable('Daily','d',s)}${lvTable('Weekly','w',s)}${lvTable('Monthly','m',s)}${lvTable('Yearly','y',s)}<div class="ps-desc" style="margin-top:8px">Levels are for the next session. Long-only; bearish conditions mean Avoid New Buy, never a short.</div>`;
+  else body=`<div id="plPlan">${window.mlCprPlanHtml?window.mlCprPlanHtml():''}</div>`;
+  box.innerHTML=`<div class="cp-box" style="margin-top:0"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><b style="font-size:17px">${E(s.symbol)}</b><span class="ps-desc">${E(s.name||'')}</span><span>${f2(s.price)}</span><span class="${s.change>=0?'up':'dn'}">${pc(s.change)}</span><span style="flex:1"></span><button class="smallbtn" data-cpopen="1">Open in Workspace ↗</button><button class="smallbtn" data-cpclose="1" aria-label="Close">✕</button></div>
+   <div style="margin-top:6px">${ck.map(c=>`<span class="pill ${c[1]?'ok':'no'}">${c[1]?'✓':'✗'} ${c[0]}${c[2]!==''?' ('+c[2]+')':''}</span>`).join('')}<span class="pill ${all?'ok':'no'}">${all?'Passes all 3 confirmations':'Not all confirmations met'}</span><span class="pill">Market: ${E(tr)}</span></div>
+   <div style="display:flex;gap:6px;margin-top:8px">${tb('chart','Chart')}${tb('lv','Levels')}${tb('plan','Trade plan')}</div>${body}</div>`;
+  if(dtab==='chart'){const cv=box.querySelector('#cprCv'),sy=s.symbol;loadC(sy,j=>{if(sel!==sy||!cv.isConnected)return;if(!j){cv.style.display='none';box.querySelector('#cprCvMsg').style.display='block';return}drawC(s,cv,j)})}}
+ const pg0=()=>document.getElementById('cprPage');
+ function setView(v){cfg.view=v;save();pg0().querySelectorAll('.cp-tabs button').forEach(b=>b.classList.toggle('on',b.dataset.cpv===v));groups()}
+ function pick(sym,tab,scroll){sel=sym;if(tab)dtab=tab;try{window.mlCprPlanSel&&window.mlCprPlanSel(sym)}catch(e){}detail();if(scroll){const d=document.getElementById('cprDetail');d&&d.scrollIntoView({behavior:'smooth',block:'start'})}}
  function build(){const pg=document.getElementById('cprPage');if(!pg)return;
   const asOf=meta&&meta.asOf?meta.asOf:'';
-  pg.innerHTML=`<style>${css}</style><h2 style="margin:0">CPR &amp; Pivot Scanners</h2><p class="cp-sub">Central Pivot Range from the last completed day, week and month · ${asOf?'prices as of '+E(asOf)+' · ':''}market ${meta&&meta.trend?E(meta.trend):'–'} (Nifty vs 50 and 200 DMA) · long-only</p>
-  <div class="cp-box"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><b>CPR levels for</b><input type="text" id="cprQ" placeholder="Symbol, e.g. RELIANCE" autocomplete="off"><label class="ps-desc"><input type="checkbox" id="cprLiq" ${cfg.liquid?'checked':''}> Liquid only</label><details><summary class="ps-desc" style="cursor:pointer">Settings</summary><div class="ps-desc" style="line-height:2.2">Narrow CPR width % (≤): Daily <input type="number" step="0.05" id="cn_d" value="${cfg.nd}"> Weekly <input type="number" step="0.05" id="cn_w" value="${cfg.nw}"> Monthly <input type="number" step="0.1" id="cn_m" value="${cfg.nm}"><br>Wide CPR width % (≥): Daily <input type="number" step="0.1" id="cw_d" value="${cfg.wd}"> Weekly <input type="number" step="0.1" id="cw_w" value="${cfg.ww}"> Monthly <input type="number" step="0.5" id="cw_m" value="${cfg.wm}"><br>Near upper circuit: within <input type="number" step="0.5" id="cn_c" value="${cfg.circ}"> % of the limit price</div></details></div><div id="cprDetail"></div></div>
-  <div id="cprPlanner"></div><div id="cprEntries"></div><div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Chart overlays, the four entry setups and trade states are the next stage.</p>`;
-  const q=pg.querySelector('#cprQ');q.oninput=()=>{const v=q.value.trim().toUpperCase();const s=stocks.find(x=>x.symbol===v);if(s){sel=v;detail()}};
+  pg.innerHTML=`<style>${css}</style><h2 style="margin:0">CPR &amp; Pivot Scanners</h2><p class="cp-sub">Central Pivot Range from the last completed day, week, month and year · ${asOf?'prices as of '+E(asOf)+' · ':''}market ${meta&&meta.trend?E(meta.trend):'–'} (Nifty vs 50 and 200 DMA) · long-only</p>
+  <div class="cp-bar"><input type="text" id="cprQ" placeholder="Search symbol, e.g. RELIANCE" autocomplete="off"><label class="ps-desc">Sort <select id="cprSort" style="padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:inherit"><option value="" ${!cfg.srt?'selected':''}>Default (RS)</option><option value="d" ${cfg.srt==='d'?'selected':''}>Change % ↓ high to low</option><option value="a" ${cfg.srt==='a'?'selected':''}>Change % ↑ low to high</option></select></label><label class="ps-desc"><input type="checkbox" id="cprLiq" ${cfg.liquid?'checked':''}> Liquid only</label><details><summary class="ps-desc" style="cursor:pointer">Settings</summary><div class="ps-desc" style="line-height:2.2">Narrow CPR width % (≤): Daily <input type="number" step="0.05" id="cn_d" value="${cfg.nd}"> Weekly <input type="number" step="0.05" id="cn_w" value="${cfg.nw}"> Monthly <input type="number" step="0.1" id="cn_m" value="${cfg.nm}"> Yearly <input type="number" step="0.5" id="cn_y" value="${cfg.ny}"><br>Wide CPR width % (≥): Daily <input type="number" step="0.1" id="cw_d" value="${cfg.wd}"> Weekly <input type="number" step="0.1" id="cw_w" value="${cfg.ww}"> Monthly <input type="number" step="0.5" id="cw_m" value="${cfg.wm}"> Yearly <input type="number" step="0.5" id="cw_y" value="${cfg.wy}"><br>Near upper circuit: within <input type="number" step="0.5" id="cn_c" value="${cfg.circ}"> % of the limit price</div></details></div>
+  <div id="cprDetail"></div>
+  <div class="cp-tabs"><button data-cpv="sc" class="${cfg.view==='sc'?'on':''}">Scanners</button><button data-cpv="pl" class="${cfg.view==='pl'?'on':''}">Trade Planner</button><button data-cpv="en" class="${cfg.view==='en'?'on':''}">Entries</button></div>
+  <div id="cprPlanner"></div><div id="cprEntries"></div><div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Intraday (30m / 1H / 4H) is not included yet.</p>`;
+  const q=pg.querySelector('#cprQ');q.oninput=()=>{const v=q.value.trim().toUpperCase();const s=stocks.find(x=>x.symbol===v);if(s)pick(v,null,false)};
   pg.querySelector('#cprLiq').onchange=e=>{cfg.liquid=e.target.checked?1:0;save();groups()};
-  [['cn_d','nd'],['cn_w','nw'],['cn_m','nm'],['cw_d','wd'],['cw_w','ww'],['cw_m','wm'],['cn_c','circ']].forEach(([id,k])=>{pg.querySelector('#'+id).onchange=e=>{const v=parseFloat(e.target.value);if(v>=0){cfg[k]=v;save();groups();detail()}}});
-  pg.addEventListener('click',e=>{const m=e.target.closest('[data-cpmore]');if(m){open[m.dataset.cpmore]=!open[m.dataset.cpmore];groups();return}const r=e.target.closest('[data-cpsym]');if(r){sel=r.dataset.cpsym;detail();pg.querySelector('#cprDetail').scrollIntoView({behavior:'smooth',block:'center'})}});
+  pg.querySelector('#cprSort').onchange=e=>{cfg.srt=e.target.value;save();groups()};
+  [['cn_d','nd'],['cn_w','nw'],['cn_m','nm'],['cn_y','ny'],['cw_d','wd'],['cw_w','ww'],['cw_m','wm'],['cw_y','wy'],['cn_c','circ']].forEach(([id,k])=>{pg.querySelector('#'+id).onchange=e=>{const v=parseFloat(e.target.value);if(v>=0){cfg[k]=v;save();groups();detail()}}});
+  pg.onclick=e=>{
+   const v=e.target.closest('[data-cpv]');if(v){setView(v.dataset.cpv);return}
+   const m=e.target.closest('[data-cpmore]');if(m){open[m.dataset.cpmore]=!open[m.dataset.cpmore];groups();return}
+   const dt=e.target.closest('[data-cpdt]');if(dt){dtab=dt.dataset.cpdt;detail();return}
+   const lv=e.target.closest('[data-cplv]');if(lv){const k=lv.dataset.cplv;cfg.lv=cfg.lv.includes(k)?cfg.lv.replace(k,''):cfg.lv+k;if(!cfg.lv)cfg.lv=k;save();detail();return}
+   const rg=e.target.closest('[data-cprng]');if(rg){cfg.rng=+rg.dataset.cprng;save();detail();return}
+   if(e.target.closest('[data-cpema]')){cfg.ema=cfg.ema?0:1;save();detail();return}
+   if(e.target.closest('[data-cpclose]')){sel=null;detail();return}
+   if(e.target.closest('[data-cpopen]')){try{window.openStockChart&&window.openStockChart(sel)}catch(x){}return}
+   const r=e.target.closest('[data-cpsym]');if(r){pick(r.dataset.cpsym,null,true)}};
+  pg.onchange=e=>{try{window.mlCprPlanChange&&window.mlCprPlanChange(e)}catch(x){}};
   built=true;groups();detail()}
- function groups(){try{window.mlCprPlanner&&window.mlCprPlanner()}catch(e){}try{window.mlCprEntries&&window.mlCprEntries()}catch(e){}const g=document.getElementById('cprGroups');if(!g)return;g.innerHTML=GROUPS.map(([t,sub,ids])=>`<div class="cp-h">${t}</div>${sub?`<div class="cp-sub">${sub}</div>`:''}<div class="cp-grid">${ids.map(card).join('')}</div>`).join('')}
+ function groups(){const v=cfg.view||'sc',P=document.getElementById('cprPlanner'),En=document.getElementById('cprEntries'),g=document.getElementById('cprGroups');if(!g)return;
+  P.style.display=v==='pl'?'':'none';En.style.display=v==='en'?'':'none';g.style.display=v==='sc'?'':'none';
+  if(v==='pl'){try{window.mlCprPlanner&&window.mlCprPlanner()}catch(e){}}
+  else if(v==='en'){try{window.mlCprEntries&&window.mlCprEntries()}catch(e){}}
+  else g.innerHTML=GROUPS.map(([t,sub,ids])=>`<div class="cp-h">${t}</div>${sub?`<div class="cp-sub">${sub}</div>`:''}<div class="cp-grid">${ids.map(card).join('')}</div>`).join('')}
  function show(){const nav=document.getElementById('nav');if(!window.__mlRealData||!window.stocks)return;if(!built)build();else groups()}
  function hideAll(){document.querySelectorAll('#swingPage,#popularPage,#sectorPage,#backtestPage,#toolsPage,#morePage').forEach(x=>x.classList.add('hidden'));const l=document.querySelector('.layout');if(l)l.classList.add('hidden')}
  function install(){
@@ -3635,7 +3694,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
    if(!meta)fetch('data/meta.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{meta=j;built=false;if(!pg.classList.contains('hidden'))show()}).catch(()=>{});
    show();window.scrollTo({top:0,behavior:'smooth'})});
   document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],#moreMenu button,#moreMenu a');if(t&&!t.dataset.cprTab){pg.classList.add('hidden');b.classList.remove('active')}},true)}
- window.mlCprCfg=()=>cfg;window.mlCprMeta=()=>meta;window.mlCprSelect=x=>{sel=x;detail()};
+ window.mlCprCfg=()=>cfg;window.mlCprMeta=()=>meta;window.mlCprSelect=(x,t,sc)=>pick(x,t,sc);
  install();
 })();
 </script>
@@ -3681,7 +3740,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
  function stopOf(e){const low=e[4];if(!(cfg.buf>0))return low;let st=Math.round(low*(1-cfg.buf/100)*100)/100;if(st>=low)st=Math.round((low-0.01)*100)/100;return st>0?st:low}
  function rows(code,rg){const lq=(window.mlCprCfg&&window.mlCprCfg().liquid),out=[];
   stocks.forEach(s=>{if(!s.en||(lq&&s.turnover!=null&&s.turnover<10))return;s.en.forEach(e=>{if(e[0]!==cfg.style||e[1]!==code)return;const st=status(s,e,rg),sp=stopOf(e),risk=e[3]-sp;out.push({s,e,st,stop:sp,r1:e[5]>e[3]?(e[5]-e[3])/risk:null,r2:(e[6]-e[3])/risk,rk:(e[3]-sp)/e[3]*100})})});
-  return out.sort((a,b)=>RK[a.st[1]]-RK[b.st[1]]||b.r2-a.r2)}
+  const sr=window.mlCprCfg&&window.mlCprCfg().srt;return out.sort((a,b)=>RK[a.st[1]]-RK[b.st[1]]||(sr?(sr==='a'?1:-1)*((a.s.change||0)-(b.s.change||0)):b.r2-a.r2))}
  function card(code,title,desc,rg){const L=rows(code,rg),show=open[code]?L:L.slice(0,8),nc=L.filter(x=>x.st[1]==='bc').length;
   const rs=show.map(x=>{const{s,e,st}=x;return `<div data-cpsym="${E(s.symbol)}" style="padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font-size:12px" ${st[2]?`title="${E(st[2])}"`:''}>
    <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b style="font-size:13px">${E(s.symbol)}</b> <span style="color:var(--muted,#8a9089)">${f2(s.price)}</span></span><span class="pill ${st[1]==='bc'?'ok':st[1]==='sf'?'':'no'}" style="margin:0">${st[0]}</span></div>
@@ -3708,7 +3767,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
 (function(){
  const LS='mlCprPlanCfg1',DEF={style:'sw',per:'w',rule:'w',dir:'all',ema:1,rsi:1,drv:0,part:50,cap:100000,risk:1};
  const STY={sw:['Swing','w','30m / 1H / 4H / Daily'],mo:['Momentum','w','Daily / Weekly'],lt:['Long-term','m','Weekly / Monthly']};
- const PN={d:'Daily',w:'Weekly',m:'Monthly'},DIR={A:'Ascending',D:'Descending',M:'Mixed',O:'Overlapping'},CODE={PB:'P Breakout',PR:'P Retest',TB:'TC Bounce',EP:'EMA Pullback'};
+ const PN={d:'Daily',w:'Weekly',m:'Monthly',y:'Yearly'},DIR={A:'Ascending',D:'Descending',M:'Mixed',O:'Overlapping'},CODE={PB:'P Breakout',PR:'P Retest',TB:'TC Bounce',EP:'EMA Pullback'};
  let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
  const save=()=>{try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}};
  const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),f2=v=>(+v).toFixed(2),pc=v=>(v>0?'+':'')+(+v).toFixed(2)+'%';
@@ -3717,8 +3776,8 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
  function narrow(s,p){if(!s[p+'c'])return false;if(cfg.rule==='r')return s[p+'nr']===1;const th=ccfg()['n'+p];return th!=null&&s[p+'cw']!=null&&s[p+'cw']<=th}
  function pos(s,p){const lv=s[p+'c'];return s.price>lv[5]?'Above CPR':s.price<lv[3]?'Below CPR':'Inside CPR'}
  function list(){const p=cfg.per,lq=ccfg().liquid;
-  return stocks.filter(s=>s[p+'c']&&(!lq||s.turnover==null||s.turnover>=10)&&narrow(s,p)&&(cfg.dir==='all'||s[p+'cd']===cfg.dir)&&(!cfg.ema||s.es===1)&&(!cfg.rsi||s.rsi>60)&&(!cfg.drv||(s.drv||0)>=150))
-   .sort((a,b)=>a[p+'cw']-b[p+'cw'])}
+  return stocks.filter(s=>s[p+'c']&&(!lq||s.turnover==null||s.turnover>=10)&&narrow(s,p)&&(!cfg.all||s.cALL===1)&&(cfg.dir==='all'||s[p+'cd']===cfg.dir)&&(!cfg.ema||s.es===1)&&(!cfg.rsi||s.rsi>60)&&(!cfg.drv||(s.drv||0)>=150))
+   .sort(ccfg().srt?(a,b)=>(ccfg().srt==='a'?1:-1)*((a.change||0)-(b.change||0)):(a,b)=>a[p+'cw']-b[p+'cw'])}
  const chk=(ok,txt)=>`<span class="pill ${ok?'ok':'no'}" style="margin:2px 4px 2px 0">${ok?'✓':'✗'} ${txt}</span>`;
  function entries(s,p){return (s.en||[]).filter(e=>e[0]===p).sort((a,b)=>(a[2]==='C'?0:1)-(b[2]==='C'?0:1))}
  function rowHtml(s){const p=cfg.per,lv=s[p+'c'],en=entries(s,p),api=window.mlCprApi,rg=api&&api.regime();
@@ -3726,7 +3785,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   return `<div data-plsym="${E(s.symbol)}" style="padding:9px 0;border-top:1px solid var(--line);cursor:pointer;font-size:12px;${sel===s.symbol?'background:#2a7a5214':''}">
    <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><span><b style="font-size:13px">${E(s.symbol)}</b> <span style="color:var(--muted,#8a9089)">${f2(s.price)} <span class="${s.change>=0?'up':'dn'}">${pc(s.change)}</span></span></span><span><span class="pill" style="margin:0">${f2(s[p+'cw'])}% · ${DIR[s[p+'cd']]||'–'}</span></span></div>
    <div style="margin-top:3px;color:var(--muted,#8a9089);line-height:1.7">${pos(s,p)} · S1 ${f2(lv[2])} · P <b style="color:inherit">${f2(lv[4])}</b> · R1 ${f2(lv[6])} · R2 ${f2(lv[7])}<br>${chk(s.es===1,'EMA 9>20>50')}${chk(s.rsi>60,'RSI '+(s.rsi==null?'–':Math.round(s.rsi)))}${chk((s.drv||0)>=150,'DRVOL '+(s.drv==null?'–':Math.round(s.drv)+'%'))}${tag?'<br><span style="color:#2a9d62">'+E(tag)+'</span>':''}</div></div>`}
- function matrix(s){const rowsH=['d','w','m'].map(p=>{const lv=s[p+'c'];if(!lv)return `<tr><td>${PN[p]}</td><td colspan="8">not enough history</td></tr>`;
+ function matrix(s){const rowsH=['d','w','m','y'].map(p=>{const lv=s[p+'c'];if(!lv)return `<tr><td>${PN[p]}</td><td colspan="8">not enough history</td></tr>`;
    return `<tr${p===cfg.per?' style="background:#2a7a5222"':''}><td><b>${PN[p]}</b></td><td>${f2(s[p+'cw'])}%</td><td>${DIR[s[p+'cd']]||'–'}</td><td>${f2(lv[2])}</td><td>${f2(lv[3])}</td><td>${f2(lv[4])}</td><td>${f2(lv[5])}</td><td>${f2(lv[6])}</td><td>${f2(lv[7])}</td></tr>`}).join('');
   return `<div class="cp-wrap"><table class="cp-t"><tr><th>CPR</th><th>Width</th><th>Direction</th><th>S1</th><th>BC</th><th>P</th><th>TC</th><th>R1</th><th>R2</th></tr>${rowsH}</table></div>`}
  function planHtml(){const s=sel&&stocks.find(x=>x.symbol===sel);if(!s||!s[cfg.per+'c'])return '<div class="ps-desc" style="padding:8px 0">Tap a stock above to see its Daily + Weekly + Monthly CPR and a trade plan.</div>';
@@ -3736,8 +3795,8 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   if(e){entry=e[3];stop=api.stopOf(e);t1=e[5];t2=e[6];src=CODE[e[1]]+' ('+PN[p]+' CPR)';verdict=api.status(s,e,rg)[0]}
   else{entry=px>P?px:P;stop=Math.round(BC*(1-bufPct/100)*100)/100;if(stop>=BC)stop=Math.round((BC-0.01)*100)/100;t1=R1;t2=R2;src='Reference plan: '+(px>P?'price is already above P, so wait for a retest of P or EMA 9/20 and a bullish candle':'buy on a close above P '+f2(P))+'; stop below the lower CPR edge (BC)';
    verdict=(rg.st==='NA'||rg.st==='Weak'||(rg.st==='Caution'&&api&&api.strict&&api.strict()))?(rg.st==='NA'?'Market Data Unavailable — Avoid New Buy':'Avoid New Buy'):'No entry signal yet'}
-  let lad=[['R1',R1],['R2',R2]];const hasH=s.pdh!=null||s.wh!=null||s.mh!=null;
-  if(cfg.hi!==0){[['Prev day high',s.pdh],['Prev week high',s.wh],['Prev month high',s.mh]].forEach(x=>{if(x[1]!=null)lad.push(x)})}
+  let lad=[['R1',R1],['R2',R2]];const hasH=s.pdh!=null||s.wh!=null||s.mh!=null||s.yh!=null;
+  if(cfg.hi!==0){[['Prev day high',s.pdh],['Prev week high',s.wh],['Prev month high',s.mh],['Prev year high',s.yh]].forEach(x=>{if(x[1]!=null)lad.push(x)})}
   lad=lad.filter(x=>x[1]>entry).sort((a,b)=>a[1]-b[1]);const mg=[];lad.forEach(x=>{const m=mg.find(y=>Math.abs(y[1]-x[1])/x[1]<0.001);if(m)m[0]+=' = '+x[0];else mg.push([x[0],x[1]])});lad=mg;
   const useL=cfg.hi!==0&&hasH;if(useL){t1=lad[0]?lad[0][1]:t1;t2=lad[1]?lad[1][1]:(lad[0]?lad[0][1]:t2)}
   const risk=entry-stop,rr1=t1>entry&&risk>0?(t1-entry)/risk:null,rr2=t2>entry&&risk>0?(t2-entry)/risk:null,noT=!(t2>entry);
@@ -3750,8 +3809,12 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   <div class="ps-desc" style="margin-top:8px;line-height:1.7"><b style="color:inherit">${E(src)}</b><br>Entry ${e?'above':'around'} <b style="color:inherit">${f2(entry)}</b> · Stop <b style="color:inherit">${f2(stop)}</b> (risk ${f2(risk)} = ${(risk/entry*100).toFixed(1)}%)<br>Targets (nearest first): ${ladTxt}<br><label style="cursor:pointer"><input type="checkbox" id="plHi" ${cfg.hi!==0?'checked':''}> Include previous day / week / month highs as targets</label>${cfg.hi!==0&&!hasH?' <span style="color:#d4a017">(highs appear after the next workflow run; R1/R2 only for now)</span>':''}<br>Reward/risk: ${rr1==null?'T1 passed':rr1.toFixed(1)+' to T1'} · ${rr2==null?'–':rr2.toFixed(1)+' to T2'}</div>
   <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center" class="ps-desc">Capital ₹<input type="number" id="plCap" value="${cfg.cap}" style="width:96px"> Risk <input type="number" step="0.25" id="plRisk" value="${cfg.risk}"> % per trade · Book <input type="number" id="plPart" value="${cfg.part}"> % at T1</div>
   <div class="ps-desc" style="margin-top:6px;line-height:1.7">${noT||risk<=0?'No valid position size for this plan.':`Quantity <b style="color:inherit">${qty}</b> shares (about ₹${Math.round(qty*entry).toLocaleString('en-IN')}), risking about ₹${Math.round(qty*risk).toLocaleString('en-IN')}.<br>At T1: sell ${pq} and move the stop to your cost. At T2: sell the remaining ${qty-pq}. If the stop is hit, exit everything.`}</div>
-  <div class="ps-desc" style="margin-top:6px">${p==='w'?'Weekly CPR levels stay fixed for the whole week: plan to close the trade within the week.':p==='m'?'Monthly CPR levels stay fixed for the whole month: positional hold.':'Daily levels are for the next session only.'} Long-only; bearish conditions mean Avoid New Buy, never a short. ${rg.st==='NA'||rg.st==='Weak'||rg.st==='Caution'?E(rg.why||''):''}</div>`}
+  <div class="ps-desc" style="margin-top:6px">${p==='w'?'Weekly CPR levels stay fixed for the whole week: plan to close the trade within the week.':p==='m'?'Monthly CPR levels stay fixed for the whole month: positional hold.':p==='y'?'Yearly CPR levels stay fixed for the whole year: long-term hold.':'Daily levels are for the next session only.'} Long-only; bearish conditions mean Avoid New Buy, never a short. ${rg.st==='NA'||rg.st==='Weak'||rg.st==='Caution'?E(rg.why||''):''}</div>`}
  function paintPlan(){const b=document.getElementById('plPlan');if(b)b.innerHTML=planHtml()}
+ function planChange(e){const id=e.target.id,v=e.target.value;
+  if(id==='plHi'){cfg.hi=e.target.checked?1:0}else if(id==='plCap'&&+v>0){cfg.cap=+v}else if(id==='plRisk'&&+v>0&&+v<=10){cfg.risk=+v}else if(id==='plPart'&&+v>=0&&+v<=100){cfg.part=+v}else return false;
+  save();paintPlan();return true}
+ window.mlCprPlanChange=planChange;window.mlCprPlanHtml=()=>planHtml();window.mlCprPlanSel=x=>{sel=x};
  window.mlCprPlanner=function(){const box=document.getElementById('cprPlanner');if(!box||!window.stocks)return;
   const has=stocks.some(s=>s.wc),L=has?list():[],show=showAll?L.slice(0,80):L.slice(0,12),p=cfg.per;
   const sb=(k)=>`<button class="smallbtn" data-plstyle="${k}" style="${cfg.style===k?'background:var(--accent,#2a7a52);color:#fff':''}">${STY[k][0]}</button>`;
@@ -3761,25 +3824,31 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   <div class="cp-box" style="margin-top:6px">
    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b>Trading style</b>${sb('sw')}${sb('mo')}${sb('lt')}</div>
    <div class="ps-desc" style="margin-top:4px">${STY[cfg.style][0]}: ${PN[STY[cfg.style][1]]} CPR · analysis charts ${STY[cfg.style][2]}${cfg.per!==STY[cfg.style][1]?' · <span style="color:#d9a441">you changed the CPR period below</span>':''}</div>
-   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px"><b>Narrow CPR period</b>${pb('d')}${pb('w')}${pb('m')}</div>
+   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px"><b>Narrow CPR period</b>${pb('d')}${pb('w')}${pb('m')}${pb('y')}</div>
    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px" class="ps-desc">Narrow means ${sel1('plRule',[['w','CPR width is small (recommended)'],['r','Range is smaller than the last period']],cfg.rule)} Direction ${sel1('plDir',[['all','Any'],['A','Ascending'],['D','Descending'],['M','Mixed'],['O','Overlapping']],cfg.dir)}</div>
-   <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px" class="ps-desc">Only show stocks with: <label><input type="checkbox" id="plEma" ${cfg.ema?'checked':''}> EMA 9&gt;20&gt;50</label><label><input type="checkbox" id="plRsi" ${cfg.rsi?'checked':''}> RSI(14) &gt; 60</label><label><input type="checkbox" id="plDrv" ${cfg.drv?'checked':''}> DRVOL ≥ 150%</label></div>
+   <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px" class="ps-desc">Only show stocks with: <label><input type="checkbox" id="plEma" ${cfg.ema?'checked':''}> EMA 9&gt;20&gt;50</label><label><input type="checkbox" id="plRsi" ${cfg.rsi?'checked':''}> RSI(14) &gt; 60</label><label><input type="checkbox" id="plDrv" ${cfg.drv?'checked':''}> DRVOL ≥ 150%</label><label><input type="checkbox" id="plAll" ${cfg.all?'checked':''}> Narrow on ALL periods (D+W+M+Y)</label></div>
    <div class="ps-desc" style="margin-top:6px">The narrow limits (width %) are in Settings above. Every row shows all checks even if a filter is off. <b style="color:inherit">DRVOL</b> = today's volume ÷ average of the previous 20 days × 100.</div></div>
   <div class="cp-box"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>${PN[p]} narrow CPR stocks</b><span class="ps-count" style="font-size:12px">${L.length}</span></div>
    ${has?'':'<div class="ps-desc" style="padding:10px 0">CPR data appears after the next "Update stock data" run.</div>'}
    ${has&&!L.length?'<div class="ps-desc" style="padding:10px 0">No stock matches these filters today. Try turning off DRVOL or RSI.</div>':''}
    <div>${show.map(rowHtml).join('')}</div>${L.length>12?`<div class="ps-actions"><button data-plmore="1">${showAll?'Show less':'See '+Math.min(L.length,80)+' of '+L.length} →</button></div>`:''}</div>
-  <div class="cp-box" id="plPlanBox"><b>Trade plan</b><div id="plPlan">${planHtml()}</div></div>`;
+  <div class="ps-desc" style="margin-top:10px">Tap a stock to open its chart and trade plan at the top of the page.</div>`;
   box.onclick=e=>{const a=e.target.closest('[data-plstyle]');if(a){cfg.style=a.dataset.plstyle;cfg.per=STY[cfg.style][1];save();window.mlCprPlanner();return}
    const b=e.target.closest('[data-plper]');if(b){cfg.per=b.dataset.plper;save();window.mlCprPlanner();return}
    if(e.target.closest('[data-plmore]')){showAll=!showAll;window.mlCprPlanner();return}
-   const r=e.target.closest('[data-plsym]');if(r){sel=r.dataset.plsym;try{window.mlCprSelect&&window.mlCprSelect(sel)}catch(x){}window.mlCprPlanner();const pb=document.getElementById('plPlanBox');if(pb)pb.scrollIntoView({behavior:'smooth',block:'nearest'})}};
-  box.onchange=e=>{const id=e.target.id,v=e.target.value;
-   if(id==='plRule')cfg.rule=v;else if(id==='plDir')cfg.dir=v;else if(id==='plEma')cfg.ema=e.target.checked?1:0;else if(id==='plRsi')cfg.rsi=e.target.checked?1:0;else if(id==='plDrv')cfg.drv=e.target.checked?1:0;
+   const r=e.target.closest('[data-plsym]');if(r){sel=r.dataset.plsym;window.mlCprPlanner();try{window.mlCprSelect&&window.mlCprSelect(sel,'plan',true)}catch(x){}}};
+  box.onchange=e=>{if(planChange(e))return;const id=e.target.id,v=e.target.value;
+   if(id==='plRule')cfg.rule=v;else if(id==='plDir')cfg.dir=v;else if(id==='plEma')cfg.ema=e.target.checked?1:0;else if(id==='plRsi')cfg.rsi=e.target.checked?1:0;else if(id==='plDrv')cfg.drv=e.target.checked?1:0;else if(id==='plAll')cfg.all=e.target.checked?1:0;
    else if(id==='plHi'){cfg.hi=e.target.checked?1:0;save();paintPlan();return}
    else if(id==='plCap'&&+v>0){cfg.cap=+v;save();paintPlan();return}else if(id==='plRisk'&&+v>0&&+v<=10){cfg.risk=+v;save();paintPlan();return}else if(id==='plPart'&&+v>=0&&+v<=100){cfg.part=+v;save();paintPlan();return}else return;
    save();window.mlCprPlanner()}};
 })();
+</script>
+<script id="mlChgSort">
+/* Workspace list: tap the Chg% header to sort high to low, then low to high, then back to the default order. */
+document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('#chgSortTh');if(!t)return;
+ window.__mlChgSort=window.__mlChgSort==='d'?'a':window.__mlChgSort==='a'?'':'d';
+ try{if(typeof renderRows==='function')renderRows()}catch(x){}});
 </script>
 </body>
 </html>
