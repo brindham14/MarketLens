@@ -465,9 +465,9 @@ def cpr_fields(df, today=None):
         f["cpu"] = int(t["BC"] > y["TC"]); f["cpd"] = int(t["TC"] < y["BC"])
         f["cpr"] = [round(float(t[k]), 2) for k in ("S2", "S1", "BC", "P", "TC", "R1", "R2")]
         f["cprNar"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]) and t["P"] > y["P"])
+        f["pdh"] = round(float(H[-1]), 2)                                              # previous (last completed) day high
         f["dc"] = _lv(t); f["dcw"] = round(float(t["W"]), 2); f["dcd"] = _dirn(t, y)
         f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                       # daily range smaller than the day before
-        f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                  # daily range smaller than the previous day
         wn_rng = mn_rng = None
         for tag, rule in (("w", "W-FRI"), ("m", "ME")):
             g = d.resample(rule).agg({"High": "max", "Low": "min", "Close": "last"}).dropna()
@@ -482,7 +482,7 @@ def cpr_fields(df, today=None):
             f[tag + "c"] = _lv(a); f[tag + "cw"] = round(float(a["W"]), 2); f[tag + "cd"] = _dirn(a, b)
             rng = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]))
             f[tag + "nr"] = rng                                                          # period range smaller than the previous period (wnr / mnr)
-            f[tag + "nr"] = rng                                                              # range (R1-S1) smaller than the previous completed period
+            f[tag + "h"] = round(float(g.iloc[-1]["High"]), 2)                           # previous COMPLETED week / month high (wh / mh) used as targets
             if tag == "w": wn_rng = rng; f["cWN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"])   # weekly narrow range = inside the previous week (R1 lower, S1 higher), like the monthly rule
             else:
                 f["cMN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"]); mn_rng = rng

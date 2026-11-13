@@ -3512,7 +3512,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 50</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 51</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3736,13 +3736,18 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   if(e){entry=e[3];stop=api.stopOf(e);t1=e[5];t2=e[6];src=CODE[e[1]]+' ('+PN[p]+' CPR)';verdict=api.status(s,e,rg)[0]}
   else{entry=px>P?px:P;stop=Math.round(BC*(1-bufPct/100)*100)/100;if(stop>=BC)stop=Math.round((BC-0.01)*100)/100;t1=R1;t2=R2;src='Reference plan: '+(px>P?'price is already above P, so wait for a retest of P or EMA 9/20 and a bullish candle':'buy on a close above P '+f2(P))+'; stop below the lower CPR edge (BC)';
    verdict=(rg.st==='NA'||rg.st==='Weak'||(rg.st==='Caution'&&api&&api.strict&&api.strict()))?(rg.st==='NA'?'Market Data Unavailable — Avoid New Buy':'Avoid New Buy'):'No entry signal yet'}
+  let lad=[['R1',R1],['R2',R2]];const hasH=s.pdh!=null||s.wh!=null||s.mh!=null;
+  if(cfg.hi!==0){[['Prev day high',s.pdh],['Prev week high',s.wh],['Prev month high',s.mh]].forEach(x=>{if(x[1]!=null)lad.push(x)})}
+  lad=lad.filter(x=>x[1]>entry).sort((a,b)=>a[1]-b[1]);const mg=[];lad.forEach(x=>{const m=mg.find(y=>Math.abs(y[1]-x[1])/x[1]<0.001);if(m)m[0]+=' = '+x[0];else mg.push([x[0],x[1]])});lad=mg;
+  const useL=cfg.hi!==0&&hasH;if(useL){t1=lad[0]?lad[0][1]:t1;t2=lad[1]?lad[1][1]:(lad[0]?lad[0][1]:t2)}
   const risk=entry-stop,rr1=t1>entry&&risk>0?(t1-entry)/risk:null,rr2=t2>entry&&risk>0?(t2-entry)/risk:null,noT=!(t2>entry);
+  const ladTxt=useL?(lad.length?lad.map((x,i)=>`${i<2?'T'+(i+1)+' = ':'then '}${x[0]} <b style="color:inherit">${f2(x[1])}</b>${risk>0?' ('+((x[1]-entry)/risk).toFixed(1)+'R)':''}`).join(' → '):'No target above the entry: skip'):`T1 = R1 <b style="color:inherit">${f2(t1)}</b>${t1>entry?'':' (already passed)'} · T2 = R2 <b style="color:inherit">${f2(t2)}</b>${noT?' (already passed: no target left, skip)':''}`;
   const amt=cfg.cap*cfg.risk/100,qty=risk>0?Math.floor(amt/risk):0,pq=Math.floor(qty*cfg.part/100);
   const ok=(rg.st==='Supportive'),mk=`Market: ${rg.st==='NA'?'data unavailable':rg.st}`;
   return `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><b style="font-size:16px">${E(s.symbol)}</b><span class="ps-desc">${E(s.name||'')}</span><span>${f2(px)}</span><span class="pill ${verdict==='Buy Confirmed'?'ok':/Avoid|Unavailable|Wait/.test(verdict)?'no':''}" style="margin:0">${E(verdict)}</span></div>
   <div style="margin-top:6px">${chk(narrow(s,p),PN[p]+' narrow CPR ('+f2(s[p+'cw'])+'%)')}${chk(s.es===1,'EMA 9>20>50')}${chk(s.rsi>60,'RSI(14) > 60 ('+(s.rsi==null?'–':Math.round(s.rsi))+')')}${chk((s.drv||0)>=150,'DRVOL ≥ 150% ('+(s.drv==null?'–':Math.round(s.drv)+'%')+')')}${chk(ok,mk)}</div>
   ${matrix(s)}
-  <div class="ps-desc" style="margin-top:8px;line-height:1.7"><b style="color:inherit">${E(src)}</b><br>Entry ${e?'above':'around'} <b style="color:inherit">${f2(entry)}</b> · Stop <b style="color:inherit">${f2(stop)}</b> (risk ${f2(risk)} = ${(risk/entry*100).toFixed(1)}%)<br>T1 = R1 <b style="color:inherit">${f2(t1)}</b>${t1>entry?'':' (already passed)'} · T2 = R2 <b style="color:inherit">${f2(t2)}</b>${noT?' (already passed: no target left, skip)':''}<br>Reward/risk: ${rr1==null?'T1 passed':rr1.toFixed(1)+' to T1'} · ${rr2==null?'–':rr2.toFixed(1)+' to T2'}</div>
+  <div class="ps-desc" style="margin-top:8px;line-height:1.7"><b style="color:inherit">${E(src)}</b><br>Entry ${e?'above':'around'} <b style="color:inherit">${f2(entry)}</b> · Stop <b style="color:inherit">${f2(stop)}</b> (risk ${f2(risk)} = ${(risk/entry*100).toFixed(1)}%)<br>Targets (nearest first): ${ladTxt}<br><label style="cursor:pointer"><input type="checkbox" id="plHi" ${cfg.hi!==0?'checked':''}> Include previous day / week / month highs as targets</label>${cfg.hi!==0&&!hasH?' <span style="color:#d4a017">(highs appear after the next workflow run; R1/R2 only for now)</span>':''}<br>Reward/risk: ${rr1==null?'T1 passed':rr1.toFixed(1)+' to T1'} · ${rr2==null?'–':rr2.toFixed(1)+' to T2'}</div>
   <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center" class="ps-desc">Capital ₹<input type="number" id="plCap" value="${cfg.cap}" style="width:96px"> Risk <input type="number" step="0.25" id="plRisk" value="${cfg.risk}"> % per trade · Book <input type="number" id="plPart" value="${cfg.part}"> % at T1</div>
   <div class="ps-desc" style="margin-top:6px;line-height:1.7">${noT||risk<=0?'No valid position size for this plan.':`Quantity <b style="color:inherit">${qty}</b> shares (about ₹${Math.round(qty*entry).toLocaleString('en-IN')}), risking about ₹${Math.round(qty*risk).toLocaleString('en-IN')}.<br>At T1: sell ${pq} and move the stop to your cost. At T2: sell the remaining ${qty-pq}. If the stop is hit, exit everything.`}</div>
   <div class="ps-desc" style="margin-top:6px">${p==='w'?'Weekly CPR levels stay fixed for the whole week: plan to close the trade within the week.':p==='m'?'Monthly CPR levels stay fixed for the whole month: positional hold.':'Daily levels are for the next session only.'} Long-only; bearish conditions mean Avoid New Buy, never a short. ${rg.st==='NA'||rg.st==='Weak'||rg.st==='Caution'?E(rg.why||''):''}</div>`}
@@ -3771,6 +3776,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
    const r=e.target.closest('[data-plsym]');if(r){sel=r.dataset.plsym;try{window.mlCprSelect&&window.mlCprSelect(sel)}catch(x){}window.mlCprPlanner();const pb=document.getElementById('plPlanBox');if(pb)pb.scrollIntoView({behavior:'smooth',block:'nearest'})}};
   box.onchange=e=>{const id=e.target.id,v=e.target.value;
    if(id==='plRule')cfg.rule=v;else if(id==='plDir')cfg.dir=v;else if(id==='plEma')cfg.ema=e.target.checked?1:0;else if(id==='plRsi')cfg.rsi=e.target.checked?1:0;else if(id==='plDrv')cfg.drv=e.target.checked?1:0;
+   else if(id==='plHi'){cfg.hi=e.target.checked?1:0;save();paintPlan();return}
    else if(id==='plCap'&&+v>0){cfg.cap=+v;save();paintPlan();return}else if(id==='plRisk'&&+v>0&&+v<=10){cfg.risk=+v;save();paintPlan();return}else if(id==='plPart'&&+v>=0&&+v<=100){cfg.part=+v;save();paintPlan();return}else return;
    save();window.mlCprPlanner()}};
 })();
