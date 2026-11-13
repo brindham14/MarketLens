@@ -426,7 +426,20 @@ def _ema(x, n):
     for v in x[1:]: e = a * float(v) + (1 - a) * e
     return e
 
-def cpr_fields(df):
+def _period_complete(last, rule, today=None):
+    """True only when the calendar week / month that contains the bar `last` is really over: the bar is on the period's last weekday,
+    or today (IST) is already past the period end. A running month is never treated as complete (28th-31st included)."""
+    last = pd.Timestamp(last).normalize()
+    today = pd.Timestamp(today).normalize() if today is not None else pd.Timestamp.now(tz="Asia/Kolkata").tz_localize(None).normalize()
+    if rule == "W-FRI":
+        end = last + pd.Timedelta(days=4 - last.weekday()) if last.weekday() <= 4 else last - pd.Timedelta(days=last.weekday() - 4)
+        return bool(last >= end or today > end)
+    end = last + pd.offsets.MonthEnd(0)
+    lastday = end
+    while lastday.weekday() > 4: lastday -= pd.Timedelta(days=1)                      # last weekday of the month
+    return bool(last >= lastday or today > end)
+
+def cpr_fields(df, today=None):
     """CPR + traditional pivots (daily / weekly / monthly) for the NEXT session, EMA stack, RSI(14), daily DRVOL and the CPR-tab scanners.
     Daily/weekly/monthly levels always come from the last COMPLETED period. Scanner rules follow the Chartink 'KAYBEE PIVOT' dashboard."""
     f = {}
@@ -453,13 +466,14 @@ def cpr_fields(df):
         f["cpr"] = [round(float(t[k]), 2) for k in ("S2", "S1", "BC", "P", "TC", "R1", "R2")]
         f["cprNar"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]) and t["P"] > y["P"])
         f["dc"] = _lv(t); f["dcw"] = round(float(t["W"]), 2); f["dcd"] = _dirn(t, y)
+        f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                       # daily range smaller than the day before
+        f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                  # daily range smaller than the previous day
         wn_rng = mn_rng = None
         for tag, rule in (("w", "W-FRI"), ("m", "ME")):
             g = d.resample(rule).agg({"High": "max", "Low": "min", "Close": "last"}).dropna()
             if len(g) < 4: continue
             last = d.index[-1]
-            running = (last.weekday() < 4 and last < g.index[-1]) if rule == "W-FRI" else (last.to_period("M") == g.index[-1].to_period("M") and last.day < 28)
-            if running: g = g.iloc[:-1]
+            if not _period_complete(last, rule, today): g = g.iloc[:-1]                  # the period still running is never used
             if len(g) < 3: continue
             a, b = _piv(*g.iloc[-1][["High", "Low", "Close"]]), _piv(*g.iloc[-2][["High", "Low", "Close"]])
             f[tag + "r1"] = round(float(a["R1"]), 2); f[tag + "s1"] = round(float(a["S1"]), 2); f[tag + "p"] = round(float(a["P"]), 2)
@@ -467,6 +481,8 @@ def cpr_fields(df):
             f[tag + "brk"] = int(c > a["R1"])
             f[tag + "c"] = _lv(a); f[tag + "cw"] = round(float(a["W"]), 2); f[tag + "cd"] = _dirn(a, b)
             rng = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]))
+            f[tag + "nr"] = rng                                                          # period range smaller than the previous period (wnr / mnr)
+            f[tag + "nr"] = rng                                                              # range (R1-S1) smaller than the previous completed period
             if tag == "w": wn_rng = rng; f["cWN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"])   # weekly narrow range = inside the previous week (R1 lower, S1 higher), like the monthly rule
             else:
                 f["cMN"] = int(a["R1"] < b["R1"] and a["S1"] > b["S1"]); mn_rng = rng
@@ -486,6 +502,61 @@ def cpr_fields(df):
     except Exception as e:
         pass
     return f
+
+def _levels_by_bar(d, rule):
+    """CPR levels in force on every daily bar = pivots of the PREVIOUS completed week/month (never the period the bar belongs to -> no lookahead)."""
+    key = d.index.to_period("W-FRI") if rule == "W" else d.index.to_period("M")
+    g = d.groupby(key).agg(H=("High", "max"), L=("Low", "min"), C=("Close", "last"))
+    P = (g.H + g.L + g.C) / 3.0; bc = (g.H + g.L) / 2.0; tc = 2 * P - bc
+    lv = pd.DataFrame({"P": P, "TC": np.maximum(tc, bc), "BC": np.minimum(tc, bc), "R1": 2 * P - g.L, "R2": P + (g.H - g.L)}).shift(1)
+    return lv.reindex(key).set_axis(d.index)
+
+def entry_fields(df, f):
+    """Four long-only CPR entries on real daily candles for Weekly (swing) and Monthly (positional) CPR.
+    Evaluated on the latest COMPLETED daily bar t. Filters (all four): EMA9>EMA20>EMA50, RSI(14)>60, daily DRVOL(20)>=150%.
+    Returns f["en"] = [[tf, code, status, entry, stop, T1, T2], ...]; status C = confirmed (buy above the confirmation candle high), F = forming."""
+    out = []
+    try:
+        if f.get("es") != 1 or (f.get("rsi") or 0) <= 60 or (f.get("drv") or 0) < 150: return {"en": out}
+        d = df[["Open", "High", "Low", "Close", "Volume"]].dropna(subset=["Open", "High", "Low", "Close"])
+        n = len(d)
+        if n < 80 or d["Volume"].iloc[-1] <= 0: return {"en": out}
+        O, H, L, C = (d[k].values.astype(float) for k in ("Open", "High", "Low", "Close")); t = n - 1
+        e9, e20, e50 = (d.Close.ewm(span=k, adjust=False).mean().values for k in (9, 20, 50))
+        TOL = 0.005
+        f["op"] = round(float(O[t]), 2); f["gp"] = round(float((O[t] / C[t - 1] - 1) * 100), 2)
+        def bull(i): return C[i] > O[i] and C[i] > C[i - 1] and C[i] >= L[i] + 0.5 * (H[i] - L[i])     # bullish candle closing in its upper half
+        for tf, rule in (("w", "W"), ("m", "M")):
+            lv = _levels_by_bar(d, rule)
+            if lv.iloc[t].isna().any() or lv.iloc[t - 20:t + 1].isna().any().any(): continue            # need completed periods behind every bar used
+            P, TC, R1, R2 = (lv[k].values for k in ("P", "TC", "R1", "R2"))
+            found = {}
+            def add(code, st, stop):
+                entry = float(H[t]); stop = float(stop)
+                if not (stop < entry < R2[t]): return                                                       # no risk or no target left
+                found[code] = [tf, code, st, round(entry, 2), round(stop, 2), round(float(R1[t]), 2), round(float(R2[t]), 2)]
+            # 1) P Breakout: previous close at/below P, latest close above P
+            if C[t - 1] <= P[t] and C[t] > P[t]: add("PB", "C", L[t])
+            # 2) P Retest: an earlier close above P, then a test of P in the last 3 sessions that held (closes stay >= P), then a bullish candle
+            for code, LV in (("PR", P), ("TB", TC)):
+                for k in (t - 1, t - 2, t - 3, t):                                                          # most recent test first (tightest honest stop)
+                    if L[k] > LV[k] * (1 + TOL) or C[k] < LV[k]: continue                                   # no touch, or support failed
+                    if any(C[j] < LV[j] for j in range(k, t + 1)): continue
+                    if not any(C[j] > LV[j] for j in range(max(0, k - 15), k)): continue                    # must have traded above before the test
+                    if code == "TB" and not C[k - 1] > TC[k - 1]: continue                                  # TC bounce: came from above the CPR
+                    if k < t and bull(t): add(code, "C", min(L[k:t + 1])); break
+                    if k == t: add(code, "F", min(L[k:t + 1])); break
+            # 4) EMA Pullback: price above P, EMA stack, touched EMA 9/20 within the last 5 sessions, held EMA 20 / 50, bullish candle
+            if C[t] > P[t] and C[t] >= e20[t]:
+                for k in (t - 1, t - 2, t - 3, t - 4, t - 5, t):
+                    if L[k] <= max(e9[k], e20[k]) * (1 + TOL) and all(C[j] > e50[j] for j in range(k, t + 1)):
+                        if k < t and bull(t): add("EP", "C", min(L[k:t + 1])); break
+                        if k == t: add("EP", "F", min(L[k:t + 1])); break
+            out += list(found.values())
+    except Exception:
+        out = []
+    return {"en": out} if out else {}
+
 
 def weekly_tight(close_series):
     wc = close_series.resample("W-FRI").last().dropna().values
@@ -578,7 +649,7 @@ for s, df in frames.items():
     if BAND.get(s): f["pb"] = BAND[s]
     f.update(pattern_fields(o, h, l, c, v)); f.update(flag_cup_my(h, l, c))
     f["tw"] = weekly_tight(df.Close)
-    f.update(cpr_fields(df))
+    f.update(cpr_fields(df)); f.update(entry_fields(df, f))
     # trend-template pieces that do not depend on RS
     lo52, hi52 = float(np.min(l[-252:])), float(np.max(h[-252:])); ma50 = sma(c, 50)
     _ttc = [price > ma150 and price > ma200, ma150 > ma200, ma200 > ma200_prev, ma50 > ma150 and ma50 > ma200,
@@ -1115,9 +1186,47 @@ try:   # like the reference: Uptrend = benchmark above its 50 and 200-day averag
     _bc = idx_close.dropna(); _px = float(_bc.iloc[-1]); _m50 = float(_bc.iloc[-50:].mean()); _m200 = float(_bc.iloc[-200:].mean())
     _trend = "Uptrend" if (_px > _m50 and _px > _m200) else ("Downtrend" if (_px < _m50 and _px < _m200) else "Mixed")
 except Exception: pass
+# Nifty 50 market-regime inputs for the CPR entry scanners. Nifty 50 first; if it is missing, invalid or stale the Nifty 500 benchmark is used and labelled
+# as a fallback; if that fails too, nothing is published and the site shows "Market Data Unavailable - Avoid New Buy".
+def _regime(nd, src, asof):
+    if nd is None: return None
+    nd = nd.dropna(subset=["Close", "High", "Low"])
+    if len(nd) < 230: return None
+    nd = nd[nd.index <= pd.Timestamp(asof)]                                    # never use a bar newer than the stock data
+    if len(nd) < 230: return None
+    if (pd.Timestamp(asof) - nd.index[-1]).days > 3:
+        print("market regime:", src, "is stale (", nd.index[-1].date(), ")"); return None
+    c, h, l = (nd[k].values.astype(float) for k in ("Close", "High", "Low"))
+    tr = np.maximum(h[1:] - l[1:], np.maximum(abs(h[1:] - c[:-1]), abs(l[1:] - c[:-1])))
+    pdm = np.where((h[1:] - h[:-1] > l[:-1] - l[1:]) & (h[1:] - h[:-1] > 0), h[1:] - h[:-1], 0.0)
+    mdm = np.where((l[:-1] - l[1:] > h[1:] - h[:-1]) & (l[:-1] - l[1:] > 0), l[:-1] - l[1:], 0.0)
+    def w(x):
+        o = np.zeros(len(x)); o[13] = x[:14].sum()
+        for i in range(14, len(x)): o[i] = o[i - 1] - o[i - 1] / 14 + x[i]
+        return o[13:]
+    a, p_, m_ = w(tr), w(pdm), w(mdm)
+    dx = 100 * abs(p_ - m_) / np.where((p_ + m_) == 0, 1, (p_ + m_))
+    adx = float(np.mean(dx[:14]))
+    for v in dx[14:]: adx = (adx * 13 + v) / 14
+    vals = [float(c[-1]), float(c[-50:].mean()), float(c[-200:].mean()), float(c[-70:-20].mean()), float(adx)]
+    if not all(np.isfinite(vals)) or vals[0] <= 0: print("market regime:", src, "has invalid values"); return None
+    return {"src": src, "asOf": nd.index[-1].strftime("%Y-%m-%d"), "close": round(vals[0], 2), "sma50": round(vals[1], 2),
+            "sma200": round(vals[2], 2), "sma50prev": round(vals[3], 2), "adx": round(vals[4], 1)}
+_mkt = None
+try:
+    _nd = None
+    try:
+        _nd = yf.download("^NSEI", start="2023-01-01", auto_adjust=False, progress=False)
+        if isinstance(_nd.columns, pd.MultiIndex): _nd.columns = _nd.columns.get_level_values(0)
+    except Exception as _e: _nd = None
+    _mkt = _regime(_nd, "Nifty 50", asof)
+    if _mkt is None and bench is not None: _mkt = _regime(bench, "Nifty 500 fallback (Nifty 50 data missing, invalid or stale)", asof)
+except Exception as _e:
+    print("market regime skipped:", _e)
+print("market regime:", _mkt["src"] if _mkt else "NOT AVAILABLE -> site will show Avoid New Buy")
 _last = max(df.index[-1] for df in frames.values())
 json.dump({"asOf": asof, "lastCandle": _last.strftime("%Y-%m-%d"), "generated": dt.datetime.utcnow().isoformat() + "Z",
            "stocksDownloaded": len(frames), "stocksRequested": len(syms), "stocksScored": len(rows),
            "benchmarkOk": bench is not None, "rsUniverse": len(uni),
-           "trend": _trend, "liquid": sum(1 for r in rows if r.get("turnover", 0) >= 10), "scanned": pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M")},
+           "trend": _trend, "mkt": _mkt, "liquid": sum(1 for r in rows if r.get("turnover", 0) >= 10), "scanned": pd.Timestamp.now(tz="Asia/Kolkata").strftime("%Y-%m-%d %H:%M")},
           open(f"{OUT}/meta.json", "w"), separators=(",", ":"))

@@ -3512,7 +3512,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 47</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 50</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3618,13 +3618,13 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   const asOf=meta&&meta.asOf?meta.asOf:'';
   pg.innerHTML=`<style>${css}</style><h2 style="margin:0">CPR &amp; Pivot Scanners</h2><p class="cp-sub">Central Pivot Range from the last completed day, week and month · ${asOf?'prices as of '+E(asOf)+' · ':''}market ${meta&&meta.trend?E(meta.trend):'–'} (Nifty vs 50 and 200 DMA) · long-only</p>
   <div class="cp-box"><div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center"><b>CPR levels for</b><input type="text" id="cprQ" placeholder="Symbol, e.g. RELIANCE" autocomplete="off"><label class="ps-desc"><input type="checkbox" id="cprLiq" ${cfg.liquid?'checked':''}> Liquid only</label><details><summary class="ps-desc" style="cursor:pointer">Settings</summary><div class="ps-desc" style="line-height:2.2">Narrow CPR width % (≤): Daily <input type="number" step="0.05" id="cn_d" value="${cfg.nd}"> Weekly <input type="number" step="0.05" id="cn_w" value="${cfg.nw}"> Monthly <input type="number" step="0.1" id="cn_m" value="${cfg.nm}"><br>Wide CPR width % (≥): Daily <input type="number" step="0.1" id="cw_d" value="${cfg.wd}"> Weekly <input type="number" step="0.1" id="cw_w" value="${cfg.ww}"> Monthly <input type="number" step="0.5" id="cw_m" value="${cfg.wm}"><br>Near upper circuit: within <input type="number" step="0.5" id="cn_c" value="${cfg.circ}"> % of the limit price</div></details></div><div id="cprDetail"></div></div>
-  <div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Chart overlays, the four entry setups and trade states are the next stage.</p>`;
+  <div id="cprPlanner"></div><div id="cprEntries"></div><div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Chart overlays, the four entry setups and trade states are the next stage.</p>`;
   const q=pg.querySelector('#cprQ');q.oninput=()=>{const v=q.value.trim().toUpperCase();const s=stocks.find(x=>x.symbol===v);if(s){sel=v;detail()}};
   pg.querySelector('#cprLiq').onchange=e=>{cfg.liquid=e.target.checked?1:0;save();groups()};
   [['cn_d','nd'],['cn_w','nw'],['cn_m','nm'],['cw_d','wd'],['cw_w','ww'],['cw_m','wm'],['cn_c','circ']].forEach(([id,k])=>{pg.querySelector('#'+id).onchange=e=>{const v=parseFloat(e.target.value);if(v>=0){cfg[k]=v;save();groups();detail()}}});
   pg.addEventListener('click',e=>{const m=e.target.closest('[data-cpmore]');if(m){open[m.dataset.cpmore]=!open[m.dataset.cpmore];groups();return}const r=e.target.closest('[data-cpsym]');if(r){sel=r.dataset.cpsym;detail();pg.querySelector('#cprDetail').scrollIntoView({behavior:'smooth',block:'center'})}});
   built=true;groups();detail()}
- function groups(){const g=document.getElementById('cprGroups');if(!g)return;g.innerHTML=GROUPS.map(([t,sub,ids])=>`<div class="cp-h">${t}</div>${sub?`<div class="cp-sub">${sub}</div>`:''}<div class="cp-grid">${ids.map(card).join('')}</div>`).join('')}
+ function groups(){try{window.mlCprPlanner&&window.mlCprPlanner()}catch(e){}try{window.mlCprEntries&&window.mlCprEntries()}catch(e){}const g=document.getElementById('cprGroups');if(!g)return;g.innerHTML=GROUPS.map(([t,sub,ids])=>`<div class="cp-h">${t}</div>${sub?`<div class="cp-sub">${sub}</div>`:''}<div class="cp-grid">${ids.map(card).join('')}</div>`).join('')}
  function show(){const nav=document.getElementById('nav');if(!window.__mlRealData||!window.stocks)return;if(!built)build();else groups()}
  function hideAll(){document.querySelectorAll('#swingPage,#popularPage,#sectorPage,#backtestPage,#toolsPage,#morePage').forEach(x=>x.classList.add('hidden'));const l=document.querySelector('.layout');if(l)l.classList.add('hidden')}
  function install(){
@@ -3635,7 +3635,144 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
    if(!meta)fetch('data/meta.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{meta=j;built=false;if(!pg.classList.contains('hidden'))show()}).catch(()=>{});
    show();window.scrollTo({top:0,behavior:'smooth'})});
   document.addEventListener('click',e=>{const t=e.target.closest('[data-tab],#moreMenu button,#moreMenu a');if(t&&!t.dataset.cprTab){pg.classList.add('hidden');b.classList.remove('active')}},true)}
+ window.mlCprCfg=()=>cfg;window.mlCprMeta=()=>meta;window.mlCprSelect=x=>{sel=x;detail()};
  install();
+})();
+</script>
+
+<script id="mlCprEntry">
+/* CPR entry scanners (long-only): P Breakout, P Retest, TC Bounce, EMA Pullback.
+   Signals come from update_data.py (real daily candles, CPR of the previous COMPLETED week / month, filters EMA9>20>50, RSI>60, daily DRVOL>=150%).
+   Here: Nifty market filter ("Avoid New Buy"), Gap-Up — Wait, and the entry / stop / R1 / R2 / risk-reward display. */
+(function(){
+ const LS='mlCprEntryCfg1',DEF={style:'w',gap:3,circ:2,strict:0,adx:20,buf:0.3};
+ let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
+ const save=()=>{try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}};
+ const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),f2=v=>(+v).toFixed(2);
+ const TYPES=[['PB','P Breakout','Closed above the pivot P after closing at or below it the session before.'],
+  ['PR','P Retest','Traded above P earlier, tested P in the last 3 sessions and held (closes stayed at or above P), then a bullish candle.'],
+  ['TB','TC Bounce','Above the CPR, pulled back to its top (TC) in the last 3 sessions, held, then a bullish candle.'],
+  ['EP','EMA Pullback','Above P, EMA 9 > 20 > 50, touched EMA 9/20 in the last 5 sessions, stayed above EMA 50, then a bullish candle.']];
+ let open={};
+ function regime(){const m=window.mlCprMeta&&window.mlCprMeta(),k=m&&m.mkt,num=v=>typeof v==='number'&&isFinite(v)&&v>0;
+  if(!m||!k)return{st:'NA',why:'Nifty market data is missing, so buying is not allowed.'};
+  if(![k.close,k.sma50,k.sma200,k.sma50prev].every(num))return{st:'NA',why:'Nifty market data is invalid, so buying is not allowed.'};
+  const dm=Date.parse(m.asOf),dk=Date.parse(k.asOf);
+  if(!isFinite(dm)||!isFinite(dk))return{st:'NA',why:'Nifty market data has no valid date, so buying is not allowed.'};
+  if((dm-dk)/864e5>3)return{st:'NA',why:'Nifty market data is stale (as of '+k.asOf+' while stock data is as of '+m.asOf+'), so buying is not allowed.'};
+  const a50=k.close>k.sma50,a200=k.close>k.sma200,rise=k.sma50>k.sma50prev,nm=k.src||'Nifty 50';
+  let st,why;
+  if(a50&&a200&&rise){st='Supportive';why=nm+' closed above its 50 and 200 DMA and the 50 DMA is rising.';if(cfg.adx>0&&k.adx<cfg.adx){st='Caution';why+=' But ADX(14) is '+k.adx+' (below '+cfg.adx+'): weak trend strength.'}}
+  else if(!a50&&!a200){st='Weak';why=nm+' closed below both its 50 DMA ('+f2(k.sma50)+') and 200 DMA ('+f2(k.sma200)+').'}
+  else{st='Caution';why=nm+' is mixed: '+(a50?'above':'below')+' its 50 DMA, '+(a200?'above':'below')+' its 200 DMA, 50 DMA '+(rise?'rising':'not rising')+'.'}
+  const fb=/fallback/i.test(nm);if(fb)why+=' Using the Nifty 500 fallback because Nifty 50 data was not available.';
+  return{st,why,adx:k.adx,asOf:k.asOf,fb}}
+ function status(s,e,rg){if(rg.st==='NA')return['Market Data Unavailable — Avoid New Buy','av',rg.why];
+  const blocked=rg.st==='Weak'||(rg.st==='Caution'&&cfg.strict);
+  if(blocked)return['Avoid New Buy','av'];
+  if(e[2]==='C'){
+   const gap=s.gp!=null&&s.gp>=cfg.gap,aboveR1=s.op!=null&&s.op>e[5];
+   let circ=false;if(s.pb&&s.change!=null){const pv=s.price/(1+s.change/100),up=pv*(1+s.pb/100);circ=s.price>=up*(1-cfg.circ/100)}
+   if(gap||aboveR1||circ)return['Gap-Up — Wait','gw',(gap?'opened '+s.gp+'% above the previous close; ':'')+(aboveR1?'opened above R1; ':'')+(circ?'near upper circuit; ':'')+'do not chase: wait for a pullback to EMA 9/20 or TC and a 1H/4H bullish confirmation.'];
+   return['Buy Confirmed','bc']}
+  return['Setup Forming','sf']}
+ const RK={bc:0,gw:1,sf:2,av:3};
+ /* stop = the structural low (confirmation candle low for P Breakout, lowest low of the test / pullback for the others) minus a configurable buffer; always strictly below the low unless the buffer is 0 */
+ function stopOf(e){const low=e[4];if(!(cfg.buf>0))return low;let st=Math.round(low*(1-cfg.buf/100)*100)/100;if(st>=low)st=Math.round((low-0.01)*100)/100;return st>0?st:low}
+ function rows(code,rg){const lq=(window.mlCprCfg&&window.mlCprCfg().liquid),out=[];
+  stocks.forEach(s=>{if(!s.en||(lq&&s.turnover!=null&&s.turnover<10))return;s.en.forEach(e=>{if(e[0]!==cfg.style||e[1]!==code)return;const st=status(s,e,rg),sp=stopOf(e),risk=e[3]-sp;out.push({s,e,st,stop:sp,r1:e[5]>e[3]?(e[5]-e[3])/risk:null,r2:(e[6]-e[3])/risk,rk:(e[3]-sp)/e[3]*100})})});
+  return out.sort((a,b)=>RK[a.st[1]]-RK[b.st[1]]||b.r2-a.r2)}
+ function card(code,title,desc,rg){const L=rows(code,rg),show=open[code]?L:L.slice(0,8),nc=L.filter(x=>x.st[1]==='bc').length;
+  const rs=show.map(x=>{const{s,e,st}=x;return `<div data-cpsym="${E(s.symbol)}" style="padding:8px 0;border-top:1px solid var(--line);cursor:pointer;font-size:12px" ${st[2]?`title="${E(st[2])}"`:''}>
+   <div style="display:flex;justify-content:space-between;align-items:center;gap:6px"><span><b style="font-size:13px">${E(s.symbol)}</b> <span style="color:var(--muted,#8a9089)">${f2(s.price)}</span></span><span class="pill ${st[1]==='bc'?'ok':st[1]==='sf'?'':'no'}" style="margin:0">${st[0]}</span></div>
+   <div style="margin-top:3px;color:var(--muted,#8a9089);line-height:1.6">Buy above <b style="color:inherit">${f2(e[3])}</b> · Stop <b style="color:inherit">${f2(x.stop)}</b> (${x.stop<e[4]?cfg.buf+'% below the low '+f2(e[4]):'at the low'}; risk ${x.rk.toFixed(1)}%) · T1 ${f2(e[5])}${x.r1==null?' (passed)':''} · T2 ${f2(e[6])}<br>Reward/risk ${x.r1==null?'T1 passed':x.r1.toFixed(1)+' to T1'} · ${x.r2.toFixed(1)} to T2${st[2]?'<br><span style="color:#d9a441">'+E(st[2])+'</span>':''}</div></div>`}).join('');
+  return `<article class="popular-scan-card"><div class="ps-head"><h3>${title}</h3><span class="ps-count">${L.length}</span></div><div class="ps-desc">${desc}</div><div class="ps-note">${nc} Buy Confirmed · long-only · screen result, not advice</div><div>${rs||'<div class="ps-desc" style="padding:10px 0">No stock qualifies today.</div>'}</div>${L.length>8?`<div class="ps-actions"><button data-enmore="${code}">${open[code]?'Show less':'See all '+L.length} →</button></div>`:''}</article>`}
+ window.mlCprEntries=function(){const box=document.getElementById('cprEntries');if(!box||!window.stocks)return;
+  const rg=regime(),col=rg.st==='Supportive'?'ok':'no',blocked=rg.st==='NA'||rg.st==='Weak'||(rg.st==='Caution'&&cfg.strict);
+  const hasEn=stocks.some(s=>s.en),seg=(v,l)=>`<button class="smallbtn" data-enstyle="${v}" style="${cfg.style===v?'background:var(--accent,#2a7a52);color:#fff':''}">${l}</button>`;
+  box.innerHTML=`<div class="cp-h">Entry scanners (long-only)</div><div class="cp-sub">Four buy setups on real daily candles, using the CPR of the previous completed week or month. Every entry needs EMA 9 &gt; 20 &gt; 50, RSI(14) &gt; 60 and daily volume at least 150% of its 20-day average.</div>
+  <div class="cp-box" style="margin-top:6px"><div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b>Trading style</b>${seg('w','Swing · Weekly CPR')}${seg('m','Positional · Monthly CPR')}<span class="pill ${col}" style="margin:0">Market: ${rg.st==='NA'?'Data Unavailable — Avoid New Buy':rg.st+(rg.fb?' (Nifty 500 fallback)':'')+(blocked?' · Avoid New Buy':'')}</span></div>
+  <div class="ps-desc" style="margin-top:6px">${E(rg.why)}${rg.asOf?' (as of '+E(rg.asOf)+')':''}${blocked?' New buy confirmations are blocked.':rg.st==='Caution'?' Setups are shown with this caution.':''}</div>
+  <details style="margin-top:6px"><summary class="ps-desc" style="cursor:pointer">Entry settings</summary><div class="ps-desc" style="line-height:2.2">Gap-Up — Wait if the stock opened ≥ <input type="number" step="0.5" id="enGap" value="${cfg.gap}"> % above the previous close, or above R1<br>Near upper circuit: within <input type="number" step="0.5" id="enCirc" value="${cfg.circ}"> % of the limit price (needs the exchange price band; if it is missing the circuit check is skipped, never guessed)<br>Stop buffer: <input type="number" step="0.1" id="enBuf" value="${cfg.buf}"> % below the low (0 = stop exactly at the low)<br>ADX(14) caution below <input type="number" step="1" id="enAdx" value="${cfg.adx}"> (0 = off) <label><input type="checkbox" id="enStrict" ${cfg.strict?'checked':''}> Also block buys when the market is in Caution</label></div></details></div>
+  ${hasEn?`<div class="cp-grid" style="margin-top:12px">${TYPES.map(t=>card(t[0],t[1],t[2],rg)).join('')}</div>`:'<div class="ps-desc" style="padding:12px 0">Entry data appears after the next "Update stock data" run.</div>'}
+  <div class="cp-sub" style="margin-top:8px">Entry = buy above the high of the confirmation candle (placed for the next session). Stop = the confirmation candle low (P Breakout) or the lowest low of the test / pullback (others), minus the stop buffer you set above. T1 = R1 and T2 = R2 of the same weekly or monthly CPR. Statuses: Buy Confirmed, Setup Forming (test happening today, no bullish candle yet), Gap-Up — Wait, Avoid New Buy. Test thresholds are my starting values, not proven.</div>`;
+  box.onclick=e=>{const sg=e.target.closest('[data-enstyle]');if(sg){cfg.style=sg.dataset.enstyle;save();window.mlCprEntries();return}const m=e.target.closest('[data-enmore]');if(m){open[m.dataset.enmore]=!open[m.dataset.enmore];window.mlCprEntries()}};
+  box.onchange=e=>{const id=e.target.id,v=parseFloat(e.target.value);if(id==='enGap'&&v>=0)cfg.gap=v;else if(id==='enCirc'&&v>=0)cfg.circ=v;else if(id==='enAdx'&&v>=0)cfg.adx=v;else if(id==='enBuf'&&v>=0&&v<=10)cfg.buf=v;else if(id==='enStrict')cfg.strict=e.target.checked?1:0;else return;save();window.mlCprEntries()}};
+ window.mlCprApi={regime,status,stopOf,buf:()=>cfg.buf,strict:()=>cfg.strict};
+})();
+</script>
+
+<script id="mlCprPlanner">
+/* CPR Trade Planner: style -> CPR period -> narrow filter (Daily / Weekly / Monthly) -> trend, RSI, DRVOL checks -> entry / stop / R1 / R2 plan with partial booking and position size.
+   Long-only. Levels come from update_data.py (previous COMPLETED day / week / month). Screening and planning only, not advice. */
+(function(){
+ const LS='mlCprPlanCfg1',DEF={style:'sw',per:'w',rule:'w',dir:'all',ema:1,rsi:1,drv:0,part:50,cap:100000,risk:1};
+ const STY={sw:['Swing','w','30m / 1H / 4H / Daily'],mo:['Momentum','w','Daily / Weekly'],lt:['Long-term','m','Weekly / Monthly']};
+ const PN={d:'Daily',w:'Weekly',m:'Monthly'},DIR={A:'Ascending',D:'Descending',M:'Mixed',O:'Overlapping'},CODE={PB:'P Breakout',PR:'P Retest',TB:'TC Bounce',EP:'EMA Pullback'};
+ let cfg=Object.assign({},DEF);try{Object.assign(cfg,JSON.parse(localStorage.getItem(LS)||'{}'))}catch(e){}
+ const save=()=>{try{localStorage.setItem(LS,JSON.stringify(cfg))}catch(e){}};
+ const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'),f2=v=>(+v).toFixed(2),pc=v=>(v>0?'+':'')+(+v).toFixed(2)+'%';
+ let sel=null,showAll=false;
+ const ccfg=()=>(window.mlCprCfg&&window.mlCprCfg())||{};
+ function narrow(s,p){if(!s[p+'c'])return false;if(cfg.rule==='r')return s[p+'nr']===1;const th=ccfg()['n'+p];return th!=null&&s[p+'cw']!=null&&s[p+'cw']<=th}
+ function pos(s,p){const lv=s[p+'c'];return s.price>lv[5]?'Above CPR':s.price<lv[3]?'Below CPR':'Inside CPR'}
+ function list(){const p=cfg.per,lq=ccfg().liquid;
+  return stocks.filter(s=>s[p+'c']&&(!lq||s.turnover==null||s.turnover>=10)&&narrow(s,p)&&(cfg.dir==='all'||s[p+'cd']===cfg.dir)&&(!cfg.ema||s.es===1)&&(!cfg.rsi||s.rsi>60)&&(!cfg.drv||(s.drv||0)>=150))
+   .sort((a,b)=>a[p+'cw']-b[p+'cw'])}
+ const chk=(ok,txt)=>`<span class="pill ${ok?'ok':'no'}" style="margin:2px 4px 2px 0">${ok?'✓':'✗'} ${txt}</span>`;
+ function entries(s,p){return (s.en||[]).filter(e=>e[0]===p).sort((a,b)=>(a[2]==='C'?0:1)-(b[2]==='C'?0:1))}
+ function rowHtml(s){const p=cfg.per,lv=s[p+'c'],en=entries(s,p),api=window.mlCprApi,rg=api&&api.regime();
+  const tag=en.length&&api?en.map(e=>`${CODE[e[1]]}: ${api.status(s,e,rg)[0]}`).join(' · '):'';
+  return `<div data-plsym="${E(s.symbol)}" style="padding:9px 0;border-top:1px solid var(--line);cursor:pointer;font-size:12px;${sel===s.symbol?'background:#2a7a5214':''}">
+   <div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><span><b style="font-size:13px">${E(s.symbol)}</b> <span style="color:var(--muted,#8a9089)">${f2(s.price)} <span class="${s.change>=0?'up':'dn'}">${pc(s.change)}</span></span></span><span><span class="pill" style="margin:0">${f2(s[p+'cw'])}% · ${DIR[s[p+'cd']]||'–'}</span></span></div>
+   <div style="margin-top:3px;color:var(--muted,#8a9089);line-height:1.7">${pos(s,p)} · S1 ${f2(lv[2])} · P <b style="color:inherit">${f2(lv[4])}</b> · R1 ${f2(lv[6])} · R2 ${f2(lv[7])}<br>${chk(s.es===1,'EMA 9>20>50')}${chk(s.rsi>60,'RSI '+(s.rsi==null?'–':Math.round(s.rsi)))}${chk((s.drv||0)>=150,'DRVOL '+(s.drv==null?'–':Math.round(s.drv)+'%'))}${tag?'<br><span style="color:#2a9d62">'+E(tag)+'</span>':''}</div></div>`}
+ function matrix(s){const rowsH=['d','w','m'].map(p=>{const lv=s[p+'c'];if(!lv)return `<tr><td>${PN[p]}</td><td colspan="8">not enough history</td></tr>`;
+   return `<tr${p===cfg.per?' style="background:#2a7a5222"':''}><td><b>${PN[p]}</b></td><td>${f2(s[p+'cw'])}%</td><td>${DIR[s[p+'cd']]||'–'}</td><td>${f2(lv[2])}</td><td>${f2(lv[3])}</td><td>${f2(lv[4])}</td><td>${f2(lv[5])}</td><td>${f2(lv[6])}</td><td>${f2(lv[7])}</td></tr>`}).join('');
+  return `<div class="cp-wrap"><table class="cp-t"><tr><th>CPR</th><th>Width</th><th>Direction</th><th>S1</th><th>BC</th><th>P</th><th>TC</th><th>R1</th><th>R2</th></tr>${rowsH}</table></div>`}
+ function planHtml(){const s=sel&&stocks.find(x=>x.symbol===sel);if(!s||!s[cfg.per+'c'])return '<div class="ps-desc" style="padding:8px 0">Tap a stock above to see its Daily + Weekly + Monthly CPR and a trade plan.</div>';
+  const p=cfg.per,lv=s[p+'c'],P=lv[4],BC=lv[3],R1=lv[6],R2=lv[7],px=s.price,api=window.mlCprApi,rg=api?api.regime():{st:'NA',why:'Market data not available.'};
+  const en=entries(s,p),e=en[0];let entry,stop,t1,t2,src,verdict;
+  const bufPct=api&&api.buf?api.buf():0.3;
+  if(e){entry=e[3];stop=api.stopOf(e);t1=e[5];t2=e[6];src=CODE[e[1]]+' ('+PN[p]+' CPR)';verdict=api.status(s,e,rg)[0]}
+  else{entry=px>P?px:P;stop=Math.round(BC*(1-bufPct/100)*100)/100;if(stop>=BC)stop=Math.round((BC-0.01)*100)/100;t1=R1;t2=R2;src='Reference plan: '+(px>P?'price is already above P, so wait for a retest of P or EMA 9/20 and a bullish candle':'buy on a close above P '+f2(P))+'; stop below the lower CPR edge (BC)';
+   verdict=(rg.st==='NA'||rg.st==='Weak'||(rg.st==='Caution'&&api&&api.strict&&api.strict()))?(rg.st==='NA'?'Market Data Unavailable — Avoid New Buy':'Avoid New Buy'):'No entry signal yet'}
+  const risk=entry-stop,rr1=t1>entry&&risk>0?(t1-entry)/risk:null,rr2=t2>entry&&risk>0?(t2-entry)/risk:null,noT=!(t2>entry);
+  const amt=cfg.cap*cfg.risk/100,qty=risk>0?Math.floor(amt/risk):0,pq=Math.floor(qty*cfg.part/100);
+  const ok=(rg.st==='Supportive'),mk=`Market: ${rg.st==='NA'?'data unavailable':rg.st}`;
+  return `<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:baseline"><b style="font-size:16px">${E(s.symbol)}</b><span class="ps-desc">${E(s.name||'')}</span><span>${f2(px)}</span><span class="pill ${verdict==='Buy Confirmed'?'ok':/Avoid|Unavailable|Wait/.test(verdict)?'no':''}" style="margin:0">${E(verdict)}</span></div>
+  <div style="margin-top:6px">${chk(narrow(s,p),PN[p]+' narrow CPR ('+f2(s[p+'cw'])+'%)')}${chk(s.es===1,'EMA 9>20>50')}${chk(s.rsi>60,'RSI(14) > 60 ('+(s.rsi==null?'–':Math.round(s.rsi))+')')}${chk((s.drv||0)>=150,'DRVOL ≥ 150% ('+(s.drv==null?'–':Math.round(s.drv)+'%')+')')}${chk(ok,mk)}</div>
+  ${matrix(s)}
+  <div class="ps-desc" style="margin-top:8px;line-height:1.7"><b style="color:inherit">${E(src)}</b><br>Entry ${e?'above':'around'} <b style="color:inherit">${f2(entry)}</b> · Stop <b style="color:inherit">${f2(stop)}</b> (risk ${f2(risk)} = ${(risk/entry*100).toFixed(1)}%)<br>T1 = R1 <b style="color:inherit">${f2(t1)}</b>${t1>entry?'':' (already passed)'} · T2 = R2 <b style="color:inherit">${f2(t2)}</b>${noT?' (already passed: no target left, skip)':''}<br>Reward/risk: ${rr1==null?'T1 passed':rr1.toFixed(1)+' to T1'} · ${rr2==null?'–':rr2.toFixed(1)+' to T2'}</div>
+  <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:10px;align-items:center" class="ps-desc">Capital ₹<input type="number" id="plCap" value="${cfg.cap}" style="width:96px"> Risk <input type="number" step="0.25" id="plRisk" value="${cfg.risk}"> % per trade · Book <input type="number" id="plPart" value="${cfg.part}"> % at T1</div>
+  <div class="ps-desc" style="margin-top:6px;line-height:1.7">${noT||risk<=0?'No valid position size for this plan.':`Quantity <b style="color:inherit">${qty}</b> shares (about ₹${Math.round(qty*entry).toLocaleString('en-IN')}), risking about ₹${Math.round(qty*risk).toLocaleString('en-IN')}.<br>At T1: sell ${pq} and move the stop to your cost. At T2: sell the remaining ${qty-pq}. If the stop is hit, exit everything.`}</div>
+  <div class="ps-desc" style="margin-top:6px">${p==='w'?'Weekly CPR levels stay fixed for the whole week: plan to close the trade within the week.':p==='m'?'Monthly CPR levels stay fixed for the whole month: positional hold.':'Daily levels are for the next session only.'} Long-only; bearish conditions mean Avoid New Buy, never a short. ${rg.st==='NA'||rg.st==='Weak'||rg.st==='Caution'?E(rg.why||''):''}</div>`}
+ function paintPlan(){const b=document.getElementById('plPlan');if(b)b.innerHTML=planHtml()}
+ window.mlCprPlanner=function(){const box=document.getElementById('cprPlanner');if(!box||!window.stocks)return;
+  const has=stocks.some(s=>s.wc),L=has?list():[],show=showAll?L.slice(0,80):L.slice(0,12),p=cfg.per;
+  const sb=(k)=>`<button class="smallbtn" data-plstyle="${k}" style="${cfg.style===k?'background:var(--accent,#2a7a52);color:#fff':''}">${STY[k][0]}</button>`;
+  const pb=(k)=>`<button class="smallbtn" data-plper="${k}" style="${cfg.per===k?'background:var(--accent,#2a7a52);color:#fff':''}">${PN[k]}</button>`;
+  const sel1=(id,opts,val)=>`<select id="${id}" style="padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:inherit">${opts.map(o=>`<option value="${o[0]}" ${o[0]===val?'selected':''}>${o[1]}</option>`).join('')}</select>`;
+  box.innerHTML=`<div class="cp-h">CPR Trade Planner (long-only)</div><div class="cp-sub">Pick a style, find narrow-CPR stocks, check trend, RSI and DRVOL, then read the plan. Intraday is not included yet.</div>
+  <div class="cp-box" style="margin-top:6px">
+   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center"><b>Trading style</b>${sb('sw')}${sb('mo')}${sb('lt')}</div>
+   <div class="ps-desc" style="margin-top:4px">${STY[cfg.style][0]}: ${PN[STY[cfg.style][1]]} CPR · analysis charts ${STY[cfg.style][2]}${cfg.per!==STY[cfg.style][1]?' · <span style="color:#d9a441">you changed the CPR period below</span>':''}</div>
+   <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px"><b>Narrow CPR period</b>${pb('d')}${pb('w')}${pb('m')}</div>
+   <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px" class="ps-desc">Narrow means ${sel1('plRule',[['w','CPR width is small (recommended)'],['r','Range is smaller than the last period']],cfg.rule)} Direction ${sel1('plDir',[['all','Any'],['A','Ascending'],['D','Descending'],['M','Mixed'],['O','Overlapping']],cfg.dir)}</div>
+   <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:8px" class="ps-desc">Only show stocks with: <label><input type="checkbox" id="plEma" ${cfg.ema?'checked':''}> EMA 9&gt;20&gt;50</label><label><input type="checkbox" id="plRsi" ${cfg.rsi?'checked':''}> RSI(14) &gt; 60</label><label><input type="checkbox" id="plDrv" ${cfg.drv?'checked':''}> DRVOL ≥ 150%</label></div>
+   <div class="ps-desc" style="margin-top:6px">The narrow limits (width %) are in Settings above. Every row shows all checks even if a filter is off. <b style="color:inherit">DRVOL</b> = today's volume ÷ average of the previous 20 days × 100.</div></div>
+  <div class="cp-box"><div style="display:flex;justify-content:space-between;align-items:baseline"><b>${PN[p]} narrow CPR stocks</b><span class="ps-count" style="font-size:12px">${L.length}</span></div>
+   ${has?'':'<div class="ps-desc" style="padding:10px 0">CPR data appears after the next "Update stock data" run.</div>'}
+   ${has&&!L.length?'<div class="ps-desc" style="padding:10px 0">No stock matches these filters today. Try turning off DRVOL or RSI.</div>':''}
+   <div>${show.map(rowHtml).join('')}</div>${L.length>12?`<div class="ps-actions"><button data-plmore="1">${showAll?'Show less':'See '+Math.min(L.length,80)+' of '+L.length} →</button></div>`:''}</div>
+  <div class="cp-box" id="plPlanBox"><b>Trade plan</b><div id="plPlan">${planHtml()}</div></div>`;
+  box.onclick=e=>{const a=e.target.closest('[data-plstyle]');if(a){cfg.style=a.dataset.plstyle;cfg.per=STY[cfg.style][1];save();window.mlCprPlanner();return}
+   const b=e.target.closest('[data-plper]');if(b){cfg.per=b.dataset.plper;save();window.mlCprPlanner();return}
+   if(e.target.closest('[data-plmore]')){showAll=!showAll;window.mlCprPlanner();return}
+   const r=e.target.closest('[data-plsym]');if(r){sel=r.dataset.plsym;try{window.mlCprSelect&&window.mlCprSelect(sel)}catch(x){}window.mlCprPlanner();const pb=document.getElementById('plPlanBox');if(pb)pb.scrollIntoView({behavior:'smooth',block:'nearest'})}};
+  box.onchange=e=>{const id=e.target.id,v=e.target.value;
+   if(id==='plRule')cfg.rule=v;else if(id==='plDir')cfg.dir=v;else if(id==='plEma')cfg.ema=e.target.checked?1:0;else if(id==='plRsi')cfg.rsi=e.target.checked?1:0;else if(id==='plDrv')cfg.drv=e.target.checked?1:0;
+   else if(id==='plCap'&&+v>0){cfg.cap=+v;save();paintPlan();return}else if(id==='plRisk'&&+v>0&&+v<=10){cfg.risk=+v;save();paintPlan();return}else if(id==='plPart'&&+v>=0&&+v<=100){cfg.part=+v;save();paintPlan();return}else return;
+   save();window.mlCprPlanner()}};
 })();
 </script>
 </body>
