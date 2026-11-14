@@ -421,6 +421,17 @@ def _dirn(a, b):   # CPR direction vs the previous period: A ascending, D descen
     if (a["TC"] > b["TC"] and a["BC"] < b["BC"]) or (a["TC"] < b["TC"] and a["BC"] > b["BC"]): return "M"
     return "O"
 
+def _cm(h, l, c):   # Camarilla S4, S3, R3, R4 from one period's high / low / close
+    r = (h - l) * 1.1
+    return [round(float(c - r / 2), 2), round(float(c - r / 4), 2), round(float(c + r / 4), 2), round(float(c + r / 2), 2)]
+
+def _ctype(a, b, h, l):   # CPR type flags of CPR `a` against the previous CPR `b`; (h, l) = high / low of the period the CPR `b` was in force
+    inn = int(a["TC"] <= b["TC"] and a["BC"] >= b["BC"] and (a["TC"] < b["TC"] or a["BC"] > b["BC"]))      # inside: fully within the previous CPR
+    out = int(a["TC"] >= b["TC"] and a["BC"] <= b["BC"] and (a["TC"] > b["TC"] or a["BC"] < b["BC"]))     # outside: covers the previous CPR
+    ci = int(any(a["BC"] <= v <= a["TC"] for v in (a["_cm3"], a["_cs3"])))                                  # Camarilla R3 or S3 sits inside this CPR
+    vg = int(h < b["BC"] or l > b["TC"])                                                                    # virgin: price never touched the previous CPR (wicks included, daily data)
+    return inn, out, ci, vg
+
 def _ema(x, n):
     a = 2.0 / (n + 1); e = float(x[0])
     for v in x[1:]: e = a * float(v) + (1 - a) * e
@@ -468,20 +479,39 @@ def cpr_fields(df, today=None):
         f["pdh"] = round(float(H[-1]), 2)                                              # previous (last completed) day high
         f["dc"] = _lv(t); f["dcw"] = round(float(t["W"]), 2); f["dcd"] = _dirn(t, y)
         f["dnr"] = int((t["R1"] - t["S1"]) < (y["R1"] - y["S1"]))                       # daily range smaller than the day before
+        f["pdl"] = round(float(L[-1]), 2)                                                # previous (last completed) day low
         wn_rng = mn_rng = None
-        f["cDN"] = int(t["R1"] < y["R1"] and t["S1"] > y["S1"])                         # daily narrow: R1 lower and S1 higher than the day before (Chartink rule)
+        f["cDN"] = int(t["R1"] < y["R1"] and t["S1"] > y["S1"])
+        cmd = _cm(H[-1], L[-1], C[-1]); f["dcm"] = cmd; f["pdl"] = round(float(L[-1]), 2)
+        t2 = dict(t); t2["_cs3"], t2["_cm3"] = cmd[1], cmd[2]
+        f["din"], f["dout"], f["dci"], _ = _ctype(t2, y, float(H[-1]), float(L[-1]))   # inside / outside the previous day's CPR, Camarilla R3 or S3 inside this CPR
+        f["dv"] = int(not (max(O[-1], C[-1]) >= y["BC"] and min(O[-1], C[-1]) <= y["TC"]))   # Virgin CPR: no candle BODY touched the CPR that was in force on the last day (wicks do not count)
+        if f["dv"]: f["dvz"] = [round(float(y["BC"]), 2), round(float(y["TC"]), 2)]
         for tag, rule in (("w", "W-FRI"), ("m", "ME"), ("y", "YE")):
             g = d.resample(rule).agg({"High": "max", "Low": "min", "Close": "last"}).dropna()
             if len(g) < 4: continue
             last = d.index[-1]
-            if not _period_complete(last, rule, today): g = g.iloc[:-1]                  # the period still running is never used
+            run = None
+            if not _period_complete(last, rule, today): run = g.iloc[-1]; g = g.iloc[:-1]   # the period still running is never used for levels (only for the "Next" preview)
             if len(g) < 3: continue
             if tag == "y" and d.index[0] > pd.Timestamp(year=int(g.index[-2].year), month=1, day=20): continue   # yearly CPR needs the full previous two years of candles
             a, b = _piv(*g.iloc[-1][["High", "Low", "Close"]]), _piv(*g.iloc[-2][["High", "Low", "Close"]])
             f[tag + "r1"] = round(float(a["R1"]), 2); f[tag + "s1"] = round(float(a["S1"]), 2); f[tag + "p"] = round(float(a["P"]), 2)
             f[tag + "nar"] = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]) and a["P"] > b["P"])
             f[tag + "brk"] = int(c > a["R1"])
+            gl = g.iloc[-1]; cmx = _cm(gl["High"], gl["Low"], gl["Close"]); f[tag + "cm"] = cmx; f[tag + "l"] = round(float(gl["Low"]), 2)
+            a2 = dict(a); a2["_cs3"], a2["_cm3"] = cmx[1], cmx[2]
+            f[tag + "in"], f[tag + "out"], f[tag + "ci"], _ = _ctype(a2, b, float(gl["High"]), float(gl["Low"]))
             f[tag + "c"] = _lv(a); f[tag + "cw"] = round(float(a["W"]), 2); f[tag + "cd"] = _dirn(a, b)
+            try:   # Virgin CPR: no daily candle body touched the CPR (from the period before) during the last completed period
+                per = {"w": "W-FRI", "m": "M", "y": "Y"}[tag]
+                msk = (d.index.to_period(per) == g.index[-1].to_period(per))
+                if msk.any():
+                    f[tag + "v"] = int(not np.any((np.maximum(O, C)[msk] >= b["BC"]) & (np.minimum(O, C)[msk] <= b["TC"])))
+                    if f[tag + "v"]: f[tag + "vz"] = [round(float(b["BC"]), 2), round(float(b["TC"]), 2)]
+            except Exception: pass
+            if run is not None and tag in ("w", "m") and not (np.isnan(run["High"]) or np.isnan(run["Low"])):
+                nx = _piv(run["High"], run["Low"], run["Close"]); f["n" + tag + "c"] = _lv(nx); f["n" + tag + "cw"] = round(float(nx["W"]), 2)   # developing "Next Week / Next Month" CPR
             rng = int((a["R1"] - a["S1"]) < (b["R1"] - b["S1"]))
             f[tag + "nr"] = rng                                                          # period range smaller than the previous period (wnr / mnr)
             f[tag + "h"] = round(float(g.iloc[-1]["High"]), 2)                           # previous COMPLETED week / month high (wh / mh) used as targets
