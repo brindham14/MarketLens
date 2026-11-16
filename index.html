@@ -3293,7 +3293,7 @@ document.querySelectorAll('[data-tab]').forEach(b=>b.addEventListener('click',()
   if(!S||!S.since||!Object.keys(S.since).length){if(box)box.style.display="none";return}
   if(!box){box=document.createElement("div");box.id="moneyPanel";box.className="panel";box.style.cssText="margin:14px 0;padding:12px";const anchor=$("changedPanel")||document.querySelector(".strongest-controls");anchor.parentNode.insertBefore(box,anchor)}
   box.style.display="";
-  const list=(M.t==="Sectors"?S.sectors:M.t==="Industries"?(S.industries||[]):S.themes).filter(i=>i.pr&&i.pr[M.w]).map(i=>({n:i.name,a:i.pr[M.w],b:i.rank,d:i.pr[M.w]-i.rank}));
+  const list=(M.t==="Sectors"?S.sectors.filter(i=>!i.idx):M.t==="Industries"?(S.industries||[]):S.themes.filter(i=>!i.idx)).filter(i=>i.pr&&i.pr[M.w]).map(i=>({n:i.name,a:i.pr[M.w],b:i.rank}));{const ra=list.slice().sort((x,y)=>x.a-y.a),rb=list.slice().sort((x,y)=>x.b-y.b);ra.forEach((x,i)=>x.a=i+1);rb.forEach((x,i)=>x.b=i+1);list.forEach(x=>x.d=x.a-x.b)}
   const up=list.filter(x=>x.d>0).sort((a,b)=>b.d-a.d||a.b-b.b).slice(0,6),dn=list.filter(x=>x.d<0).sort((a,b)=>a.d-b.d||a.b-b.b).slice(0,6);
   const row=x=>`<div style="display:flex;justify-content:space-between;gap:6px;padding:6px 0;border-bottom:1px solid var(--line);font-size:12px"><b style="font-weight:600">${rEsc(x.n)}</b><span style="white-space:nowrap"><span class="meta">#${x.a} → #${x.b}</span> <span style="color:${x.d>0?"#347e56":"#b34d4d"}">${x.d>0?"▲":"▼"}${Math.abs(x.d)}</span></span></div>`;
   const btn=(grp,k,cur,label)=>`<button data-mm="${grp}:${k}" class="${cur===k?"active":""}">${label||k}</button>`;
@@ -3552,7 +3552,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 58</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 59</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3912,5 +3912,44 @@ document.addEventListener('click',function(e){var t=e.target.closest&&e.target.c
  window.__mlChgSort=window.__mlChgSort==='d'?'a':window.__mlChgSort==='a'?'':'d';
  try{if(typeof renderRows==='function')renderRows()}catch(x){}});
 </script>
+<script id="mlGroupPerf">
+/* Group performance: median 1D / 1W / 1M return of liquid stocks per sector / industry / theme (reference: getmarketstrength Sector Rotation page). */
+(function(){
+ const st={t:'Themes',more:{}};
+ const E=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+ const css=`#groupPerf{margin:14px 0;padding:12px}#groupPerf h3{margin:0;font-size:16px}#groupPerf .gp-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}#groupPerf .gp-tabs{display:flex;gap:2px;border:1px solid var(--line);border-radius:10px;padding:2px}#groupPerf .gp-tabs button{border:0;background:transparent;color:inherit;padding:6px 12px;border-radius:8px;font-weight:650;font-size:12px}#groupPerf .gp-tabs button.on{background:var(--ink,#1e3b2e);color:var(--bg,#fff)}
+ #groupPerf .gp-lead{margin:10px 0;padding:8px 11px;border:1px solid #2a7a5266;background:#2a7a5214;border-radius:9px;font-size:12px;color:#7fbf9c}#groupPerf .gp-lead b{color:inherit}
+ #groupPerf .gp-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(285px,1fr));gap:12px}#groupPerf .gp-col{border:1px solid var(--line);border-radius:12px;padding:10px 10px 12px}#groupPerf .gp-ch{font-size:10px;letter-spacing:.08em;color:var(--muted,#8a9089);font-weight:700;margin-bottom:6px}
+ #groupPerf .gp-row{display:grid;grid-template-columns:minmax(0,1fr) 26px 72px 50px;gap:7px;align-items:center;padding:5px 5px;font-size:12px;border-radius:8px}#groupPerf .gp-row.lead{outline:1.5px solid #2a7a52}#groupPerf .gp-nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ #groupPerf .gp-n{font-size:10px;text-align:center;border:1px solid var(--line);border-radius:5px;color:var(--muted,#8a9089);padding:0 2px}#groupPerf .gp-bar{position:relative;height:6px}#groupPerf .gp-bar:before{content:"";position:absolute;left:0;right:0;top:2.5px;border-top:1px solid var(--line)}#groupPerf .gp-bar i{position:absolute;top:0;height:6px;border-radius:3px}
+ #groupPerf .gp-v{text-align:right;font-weight:700}#groupPerf .up{color:#3aa06b}#groupPerf .dn{color:#d9605c}#groupPerf .gp-more{display:block;width:100%;border:0;background:transparent;color:var(--muted,#8a9089);font-size:11px;padding:8px 0;margin:4px 0;border-top:1px dashed var(--line);border-bottom:1px dashed var(--line)}`;
+ function med(a){a=a.filter(x=>Number.isFinite(x)).sort((x,y)=>x-y);const n=a.length;return n?(n%2?a[(n-1)>>1]:(a[n/2-1]+a[n/2])/2):null}
+ function groups(){const S=window.__mlSectors,L=window.stocks;if(!S||!L)return[];
+  const by=new Map(L.map(s=>[s.symbol,s]));
+  const src=st.t==='Sectors'?(S.sectors||[]).filter(i=>!i.idx):st.t==='Industries'?(S.industries||[]):(S.themes||[]).filter(i=>!i.idx);
+  return src.map(g=>{const m=(g.members||[]).map(x=>by.get(x)).filter(s=>s&&(s.turnover==null||s.turnover>=10));if(m.length<3)return null;
+   return{name:g.name,n:m.length,d:med(m.map(s=>s.change)),w:med(m.map(s=>s.ret1w)),m:med(m.map(s=>s.r1))}}).filter(Boolean)}
+ const pc=v=>(v>0?'+':'')+v.toFixed(1)+'%';
+ function col(G,key,title){const V=G.filter(g=>g[key]!=null).sort((a,b)=>b[key]-a[key]),pos=V.filter(g=>g[key]>=0),neg=V.filter(g=>g[key]<0),top=pos.slice(0,10),bot=neg.slice(-10).reverse().reverse(),hid=V.length-top.length-bot.length,id=st.t+key,ex=st.more[id];
+  const mx=Math.max(.01,...V.map(g=>Math.abs(g[key]))),lead=V[0]&&V[0].name;
+  const row=g=>{const v=g[key],w=Math.max(2,Math.abs(v)/mx*34);return`<div class="gp-row ${g.name===lead?'lead':''}"><span class="gp-nm" title="${E(g.name)}">${E(g.name)}</span><span class="gp-n">${g.n}</span><span class="gp-bar"><i style="${v>=0?'left:50%;background:#2a7a52':'right:50%;background:#b04a47'};width:${w}%"></i></span><span class="gp-v ${v>=0?'up':'dn'}">${pc(v)}</span></div>`};
+  const list=ex?V.map(row).join(''):top.map(row).join('')+(hid>0?`<button class="gp-more" data-gpmore="${id}">${hid} more ▾</button>`:'<div style="height:14px"></div>')+bot.map(row).join('');
+  return`<div class="gp-col"><div class="gp-ch">${title}</div>${list}${ex?`<button class="gp-more" data-gpmore="${id}">Show less ▴</button>`:''}</div>`}
+ function render(){const S=window.__mlSectors;if(!S||!window.stocks)return;
+  let box=document.getElementById('groupPerf');
+  if(!box){box=document.createElement('div');box.id='groupPerf';box.className='panel';const mp=document.getElementById('moneyPanel'),anchor=mp||document.getElementById('changedPanel')||document.querySelector('.strongest-controls');if(!anchor||!anchor.parentNode)return;anchor.parentNode.insertBefore(box,mp?mp.nextSibling:anchor);
+   box.addEventListener('click',e=>{const t=e.target.closest('[data-gptab]');if(t){st.t=t.dataset.gptab;render();return}const m=e.target.closest('[data-gpmore]');if(m){st.more[m.dataset.gpmore]=!st.more[m.dataset.gpmore];render();return}
+    if(e.target.closest('[data-gpdl]')){const G=groups(),csv='group,liquid stocks,1D %,1W %,1M %\n'+G.map(g=>[`"${g.name.replace(/"/g,'""')}"`,g.n,...[g.d,g.w,g.m].map(v=>v==null?'':v.toFixed(2))].join(',')).join('\n'),a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='group-performance-'+st.t.toLowerCase()+'.csv';a.click()}})}
+  const G=groups(),best=k=>G.filter(g=>g[k]!=null).sort((a,b)=>b[k]-a[k])[0];
+  const ld=best('d'),lw=best('w'),lm=best('m');
+  box.innerHTML=`<style>${css}</style><div class="gp-top"><h3>Group performance</h3><span class="meta">median of liquid stocks · as of ${E(S.asOf||'')}</span></div>
+  <div class="gp-top" style="margin-top:8px"><div class="gp-tabs">${['Sectors','Industries','Themes'].map(t=>`<button class="${st.t===t?'on':''}" data-gptab="${t}">${t}</button>`).join('')}</div><span class="meta">${G.length} groups</span><span style="flex:1"></span><button class="smallbtn" data-gpdl="1">↓ Download</button></div>
+  ${ld&&lw&&lm?`<div class="gp-lead">▲ <b>${E(ld.name)}</b> <span class="meta">${ld.n}</span> leads the day · <b>${E(lw.name)}</b> week · <b>${E(lm.name)}</b> month <span style="float:right;white-space:nowrap">${pc(ld.d)} · ${pc(lw.w)} · ${pc(lm.m)}</span></div>`:''}
+  <div class="gp-cols">${col(G,'d','1 DAY')}${col(G,'w','1 WEEK')}${col(G,'m','1 MONTH')}</div>`}
+ window.mlRenderGroupPerf=render;
+ let tries=0;const iv=setInterval(()=>{if(typeof window.mlRenderMoney==='function'&&!window.mlRenderMoney.__gp){const o=window.mlRenderMoney;const w=function(){const r=o.apply(this,arguments);try{render()}catch(e){}return r};w.__gp=1;window.mlRenderMoney=w;try{render()}catch(e){}clearInterval(iv)}else if(++tries>100)clearInterval(iv)},200);
+})();
+</script>
+
 </body>
 </html>
