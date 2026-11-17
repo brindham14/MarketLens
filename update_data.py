@@ -877,7 +877,14 @@ _IDX_THM = ["IPO", "India Defence", "Capital Markets", "Sugar & Ethanol", "AI Ca
             "Energy", "India Digital", "India Infrastructure & Logistics", "MNC", "Mobility", "EV & New Age Automotives", "India New Age Consumer",
             "Transportation & Logistics", "Non-Cyclical Consumer", "India Tourism", "Housing", "Infrastructure", "PSE", "India Consumption", "Commodities"]
 _IDX_FILE = {"Financial Services": ["financelist", "financialserviceslist"], "Private Bank": ["pvtbanklist", "privatebanklist"], "Oil & Gas": ["oilgaslist"],
-             "Telecommunications": ["telecomlist", "telecommunicationlist"], "Services Sector": ["servicelist", "serviceslist", "servicessectorlist"]}
+             "Telecommunications": ["telecomlist", "telecommunicationlist"], "Services Sector": ["servicelist", "serviceslist", "servicessectorlist"],
+             # the four thematic indices that were still missing (extra file-name spellings to try; the log prints which ones NSE did not supply)
+             "Housing": ["housinglist", "indiahousinglist", "housingindexlist"],
+             "Non-Cyclical Consumer": ["non-cyclicalconsumerlist", "noncyclicalconsumerlist", "non_cyclicalconsumerlist", "nonCyclicalConsumerlist"],
+             "India Infrastructure & Logistics": ["indiainfrastructureandlogisticslist", "infrastructureandlogisticslist", "indiainfralogisticslist", "indiainfrastructurelogisticslist"],
+             "Small Finance Banks & NBFC": ["smallfinancebanksandnbfclist", "smallfinancebanksnbfclist", "smallfinancebanks&nbfclist", "sfbnbfclist", "smallfinancebankandnbfclist"]}
+_IDX_EXACT = {"Housing": ["ind_niftyhousing_list"], "Non-Cyclical Consumer": ["ind_niftynon-cyclicalconsumer_list"],
+              "India Infrastructure & Logistics": ["ind_niftyIndiaInfrastructure_Logistics_list"], "Small Finance Banks & NBFC": ["ind_niftySFBsMfis_list"]}   # exact NSE file names
 def _idx_load(item):
     kind, nm = item
     base = _re.sub(r"[^a-z0-9]", "", nm.lower())
@@ -887,6 +894,7 @@ def _idx_load(item):
         for tail in ("list", "_list"):
             cands.append(f"ind_nifty{sl}{tail}"); cands.append(f"ind_nifty_{sl}{tail}")
     for extra in _IDX_FILE.get(nm, []): cands.insert(0, "ind_nifty" + extra)
+    cands = _IDX_EXACT.get(nm, []) + cands
     for fn in dict.fromkeys(cands):
         try:
             c = pd.read_csv(io.BytesIO(urllib.request.urlopen(urllib.request.Request(f"https://nsearchives.nseindia.com/content/indices/{fn}.csv", headers=H), timeout=15).read()))
@@ -907,6 +915,7 @@ except Exception as e:
     print("NSE index step skipped:", e)
 print("idx loaded:", len(idx_sec), "of", len(_IDX_SEC), "sector indices,", len(idx_thm), "of", len(_IDX_THM), "thematic indices")
 print("idx sector files:", sorted(idx_sec)); print("idx thematic files:", sorted(idx_thm))
+print("idx NOT supplied by NSE (need index_groups.csv rows or another file name):", [("Nifty " + n) for n in _IDX_SEC if ("Nifty " + n) not in idx_sec] + [("Nifty " + n) for n in _IDX_THM if ("Nifty " + n) not in idx_thm])
 # groups copied from the reference site's Workspace (index_groups.csv: symbol,group,kind). An index that NSE's own file already supplied is left as NSE gave it.
 if os.path.exists("index_groups.csv"):
     try:
