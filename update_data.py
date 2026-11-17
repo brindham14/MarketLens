@@ -1172,7 +1172,25 @@ def clean(v):
     return v
 rows = [{k: clean(v) for k, v in r.items() if clean(v) is not None} for r in rows]
 asof = C.index[-1].strftime("%Y-%m-%d")
+# CPR level arrays / entries live in data/cpr.json (loaded only when the CPR tab opens) so summary.json stays light for every other page.
+CPR_BIG = [p + x for p in "dwmy" for x in ("c", "cm", "vz")] + ["nwc", "nmc", "en"]
+cpr_rows = {}
+for r in rows:
+    d = {k: r.pop(k) for k in CPR_BIG if k in r}
+    if d: cpr_rows[r["symbol"]] = d
+json.dump({"asOf": asof, "rows": cpr_rows}, open(f"{OUT}/cpr.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(rows, open(f"{OUT}/summary.json", "w"), separators=(",", ":"), allow_nan=False)
+try:   # data health report (shown at the bottom of the CPR tab): quick check that the pipeline produced what the site expects
+    _flag = lambda k: sum(1 for r in rows if r.get(k) == 1)
+    _health = {"asOf": asof, "generated": dt.datetime.utcnow().isoformat() + "Z", "stocks": len(rows), "cprStocks": len(cpr_rows),
+               "entries": sum(1 for v in cpr_rows.values() if v.get("en")),
+               "flags": {k: _flag(k) for k in ("cDN", "cWN", "cMN", "cYN", "cALL", "cWR", "cMR", "cYR", "dv", "wv", "mv", "dci", "din", "dout")},
+               "summaryKB": round(os.path.getsize(f"{OUT}/summary.json") / 1024), "cprKB": round(os.path.getsize(f"{OUT}/cpr.json") / 1024)}
+    _health["ok"] = bool(len(rows) > 500 and len(cpr_rows) > 0.8 * len(rows))
+    json.dump(_health, open(f"{OUT}/health.json", "w"), separators=(",", ":"))
+    print("health:", _health)
+except Exception as _e:
+    print("health skipped:", _e)
 json.dump(gaps, open(f"{OUT}/gaps.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump(ipos, open(f"{OUT}/ipos.json", "w"), separators=(",", ":"), allow_nan=False)
 json.dump({"asOf": asof, "themes": themes, "lists": lists}, open(f"{OUT}/themes.json", "w"), separators=(",", ":"), allow_nan=False)

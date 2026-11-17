@@ -3552,7 +3552,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 60</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 61</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3717,7 +3717,7 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   <div class="cp-bar"><input type="text" id="cprQ" placeholder="Search symbol, e.g. RELIANCE" autocomplete="off"><label class="ps-desc">Sort <select id="cprSort" style="padding:5px;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:inherit"><option value="" ${!cfg.srt?'selected':''}>Default (RS)</option><option value="d" ${cfg.srt==='d'?'selected':''}>Change % ↓ high to low</option><option value="a" ${cfg.srt==='a'?'selected':''}>Change % ↑ low to high</option></select></label><label class="ps-desc"><input type="checkbox" id="cprLiq" ${cfg.liquid?'checked':''}> Liquid only</label><details><summary class="ps-desc" style="cursor:pointer">Settings</summary><div class="ps-desc" style="line-height:2.2">Narrow CPR width % (≤): Daily <input type="number" step="0.05" id="cn_d" value="${cfg.nd}"> Weekly <input type="number" step="0.05" id="cn_w" value="${cfg.nw}"> Monthly <input type="number" step="0.1" id="cn_m" value="${cfg.nm}"> Yearly <input type="number" step="0.5" id="cn_y" value="${cfg.ny}"><br>Wide CPR width % (≥): Daily <input type="number" step="0.1" id="cw_d" value="${cfg.wd}"> Weekly <input type="number" step="0.1" id="cw_w" value="${cfg.ww}"> Monthly <input type="number" step="0.5" id="cw_m" value="${cfg.wm}"> Yearly <input type="number" step="0.5" id="cw_y" value="${cfg.wy}"><br>Near upper circuit: within <input type="number" step="0.5" id="cn_c" value="${cfg.circ}"> % of the limit price<br><button class="smallbtn" data-cpkgs="1">Use KGS indicator narrow values (D 0.1 · W 0.25 · M 0.4)</button></div></details></div>
   <div id="cprDetail"></div>
   <div class="cp-tabs"><button data-cpv="sc" class="${cfg.view==='sc'?'on':''}">Scanners</button><button data-cpv="pl" class="${cfg.view==='pl'?'on':''}">Trade Planner</button><button data-cpv="en" class="${cfg.view==='en'?'on':''}">Entries</button></div>
-  <div id="cprPlanner"></div><div id="cprEntries"></div><div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Intraday (30m / 1H / 4H) is not included yet.</p>`;
+  <div id="cprPlanner"></div><div id="cprEntries"></div><div id="cprGroups"></div><p class="cp-sub" style="margin-top:14px">Rules copied from the Chartink pivot dashboard and the MarketLens CPR V1.1 plan. Thresholds are editable in Settings and are starting values to be tested, not proven. Intraday (30m / 1H / 4H) is not included yet.</p><p class="cp-sub" id="cprHealth"></p>`;
   const q=pg.querySelector('#cprQ');q.oninput=()=>{const v=q.value.trim().toUpperCase();const s=stocks.find(x=>x.symbol===v);if(s)pick(v,null,false)};
   pg.querySelector('#cprLiq').onchange=e=>{cfg.liquid=e.target.checked?1:0;save();groups()};
   pg.querySelector('#cprSort').onchange=e=>{cfg.srt=e.target.value;save();groups()};
@@ -3744,7 +3744,12 @@ setInterval(()=>{if(document.getElementById('swingPage')&&!document.getElementBy
   else if(v==='en'){try{window.mlCprEntries&&window.mlCprEntries()}catch(e){}}
   else{const gi=Math.min(cfg.grp||0,GROUPS.length-1),ids=GROUPS[gi][2],cn={};ids.forEach(i=>cn[i]=list(i).length);const cur=ids.includes(cfg.sc)?cfg.sc:(ids.find(i=>cn[i]>0)||ids[0]);
   g.innerHTML=`<div class="cp-pills">${GROUPS.map((x,i)=>`<button class="${i===gi?'on':''}" data-cpgrp="${i}">${x[0]}</button>`).join('')}</div>${GROUPS[gi][1]?`<div class="cp-sub" style="margin:0 0 8px">${GROUPS[gi][1]}</div>`:''}<div class="cp-chips">${ids.map(i=>`<button class="${i===cur?'on':''}" data-cpsc="${i}">${D[i].t.replace(/ \(D \/ W \/ M\)| \(D \+ W \+ M \+ Y\)/,'')} <b>${cn[i]}</b></button>`).join('')}</div>${card(cur)}<div class="cp-sub" style="margin-top:10px">Screen results only, not investment advice.</div>`}}
- function show(){const nav=document.getElementById('nav');if(!window.__mlRealData||!window.stocks)return;if(!built)build();else groups()}
+ let cprP=null;
+ function ensureCpr(){if(!window.stocks||window.stocks.some(s=>s.wc))return Promise.resolve();
+  if(!cprP)cprP=fetch('data/cpr.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.rows){const by=j.rows;window.stocks.forEach(s=>{const d=by[s.symbol];if(d)Object.assign(s,d)})}}).catch(()=>{}).then(()=>{cprP=null});
+  return cprP}
+ function health(){const el=document.getElementById('cprHealth');if(!el)return;fetch('data/health.json',{cache:'no-store'}).then(r=>r.ok?r.json():null).then(h=>{if(!h)return;el.innerHTML=(h.ok?'<span style="color:#3aa06b">✓ Data check passed</span>':'<span style="color:#d9a441">⚠ Data check: something looks incomplete</span>')+' · '+h.stocks+' stocks · CPR data for '+h.cprStocks+' · '+(h.entries||0)+' with entry signals · as of '+E(h.asOf||'')}).catch(()=>{})}
+ function show(){const nav=document.getElementById('nav');if(!window.__mlRealData||!window.stocks)return;ensureCpr().then(()=>{if(!built)build();else groups();health()})}
  function hideAll(){document.querySelectorAll('#swingPage,#popularPage,#sectorPage,#backtestPage,#toolsPage,#morePage').forEach(x=>x.classList.add('hidden'));const l=document.querySelector('.layout');if(l)l.classList.add('hidden')}
  function install(){
   const nav=document.getElementById('nav'),pop=nav&&nav.querySelector('[data-tab="popular"]');if(!nav||!pop||document.getElementById('cprTab'))return;

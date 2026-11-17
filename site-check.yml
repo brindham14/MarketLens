@@ -1,0 +1,14 @@
+name: Site check
+on:
+  push:
+    paths: ["index.html", "data/**", "tests/**"]
+  workflow_dispatch:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: node tests/check_scripts.js
+      - run: python3 tests/check_data.py
