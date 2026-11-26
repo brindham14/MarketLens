@@ -2907,7 +2907,7 @@ let last=null,timer=null;
 function apply(q){
   if(!q||!q.quotes)return;
   let n=0;
-  stocks.forEach(s=>{const x=q.quotes[s.symbol];if(x&&isFinite(x.p)){s.price=x.p;if(isFinite(x.c))s.change=x.c;n++}});
+  stocks.forEach(s=>{const x=q.quotes[s.symbol];if(x&&isFinite(x.p)){if(s.chg0==null)s.chg0=s.change;s.price=x.p;if(isFinite(x.c))s.change=x.c;n++}});
   // Market posture is computed from all valid daily quote changes in the sheet, not demo constants.
   const quoteRows=Object.values(q.quotes).filter(x=>Number.isFinite(x.p)&&Number.isFinite(x.c));
   const advancing=quoteRows.filter(x=>x.c>0.000001).length, declining=quoteRows.filter(x=>x.c< -0.000001).length, unchanged=quoteRows.length-advancing-declining;
@@ -3552,7 +3552,7 @@ function sync(){f.style.display=L.classList.contains('hidden')?'none':''}
 new MutationObserver(sync).observe(L,{attributes:true,attributeFilter:['class','style']});
 document.addEventListener('click',()=>setTimeout(sync,0),true);setInterval(sync,500);sync()})();
 </script>
-<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 61</div>
+<div id="mlVer" style="position:fixed;right:8px;bottom:4px;font-size:10px;color:#888;opacity:.7;z-index:3;pointer-events:none">build 62</div>
 <script>
 /* Swing Trade leaders: List / Charts toggle (charts = mini 6-month price charts of the same leaders) */
 (function(){const $=id=>document.getElementById(id);let H=null,mode='list',lastSig='';
@@ -3933,7 +3933,7 @@ document.addEventListener('click',function(e){var t=e.target.closest&&e.target.c
   const by=new Map(L.map(s=>[s.symbol,s]));
   const src=st.t==='Sectors'?(S.sectors||[]).filter(i=>!i.idx):st.t==='Industries'?(S.industries||[]):(S.themes||[]).filter(i=>!i.idx);
   return src.map(g=>{const m=(g.members||[]).map(x=>by.get(x)).filter(s=>s&&(s.turnover==null||s.turnover>=10));if(m.length<3)return null;
-   return{name:g.name,n:m.length,d:med(m.map(s=>s.change)),w:med(m.map(s=>s.ret1w)),m:med(m.map(s=>s.r1))}}).filter(Boolean)}
+   return{name:g.name,n:m.length,d:med(m.map(s=>s.chg0!=null?s.chg0:s.change)),w:med(m.map(s=>s.ret1w)),m:med(m.map(s=>s.r1))}}).filter(Boolean)}
  const pc=v=>(v>0?'+':'')+v.toFixed(1)+'%';
  function col(G,key,title){const V=G.filter(g=>g[key]!=null).sort((a,b)=>b[key]-a[key]),pos=V.filter(g=>g[key]>=0),neg=V.filter(g=>g[key]<0),top=pos.slice(0,10),bot=neg.slice(-10).reverse().reverse(),hid=V.length-top.length-bot.length,id=st.t+key,ex=st.more[id];
   const mx=Math.max(.01,...V.map(g=>Math.abs(g[key]))),lead=V[0]&&V[0].name;
